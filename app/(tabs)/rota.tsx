@@ -1,7 +1,15 @@
+import Header from '@/components/Header';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Header from '../../components/Header';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+
+const routeCardShadow = {
+  shadowColor: '#7a0010',
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
 
 const routes = [
   {
@@ -27,32 +35,33 @@ const routes = [
 export default function RoutesPage() {
   const router = useRouter();
   return (
-    <View style={styles.mainContainer}>
+    <View className="flex-1 bg-[#f8f9fa]">
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Hazır Rotalar</Text>
-        <Text style={styles.subtitle}>Edirne'yi keşfetmek için hazırlanmış rotalar</Text>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 96 }}>
+        <Text className="mb-1 text-[22px] font-bold text-black">Hazır Rotalar</Text>
+        <Text className="mb-5 text-sm text-[#666]">Edirne'yi keşfetmek için hazırlanmış rotalar</Text>
 
         {routes.map(route => (
           <TouchableOpacity
             key={route.id}
-            style={styles.card}
+            style={routeCardShadow}
+            className="mb-5 overflow-hidden rounded-[20px] border border-[#eee] bg-white"
             activeOpacity={0.9}
             onPress={() => router.push('/route-detail')}
           >
-            <View style={styles.imageWrapper}>
-              <Image source={route.image} style={styles.cardImage} />
-              <View style={styles.ratingBadge}>
-                <Text style={styles.ratingText}>⭐ {route.rating}</Text>
+            <View className="relative">
+              <Image source={route.image} className="h-[180px] w-full" />
+              <View className="absolute right-3 top-3 rounded-xl bg-white px-2.5 py-1">
+                <Text className="text-[13px] font-bold">⭐ {route.rating}</Text>
               </View>
             </View>
-            <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{route.title}</Text>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoItem}>🕒 {route.time}</Text>
-                <Text style={styles.infoItem}>📍 {route.places}</Text>
+            <View className="p-4">
+              <Text className="mb-2.5 text-lg font-bold text-black">{route.title}</Text>
+              <View className="mb-2 flex-row">
+                <Text className="mr-4 text-sm text-[#555]">🕒 {route.time}</Text>
+                <Text className="text-sm text-[#555]">📍 {route.places}</Text>
               </View>
-              <Text style={styles.distanceText}>{route.distance}</Text>
+              <Text className="text-sm text-[#888]">{route.distance}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -60,40 +69,3 @@ export default function RoutesPage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: '#f8f9fa' },
-  container: { padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#000', marginBottom: 4 },
-  subtitle: { fontSize: 14, color: '#666', marginBottom: 20 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginBottom: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  imageWrapper: { position: 'relative' },
-  cardImage: { width: '100%', height: 180, resizeMode: 'cover' },
-  ratingBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: '#fff',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    elevation: 2,
-  },
-  ratingText: { fontWeight: 'bold', fontSize: 13 },
-  cardBody: { padding: 16 },
-  cardTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#000' },
-  infoRow: { flexDirection: 'row', marginBottom: 8 },
-  infoItem: { fontSize: 14, color: '#555', marginRight: 15 },
-  distanceText: { fontSize: 14, color: '#888' },
-});

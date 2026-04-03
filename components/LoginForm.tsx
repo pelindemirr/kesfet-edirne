@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginForm({
   onLogin,
@@ -15,17 +15,18 @@ export default function LoginForm({
   const router = useRouter();
 
   return (
-    <View style={styles.card}>
-      <ThemedText style={styles.title}>Hoş Geldiniz</ThemedText>
-      <ThemedText style={styles.subtitle}>Hesabınıza giriş yapın</ThemedText>
+    <View className="mt-6 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6">
+      <ThemedText className="mb-3 text-[28px] font-bold text-[#dc2626]">Keşfi Edirne</ThemedText>
+      <ThemedText className="mb-1 text-[18px] font-bold text-[#111827]">Hoş Geldiniz</ThemedText>
+      <ThemedText className="mb-5 text-[12px] text-[#6b7280]">Hesabınıza giriş yapın</ThemedText>
 
-      <ThemedText style={styles.label}>E-posta</ThemedText>
-      <View style={styles.inputBox}>
-        <IconSymbol name="envelope" size={20} color="#bbb" style={styles.icon} />
+      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>
+      <View className="mb-3 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+        <IconSymbol name="envelope" size={16} color="#6b7280" />
         <TextInput
-          style={styles.input}
+          className="flex-1 ml-2 text-[13px] text-[#111827]"
           placeholder="ornek@email.com"
-          placeholderTextColor="#bbb"
+          placeholderTextColor="#9ca3af"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -33,13 +34,13 @@ export default function LoginForm({
         />
       </View>
 
-      <ThemedText style={styles.label}>Şifre</ThemedText>
-      <View style={styles.inputBox}>
-        <IconSymbol name="lock" size={20} color="#bbb" style={styles.icon} />
+      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre</ThemedText>
+      <View className="mb-4 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+        <IconSymbol name="lock" size={16} color="#6b7280" />
         <TextInput
-          style={styles.input}
-          placeholder="********"
-          placeholderTextColor="#bbb"
+          className="flex-1 ml-2 text-[13px] text-[#111827]"
+          placeholder="••••••••"
+          placeholderTextColor="#9ca3af"
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
@@ -47,122 +48,29 @@ export default function LoginForm({
         <TouchableOpacity onPress={() => setShowPassword(v => !v)}>
           <IconSymbol
             name={showPassword ? 'eye.slash' : 'eye'}
-            size={20}
-            color="#bbb"
-            style={styles.iconRight}
+            size={16}
+            color="#6b7280"
           />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.forgot}>
-        <ThemedText style={styles.forgotText}>Şifremi unuttum</ThemedText>
+      <TouchableOpacity className="mb-4 self-end">
+        <ThemedText className="text-[12px] font-semibold text-[#dc2626]">Şifremi unuttum</ThemedText>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.button}
+        className="mb-4 items-center rounded-[10px] bg-[#dc2626] py-2.5"
         onPress={() => onLogin?.(email, password)}
       >
-        <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
+        <ThemedText className="text-[14px] font-bold text-white">Giriş Yap</ThemedText>
       </TouchableOpacity>
 
-      <View style={styles.footer}>
-        <ThemedText style={styles.footerText}>Hesabınız yok mu? </ThemedText>
+      <View className="flex-row items-center justify-center gap-1">
+        <ThemedText className="text-[12px] text-[#6b7280]">Hesabınız yok mu?</ThemedText>
         <TouchableOpacity onPress={() => router.push('/register')}>
-          <ThemedText style={styles.register}>Kayıt olun</ThemedText>
+          <ThemedText className="text-[12px] font-bold text-[#dc2626]">Kayıt olun</ThemedText>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 36,
-    width: '98%',
-    maxWidth: 340,
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  title: {
-    color: '#b91c1c',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  subtitle: {
-    color: '#6b7280',
-    fontSize: 12,
-    marginBottom: 10,
-  },
-  label: {
-    color: '#111827',
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  inputBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    marginBottom: 8,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    fontSize: 12,
-    color: '#111827',
-  },
-  icon: {
-    marginLeft: 8,
-  },
-  iconRight: {
-    marginRight: 8,
-  },
-  forgot: {
-    alignSelf: 'flex-end',
-    marginBottom: 8,
-  },
-  forgotText: {
-    color: '#b91c1c',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  button: {
-    backgroundColor: '#b91c1c',
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  footerText: {
-    color: '#6b7280',
-    fontSize: 11,
-  },
-  register: {
-    color: '#b91c1c',
-    fontWeight: 'bold',
-    fontSize: 11,
-  },
-});

@@ -1,6 +1,14 @@
+import Header from '@/components/Header';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Header from '../../components/Header';
+import { Image, ScrollView, Text, View } from 'react-native';
+
+const eventCardShadow = {
+  shadowColor: '#7a0010',
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 2,
+};
 
 const events = [
   {
@@ -25,20 +33,20 @@ const events = [
 
 export default function EventsPage() {
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View className="flex-1 bg-white">
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Tüm Etkinlikler</Text>
-        <Text style={styles.subtitle}>Edirne'deki güncel etkinlikler</Text>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 96 }}>
+        <Text className="mb-1 mt-2 text-xl font-bold text-[#880000]">Tüm Etkinlikler</Text>
+        <Text className="mb-4 text-sm text-[#555]">Edirne'deki güncel etkinlikler</Text>
         {events.map(event => (
-          <View key={event.id} style={styles.card}>
-            <Image source={event.image} style={styles.cardImage} />
-            <View style={styles.cardContent}>
-              <Text style={styles.cardCategory}>{event.category}</Text>
-              <Text style={styles.cardTitle}>{event.title}</Text>
-              <Text style={styles.cardInfo}>📅 {event.date}</Text>
-              <Text style={styles.cardInfo}>⏰ {event.time}</Text>
-              <Text style={styles.cardInfo}>📍 {event.location}</Text>
+          <View key={event.id} style={eventCardShadow} className="mb-4 flex-row overflow-hidden rounded-xl border border-[#eee] bg-white">
+            <Image source={event.image} className="h-[90px] w-[90px] rounded-l-xl" />
+            <View className="flex-1 justify-center p-3">
+              <Text className="mb-0.5 text-[13px] font-bold text-[#d32f2f]">{event.category}</Text>
+              <Text className="mb-1 text-base font-bold">{event.title}</Text>
+              <Text className="mb-0.5 text-[13px] text-[#444]">📅 {event.date}</Text>
+              <Text className="mb-0.5 text-[13px] text-[#444]">⏰ {event.time}</Text>
+              <Text className="text-[13px] text-[#444]">📍 {event.location}</Text>
             </View>
           </View>
         ))}
@@ -46,58 +54,3 @@ export default function EventsPage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    marginTop: 8,
-    color: '#880000',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 16,
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
-    marginBottom: 16,
-    overflow: 'hidden',
-    elevation: 2,
-  },
-  cardImage: {
-    width: 90,
-    height: 90,
-    borderTopLeftRadius: 12,
-    borderBottomLeftRadius: 12,
-  },
-  cardContent: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'center',
-  },
-  cardCategory: {
-    color: '#d32f2f',
-    fontWeight: 'bold',
-    fontSize: 13,
-    marginBottom: 2,
-  },
-  cardTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  cardInfo: {
-    fontSize: 13,
-    color: '#444',
-    marginBottom: 2,
-  },
-});

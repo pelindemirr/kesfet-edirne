@@ -27,14 +27,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Harita',
-          tabBarLabel: 'Harita',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="map" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="community"
         options={{
           title: 'Topluluk',
@@ -48,6 +40,18 @@ export default function TabLayout() {
           title: 'Menü',
           tabBarLabel: 'Menü',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="line.3.horizontal" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="rota"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="events"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

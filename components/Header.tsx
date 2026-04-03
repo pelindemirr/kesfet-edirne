@@ -1,66 +1,26 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function AppHeader() {
   const router = useRouter();
+
   return (
-    <View style={styles.headerContainer}>
-      <TouchableOpacity style={styles.menuButton} onPress={() => { /* Menü açma işlemi */ }}>
-      
+    <View className="flex-row items-center justify-between bg-[#b10016] px-4 py-3">
+      <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-xl" onPress={() => router.push('/menu')}>
+        <IconSymbol name="line.3.horizontal" size={24} color="#fff" />
       </TouchableOpacity>
-      <View style={styles.headerTextContainer}>
-        <Text style={styles.headerTitle}>Keşfi Edirne</Text>
-        <Text style={styles.headerSubtitle}>Tarihi keşfedin</Text>
+
+      <View className="flex-1 items-center px-2">
+        <Text className="text-[18px] font-extrabold text-white">Keşfi Edirne</Text>
+        <Text className="mt-0.5 text-[12px] text-white/95">Tarihi keşfedin</Text>
       </View>
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/login')}>
-        <Text style={styles.loginText}>Giriş</Text>
+
+      <TouchableOpacity className="h-[30px] min-w-[48px] items-center justify-center rounded-lg bg-white/10 px-2" onPress={() => router.push('/login')}>
+        <Text className="text-[12px] font-bold text-white">Giriş</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#b10016',
-    paddingTop: 36,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    minHeight: 80,
-  },
-  menuButton: {
-    padding: 8,
-  },
-  menuIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
-  },
-  headerTextContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    color: '#fff',
-    fontSize: 13,
-    marginTop: 2,
-  },
-  loginButton: {
-    padding: 8,
-  },
-  loginText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
