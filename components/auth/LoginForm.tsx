@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function LoginFormTW({
+export default function LoginForm({
   onLogin,
 }: {
   onLogin?: (email: string, password: string) => void;
@@ -15,16 +15,24 @@ export default function LoginFormTW({
   const router = useRouter();
 
   return (
-    <View className="mt-6 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6">
-      <ThemedText className="mb-3 text-[28px] font-bold text-[#dc2626]">Keşfi Edirne</ThemedText>
-      <ThemedText className="mb-1 text-[18px] font-bold text-[#111827]">Hoş Geldiniz</ThemedText>
-      <ThemedText className="mb-5 text-[12px] text-[#6b7280]">Hesabınıza giriş yapın</ThemedText>
+    <View
+      className="mt-4 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6"
+      style={{
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 3,
+      }}
+    >
+      <ThemedText className="mb-1 font-bold text-[#e30613]" style={{ fontSize: 33, lineHeight: 38 }}>Hoş Geldiniz</ThemedText>
+      <ThemedText className="mb-5 text-[22px] text-[#4b5563]">Hesabınıza giriş yapın</ThemedText>
 
       <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>
-      <View className="mb-3 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+      <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="envelope" size={16} color="#6b7280" />
         <TextInput
-          className="flex-1 ml-2 text-[13px] text-[#111827]"
+          className="ml-2 flex-1 text-[13px] text-[#111827]"
           placeholder="ornek@email.com"
           placeholderTextColor="#9ca3af"
           value={email}
@@ -35,10 +43,10 @@ export default function LoginFormTW({
       </View>
 
       <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre</ThemedText>
-      <View className="mb-4 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+      <View className="mb-5 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="lock" size={16} color="#6b7280" />
         <TextInput
-          className="flex-1 ml-2 text-[13px] text-[#111827]"
+          className="ml-2 flex-1 text-[13px] text-[#111827]"
           placeholder="••••••••"
           placeholderTextColor="#9ca3af"
           value={password}
@@ -55,11 +63,11 @@ export default function LoginFormTW({
       </View>
 
       <TouchableOpacity className="mb-4 self-end">
-        <ThemedText className="text-[12px] font-semibold text-[#dc2626]">Şifremi unuttum</ThemedText>
+        <ThemedText className="text-[12px] font-semibold text-[#e30613]">Şifremi unuttum</ThemedText>
       </TouchableOpacity>
 
       <TouchableOpacity
-        className="mb-4 items-center rounded-[10px] bg-[#dc2626] py-2.5"
+        className="mb-4 items-center rounded-[8px] bg-[#e30613] py-3"
         onPress={() => onLogin?.(email, password)}
       >
         <ThemedText className="text-[14px] font-bold text-white">Giriş Yap</ThemedText>
@@ -68,7 +76,7 @@ export default function LoginFormTW({
       <View className="flex-row items-center justify-center gap-1">
         <ThemedText className="text-[12px] text-[#6b7280]">Hesabınız yok mu?</ThemedText>
         <TouchableOpacity onPress={() => router.push('/register')}>
-          <ThemedText className="text-[12px] font-bold text-[#dc2626]">Kayıt olun</ThemedText>
+          <ThemedText className="text-[12px] font-bold text-[#e30613]">Kayıt olun</ThemedText>
         </TouchableOpacity>
       </View>
     </View>

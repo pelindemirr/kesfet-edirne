@@ -1,5 +1,8 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ScrollView, StatusBar, Text, View } from 'react-native';
+import { Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+
+import Header from '@/components/layout/Header';
 
 const stops = [
   { id: 1, name: 'Selimiye Camii', desc: "Mimar Sinan'ın ustalık eseri", time: '45 dk' },
@@ -9,14 +12,25 @@ const stops = [
 ];
 
 export default function RouteDetail() {
+  const router = useRouter();
+
   return (
     <View className="flex-1 bg-[#fcfcfc]">
       <StatusBar barStyle="light-content" backgroundColor="transparent" />
+      <Header />
 
       <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 40 }}>
         <View className="relative h-80">
-          <Image source={require('../assets/rota/camii.webp')} className="h-full w-full" />
+          <Image source={require('../../assets/rota/camii.webp')} className="h-full w-full" />
           <View className="absolute inset-0 bg-black/25" />
+
+          <TouchableOpacity
+            onPress={() => router.push('/rota')}
+            className="absolute left-4 top-4 rounded-full bg-white/90 px-4 py-2"
+            activeOpacity={0.85}
+          >
+            <Text className="text-[13px] font-semibold text-[#111827]">← Rotalara Don</Text>
+          </TouchableOpacity>
 
           <View className="absolute bottom-[60px] left-5">
             <Text

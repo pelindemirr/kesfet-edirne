@@ -1,4 +1,4 @@
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -19,7 +19,7 @@ const routes = [
     places: '8 yer',
     distance: '5.2 km',
     rating: '4.8',
-    image: require('../../assets/rota/camii.webp'),
+    image: require('../../../assets/rota/camii.webp'),
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ const routes = [
     places: '6 yer',
     distance: '4.8 km',
     rating: '4.6',
-    image: require('../../assets/rota/meric.jpg'),
+    image: require('../../../assets/rota/meric.jpg'),
   },
 ];
 
@@ -47,7 +47,7 @@ export default function RoutesPage() {
             style={routeCardShadow}
             className="mb-5 overflow-hidden rounded-[20px] border border-[#eee] bg-white"
             activeOpacity={0.9}
-            onPress={() => router.push('/route-detail')}
+            onPress={() => router.push('../route-detail')}
           >
             <View className="relative">
               <Image source={route.image} className="h-[180px] w-full" />

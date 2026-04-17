@@ -25,6 +25,19 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Environment variables
+
+For live weather and currency data on the home screen:
+
+1. Create a local env file:
+
+   ```bash
+   copy .env.example .env.local
+   ```
+
+2. If you have an OpenWeather key, set `EXPO_PUBLIC_OPENWEATHER_API_KEY` in `.env.local`.
+   If not set, the app automatically falls back to Open-Meteo using coordinates.
+
 ## Get a fresh project
 
 When you're ready, run:

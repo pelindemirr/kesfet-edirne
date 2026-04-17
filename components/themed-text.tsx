@@ -13,14 +13,20 @@ export function ThemedText({
   lightColor,
   darkColor,
   type = 'default',
+  className,
   ...rest
 }: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const hasExplicitColorClass =
+    typeof className === 'string' &&
+    /(^|\s)text-(?:white|black|transparent|[a-z]+-\d{2,3}|\[[^\]]+\])(?=\s|$)/.test(className);
+  const shouldUseThemeColor = !lightColor && !darkColor && !hasExplicitColorClass;
 
   return (
     <Text
+      className={className}
       style={[
-        { color },
+        shouldUseThemeColor ? { color } : undefined,
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,

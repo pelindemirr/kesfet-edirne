@@ -12,16 +12,24 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
   const router = useRouter();
 
   return (
-    <View className="mt-6 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6">
-   
-      <ThemedText className="mb-1 text-[18px] font-bold text-[#111827]">Hesap Oluşturun</ThemedText>
-      <ThemedText className="mb-5 text-[12px] text-[#6b7280]">Yeni hesabınızı oluşturun</ThemedText>
+    <View
+      className="mt-4 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6"
+      style={{
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 3,
+      }}
+    >
+      <ThemedText className="mb-1 font-bold text-[#e30613]" style={{ fontSize: 33, lineHeight: 38 }}>Hesap Oluşturun</ThemedText>
+      <ThemedText className="mb-5 text-[22px] text-[#4b5563]">Yeni bir hesap oluşturun</ThemedText>
 
       <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Ad Soyad</ThemedText>
-      <View className="mb-3 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+      <View className="mb-3 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="person" size={16} color="#6b7280" />
         <TextInput
-          className="flex-1 ml-2 text-[13px] text-[#111827]"
+          className="ml-2 flex-1 text-[13px] text-[#111827]"
           placeholder="Ad Soyad"
           placeholderTextColor="#9ca3af"
           value={name}
@@ -30,11 +38,11 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
       </View>
 
       <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>
-      <View className="mb-3 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+      <View className="mb-3 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="envelope" size={16} color="#6b7280" />
         <TextInput
-          className="flex-1 ml-2 text-[13px] text-[#111827]"
-          placeholder="ornek@email.com"
+          className="ml-2 flex-1 text-[13px] text-[#111827]"
+          placeholder="Mail adresinizi"
           placeholderTextColor="#9ca3af"
           value={email}
           onChangeText={setEmail}
@@ -44,10 +52,10 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
       </View>
 
       <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre</ThemedText>
-      <View className="mb-4 flex-row items-center rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
+      <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="lock" size={16} color="#6b7280" />
         <TextInput
-          className="flex-1 ml-2 text-[13px] text-[#111827]"
+          className="ml-2 flex-1 text-[13px] text-[#111827]"
           placeholder="••••••••"
           placeholderTextColor="#9ca3af"
           value={password}
@@ -64,7 +72,7 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
       </View>
 
       <TouchableOpacity
-        className="mb-4 items-center rounded-[10px] bg-[#dc2626] py-2.5"
+        className="mb-4 items-center rounded-[8px] bg-[#e30613] py-3"
         onPress={() => onRegister?.(name, email, password)}
       >
         <ThemedText className="text-[14px] font-bold text-white">Hesap Oluştur</ThemedText>
@@ -73,7 +81,7 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
       <View className="flex-row items-center justify-center gap-1">
         <ThemedText className="text-[12px] text-[#6b7280]">Hesabınız var mı?</ThemedText>
         <TouchableOpacity onPress={() => router.push('/login')}>
-          <ThemedText className="text-[12px] font-bold text-[#dc2626]">Giriş yapın</ThemedText>
+          <ThemedText className="text-[12px] font-bold text-[#e30613]">Giriş yapın</ThemedText>
         </TouchableOpacity>
       </View>
     </View>

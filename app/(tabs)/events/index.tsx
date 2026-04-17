@@ -1,4 +1,4 @@
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 import React from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 
@@ -18,7 +18,7 @@ const events = [
     date: '5-11 Temmuz 2024',
     time: '09:00 - 18:00',
     location: 'Sarayiçi',
-    image: require('../../assets/events/kirkpinar.jpg'),
+    image: require('../../../assets/events/kirkpinar.jpg'),
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const events = [
     date: '15-20 Ağustos 2024',
     time: '16:00 - 23:00',
     location: 'Danışment,Edirne',
-    image: require('../../assets/events/fest.jpg'),
+    image: require('../../../assets/events/fest.jpg'),
   },
 ];
 

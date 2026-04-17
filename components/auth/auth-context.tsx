@@ -2,7 +2,8 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 
 type AuthContextValue = {
   isAuthenticated: boolean;
-  signIn: () => void;
+  displayName: string | null;
+  signIn: (payload?: { displayName?: string | null }) => void;
   signOut: () => void;
 };
 
@@ -10,14 +11,22 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(null);
 
   const value = useMemo(
     () => ({
       isAuthenticated,
-      signIn: () => setIsAuthenticated(true),
-      signOut: () => setIsAuthenticated(false),
+      displayName,
+      signIn: (payload?: { displayName?: string | null }) => {
+        setDisplayName(payload?.displayName?.trim() || null);
+        setIsAuthenticated(true);
+      },
+      signOut: () => {
+        setDisplayName(null);
+        setIsAuthenticated(false);
+      },
     }),
-    [isAuthenticated],
+    [displayName, isAuthenticated],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

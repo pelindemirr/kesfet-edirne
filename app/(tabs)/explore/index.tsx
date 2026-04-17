@@ -1,8 +1,8 @@
-import AppHeader from '@/components/Header';
 import { useAuth } from '@/components/auth/auth-context';
+import Header from '@/components/layout/Header';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -11,14 +11,22 @@ const mapHtml = `
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-      html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        background: #efe7d7;
+      }
+      #map {
+        position: relative;
+        height: 100%;
+        width: 100%;
+      }
       .leaflet-control-zoom a { border-radius: 8px; }
       .place-label {
         background: rgba(255,255,255,0.96);
@@ -35,9 +43,16 @@ const mapHtml = `
   </head>
   <body>
     <div id="map"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-      const map = L.map('map', { zoomControl: true }).setView([41.6766, 26.5557], 13);
+      const map = L.map('map', {
+        zoomControl: false,
+        preferCanvas: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        dragging: true,
+      }).setView([41.6766, 26.5557], 13);
+      window.__EDIRNE_MAP__ = map;
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -64,6 +79,10 @@ const mapHtml = `
       places.forEach((place) => {
         L.marker(place.coords, { icon }).addTo(map).bindPopup('<b>' + place.name + '</b>');
       });
+
+      const fixSize = () => map.invalidateSize(true);
+      window.addEventListener('load', () => setTimeout(fixSize, 120));
+      window.addEventListener('resize', fixSize);
     </script>
   </body>
 </html>`;
@@ -90,6 +109,7 @@ const badgeClassByCategory: Record<string, string> = {
 export default function AccountExploreScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const mapWebViewRef = useRef<WebView>(null);
   const [favorites, setFavorites] = useState<typeof places>([]);
   const [plannedRoute, setPlannedRoute] = useState<typeof places>([]);
   const [selectedDistrict, setSelectedDistrict] = useState('Merkez');
@@ -122,6 +142,14 @@ export default function AccountExploreScreen() {
   const isFavorite = (placeId: number) => favorites.some((fav) => fav.id === placeId);
   const isInRoute = (placeId: number) => plannedRoute.some((p) => p.id === placeId);
 
+  const zoomInMap = () => {
+    mapWebViewRef.current?.injectJavaScript('window.__EDIRNE_MAP__ && window.__EDIRNE_MAP__.zoomIn(); true;');
+  };
+
+  const zoomOutMap = () => {
+    mapWebViewRef.current?.injectJavaScript('window.__EDIRNE_MAP__ && window.__EDIRNE_MAP__.zoomOut(); true;');
+  };
+
   const handleSaveRoute = () => {
     setSaveModalVisible(false);
     setRouteName('Örn: Tarihi Merkez Turu');
@@ -131,7 +159,7 @@ export default function AccountExploreScreen() {
   if (!isAuthenticated) {
     return (
       <View className="flex-1 bg-[#f7f4f2]">
-        <AppHeader />
+        <Header />
 
         <View className="flex-1 items-center justify-center px-5">
           <View className="w-full max-w-[360px] rounded-[18px] border border-[#ffd6d6] bg-white p-5">
@@ -156,19 +184,19 @@ export default function AccountExploreScreen() {
 
   return (
     <View className="flex-1 bg-[#f7f4f2]">
-      <AppHeader />
+      <Header />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
         <View className="px-3 pt-3">
           <Text className="mb-3 text-[22px] font-bold text-black">Rota Planlama</Text>
 
-          <View className="mb-2 rounded-[10px] bg-[#f3f4f6] px-3 py-2.5">
-            <TouchableOpacity onPress={() => setDistrictMenuOpen(!districtMenuOpen)} className="flex-row items-center justify-between">
-              <Text className="text-[14px] text-[#6b7280]">{selectedDistrict}</Text>
+          <View className="mb-2 rounded-[10px] border border-[#cfd4dc] bg-[#d9dde3] px-4 py-3.5">
+            <TouchableOpacity onPress={() => setDistrictMenuOpen(!districtMenuOpen)} className="min-h-[22px] flex-row items-center justify-between">
+              <Text className="text-[14px] font-medium text-[#111827]">{selectedDistrict}</Text>
               <IconSymbol name="chevron.down" size={16} color="#9ca3af" />
             </TouchableOpacity>
             {districtMenuOpen && (
-              <View className="mt-2 border-t border-[#e5e7eb] pt-2">
+              <View className="mt-2 rounded-[10px] border border-[#d1d5db] bg-white p-1.5">
                 {districts.map((district) => (
                   <TouchableOpacity
                     key={district}
@@ -176,7 +204,9 @@ export default function AccountExploreScreen() {
                       setSelectedDistrict(district);
                       setDistrictMenuOpen(false);
                     }}
-                    className="flex-row items-center justify-between px-2 py-2"
+                    className={`flex-row items-center justify-between rounded-[8px] px-2.5 py-2.5 ${
+                      selectedDistrict === district ? 'bg-[#f3f4f6]' : ''
+                    }`}
                   >
                     <Text
                       className={`text-[14px] ${
@@ -192,13 +222,13 @@ export default function AccountExploreScreen() {
             )}
           </View>
 
-          <View className="mb-3 rounded-[10px] bg-[#f3f4f6] px-3 py-2.5">
-            <TouchableOpacity onPress={() => setCategoryMenuOpen(!categoryMenuOpen)} className="flex-row items-center justify-between">
-              <Text className="text-[14px] text-[#6b7280]">{selectedCategory}</Text>
+          <View className="mb-3 rounded-[10px] border border-[#cfd4dc] bg-[#d9dde3] px-4 py-3.5">
+            <TouchableOpacity onPress={() => setCategoryMenuOpen(!categoryMenuOpen)} className="min-h-[22px] flex-row items-center justify-between">
+              <Text className="text-[14px] font-medium text-[#111827]">{selectedCategory}</Text>
               <IconSymbol name="chevron.down" size={16} color="#9ca3af" />
             </TouchableOpacity>
             {categoryMenuOpen && (
-              <View className="mt-2 border-t border-[#e5e7eb] pt-2">
+              <View className="mt-2 rounded-[10px] border border-[#d1d5db] bg-white p-1.5">
                 {allCategories.map((category) => (
                   <TouchableOpacity
                     key={category}
@@ -206,7 +236,9 @@ export default function AccountExploreScreen() {
                       setSelectedCategory(category);
                       setCategoryMenuOpen(false);
                     }}
-                    className="flex-row items-center justify-between px-2 py-2"
+                    className={`flex-row items-center justify-between rounded-[8px] px-2.5 py-2.5 ${
+                      selectedCategory === category ? 'bg-[#f3f4f6]' : ''
+                    }`}
                   >
                     <Text
                       className={`text-[14px] ${
@@ -222,15 +254,27 @@ export default function AccountExploreScreen() {
             )}
           </View>
 
-          <View className="mb-4 overflow-hidden rounded-[12px] border border-[#e8e3da] bg-[#efe7d7]">
+          <View className="relative mb-4 overflow-hidden rounded-[12px] border border-[#e8e3da] bg-[#efe7d7]">
             <WebView
+              ref={mapWebViewRef}
               source={{ html: mapHtml }}
-              style={{ height: 210, backgroundColor: '#efe7d7' }}
+              style={{ width: '100%', height: 210, backgroundColor: '#efe7d7' }}
+              scalesPageToFit={false}
               javaScriptEnabled
               domStorageEnabled
               originWhitelist={['*']}
               scrollEnabled={false}
+              nestedScrollEnabled
             />
+
+            <View className="absolute right-2 top-2 overflow-hidden rounded-[8px] border border-[#d1d5db] bg-white">
+              <TouchableOpacity onPress={zoomInMap} className="h-8 w-8 items-center justify-center border-b border-[#e5e7eb]">
+                <Text className="text-[18px] font-bold text-[#111827]">+</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={zoomOutMap} className="h-8 w-8 items-center justify-center">
+                <Text className="text-[18px] font-bold text-[#111827]">-</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View className="mb-4 flex-row items-center rounded-[10px] bg-white px-3 py-2.5">

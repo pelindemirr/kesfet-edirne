@@ -1,4 +1,4 @@
-import RegisterForm from '@/components/RegisterForm';
+import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/components/auth/auth-context';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -11,10 +11,10 @@ export default function RegisterScreen() {
   const { signIn } = useAuth();
 
   return (
-    <View className="flex-1 bg-[#f3f4f6] pt-16">
-      <View className="items-center">
-        <ThemedText className="mb-1 text-center text-[32px] font-bold text-[#dc2626]">Keşfi Edirne</ThemedText>
-        <ThemedText className="mb-6 text-center text-[14px] text-[#6b7280]">
+    <View className="flex-1 bg-[#f3f4f6] pt-20 mt-5">
+      <View className="items-center px-5">
+        <ThemedText className="mb-1 text-center font-bold text-[#e30613]" style={{ fontSize: 38, lineHeight: 40 }}>Keşfi Edirne</ThemedText>
+        <ThemedText className="mb-5 text-center text-[14px] text-[#4b5563]">
           Tarihi keşfedin, rotanızı planlayın
         </ThemedText>
 
@@ -22,14 +22,14 @@ export default function RegisterScreen() {
           className="mb-6 flex-row items-center gap-1"
           onPress={() => router.push('/')}
         >
-          <IconSymbol name="arrow.left" size={16} color="#1d4ed8" />
-          <ThemedText className="text-[14px] font-semibold text-[#1d4ed8]">Ana Sayfaya Dön</ThemedText>
+          <IconSymbol name="arrow.left" size={16} color="#374151" />
+          <ThemedText className="text-[14px] font-medium text-[#374151]">Ana Sayfaya Dön</ThemedText>
         </TouchableOpacity>
       </View>
 
       <RegisterForm
-        onRegister={() => {
-          signIn();
+        onRegister={(name) => {
+          signIn({ displayName: name || 'Kullanıcı' });
           router.replace('/');
         }}
       />
