@@ -65,15 +65,15 @@ export default function ProfileSettingsScreen() {
           </TouchableOpacity>
 
           <View>
-            <Text className="text-[24px] font-extrabold text-white">Profili Duzenle</Text>
-            <Text className="mt-0.5 text-[13px] text-white/90">Avatar ve bilgilerinizi guncelleyin</Text>
+            <Text className="text-[24px] font-extrabold text-white">Profili Düzenle</Text>
+            <Text className="mt-0.5 text-[13px] text-white/90">Avatar ve bilgilerinizi güncelleyin</Text>
           </View>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         <View className="rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="text-[30px] font-bold text-[#111827]">Profil Fotografi</Text>
+          <Text className="text-[30px] font-bold text-[#111827]">Profil Fotoğrafı</Text>
 
           <View className="mt-5 items-center">
             <View className="relative h-24 w-24 items-center justify-center rounded-full bg-[#e60000]">
@@ -95,14 +95,14 @@ export default function ProfileSettingsScreen() {
         </View>
 
         <View className="mt-4 rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="mb-4 text-[30px] font-bold text-[#111827]">Kisisel Bilgiler</Text>
+          <Text className="mb-4 text-[30px] font-bold text-[#111827]">Kişisel Bilgiler</Text>
 
-          <Text className="mb-1 text-[14px] font-medium text-[#111827]">Isim</Text>
+          <Text className="mb-1 text-[14px] font-medium text-[#111827]">İsim</Text>
           <TextInput
             value={name}
             onChangeText={setName}
             className="mb-4 rounded-[10px] border border-[#d1d5db] bg-[#f9fafb] px-3 py-3 text-[15px] text-[#111827]"
-            placeholder="Isim"
+            placeholder="İsim"
             placeholderTextColor="#9ca3af"
           />
 
@@ -112,11 +112,11 @@ export default function ProfileSettingsScreen() {
             editable={false}
             className="rounded-[10px] border border-[#d1d5db] bg-[#eef0f3] px-3 py-3 text-[15px] text-[#6b7280]"
           />
-          <Text className="mt-2 text-[12px] text-[#9ca3af]">E-posta degistirilemez</Text>
+          <Text className="mt-2 text-[12px] text-[#9ca3af]">E-posta değiştirilemez</Text>
         </View>
 
         <View className="mt-4 rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="mb-4 text-[30px] font-bold text-[#111827]">Kullanici Etiketleri</Text>
+          <Text className="mb-4 text-[30px] font-bold text-[#111827]">Kullanıcı Etiketleri</Text>
 
           <View className="flex-row flex-wrap justify-between">
             {userTags.map((tag) => {
@@ -141,7 +141,7 @@ export default function ProfileSettingsScreen() {
         </View>
 
         <TouchableOpacity className="mt-4 items-center rounded-[10px] bg-[#e60000] py-3.5">
-          <Text className="text-[16px] font-bold text-white">Degisiklikleri Kaydet</Text>
+          <Text className="text-[16px] font-bold text-white">Değişiklikleri Kaydet</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

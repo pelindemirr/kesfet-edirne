@@ -16,16 +16,9 @@ export default function LoginForm({
 
   return (
     <View
-      className="mt-4 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6"
-      style={{
-        shadowColor: '#000',
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 3,
-      }}
+      className="mt-4 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-lg shadow-black/10"
     >
-      <ThemedText className="mb-1 font-bold text-[#e30613]" style={{ fontSize: 33, lineHeight: 38 }}>Hoş Geldiniz</ThemedText>
+      <ThemedText className="mb-1 text-[33px] font-bold leading-[38px] text-[#e30613]">Hoş Geldiniz</ThemedText>
       <ThemedText className="mb-5 text-[22px] text-[#4b5563]">Hesabınıza giriş yapın</ThemedText>
 
       <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>

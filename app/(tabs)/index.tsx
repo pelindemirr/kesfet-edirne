@@ -8,22 +8,6 @@ import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
 
 import { fetchLiveWeather, fetchUsdTryRate } from '@/services/home-live-data';
 
-const cardShadow = {
-  shadowColor: '#7a0010',
-  shadowOpacity: 0.08,
-  shadowRadius: 8,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 2,
-};
-
-const sectionShadow = {
-  shadowColor: '#7a0010',
-  shadowOpacity: 0.1,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 3,
-};
-
 const rotaIcon = require('../../assets/icon/rota.png');
 const mapIcon = require('../../assets/icon/map.png');
 
@@ -112,17 +96,7 @@ export default function HomeScreen() {
               </View>
 
             
-
-              <View
-                style={{
-                  shadowColor: '#000',
-                  shadowOpacity: 0.14,
-                  shadowRadius: 14,
-                  shadowOffset: { width: 0, height: 6 },
-                  elevation: 5,
-                }}
-                className="rounded-[22px] border border-[#f1eaea] bg-white"
-              >
+              <View className="rounded-[22px] border border-[#f1eaea] bg-white shadow-xl shadow-black/10">
                 <View className="flex-row items-center justify-between px-5 pb-3 pt-4">
                   <View className="flex-1 pr-3">
                     <ThemedText className="text-[27px] font-extrabold text-[#202020]">Bugün nereyi keşfedelim?</ThemedText>
@@ -150,7 +124,7 @@ export default function HomeScreen() {
 
           <View className="mt-2 flex-row flex-wrap justify-between px-4">
             <Link href="/explore" asChild>
-              <TouchableOpacity style={cardShadow} className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4">
+              <TouchableOpacity className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4 shadow-lg shadow-black/10">
                 <View className="mb-[22px] h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#fff4f4]">
                   <Image source={mapIcon} className="h-6 w-6" resizeMode="contain" />
                 </View>
@@ -160,7 +134,7 @@ export default function HomeScreen() {
             </Link>
 
             <Link href="/rota" asChild>
-              <TouchableOpacity style={cardShadow} className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4">
+              <TouchableOpacity className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4 shadow-lg shadow-black/10">
                 <View className="mb-[22px] h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#fff6ea]">
                   <Image source={rotaIcon} className="h-6 w-6" resizeMode="contain" style={{ tintColor: '#d08a1f' }} />
                 </View>
@@ -170,7 +144,7 @@ export default function HomeScreen() {
             </Link>
 
             <Link href="/events" asChild>
-              <TouchableOpacity style={cardShadow} className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4">
+              <TouchableOpacity className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4 shadow-lg shadow-black/10">
                 <View className="mb-[22px] h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#edf5ff]">
                   <Image source={eventsIcon} className="h-6 w-6" resizeMode="contain" />
                 </View>
@@ -180,7 +154,7 @@ export default function HomeScreen() {
             </Link>
 
             <Link href="/community" asChild>
-              <TouchableOpacity style={cardShadow} className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4">
+              <TouchableOpacity className="mb-3 min-h-[140px] w-[48.5%] rounded-[18px] border border-[#ece5e1] bg-white p-4 shadow-lg shadow-black/10">
                 <View className="mb-[22px] h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#f5edff]">
                   <Image source={groupsIcon} className="h-6 w-6" resizeMode="contain" />
                 </View>
@@ -214,7 +188,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={sectionShadow} className="mx-4 mb-4 rounded-[18px] border border-[#eee5e2] bg-white p-4">
+          <View className="mx-4 mb-4 rounded-[18px] border border-[#eee5e2] bg-white p-4 shadow-lg shadow-black/10">
             <View className="mb-2.5 flex-row items-center justify-between">
               <ThemedText className="text-[15px] font-extrabold text-[#222]">Popüler Rotalar</ThemedText>
               <TouchableOpacity>
@@ -241,7 +215,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <View style={sectionShadow} className="mx-4 mb-4 rounded-[18px] border border-[#eee5e2] bg-white p-4">
+          <View className="mx-4 mb-4 rounded-[18px] border border-[#eee5e2] bg-white p-4 shadow-lg shadow-black/10">
             <View className="mb-2.5 flex-row items-center justify-between">
               <ThemedText className="text-[15px] font-extrabold text-[#222]">Yaklaşan Etkinlikler</ThemedText>
               <TouchableOpacity>
@@ -266,7 +240,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <View className="mx-4 mb-4 rounded-[18px] border border-[#ddc7f2] bg-[#f6edff] p-4">
+          <View className="mx-4 mb-4 rounded-[18px] border border-[#ddc7f2] bg-[#f6edff] p-4 shadow-lg shadow-black/10">
             <View className="mb-2.5 flex-row items-center justify-between">
               <ThemedText className="text-[15px] font-extrabold text-[#8e24aa]">Topluluk Rotaları</ThemedText>
               <TouchableOpacity>

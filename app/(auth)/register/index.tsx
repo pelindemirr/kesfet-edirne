@@ -13,7 +13,7 @@ export default function RegisterScreen() {
   return (
     <View className="flex-1 bg-[#f3f4f6] pt-20 mt-5">
       <View className="items-center px-5">
-        <ThemedText className="mb-1 text-center font-bold text-[#e30613]" style={{ fontSize: 38, lineHeight: 40 }}>Keşfi Edirne</ThemedText>
+        <ThemedText className="mb-1 text-center text-[38px] font-bold leading-[40px] text-[#e30613]">Keşfi Edirne</ThemedText>
         <ThemedText className="mb-5 text-center text-[14px] text-[#4b5563]">
           Tarihi keşfedin, rotanızı planlayın
         </ThemedText>

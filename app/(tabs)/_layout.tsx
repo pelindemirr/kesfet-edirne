@@ -79,8 +79,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="menu/index"
         options={{
-          title: 'Menü',
-          tabBarLabel: 'Menü',
+          title: 'Profil',
+          tabBarLabel: 'Profil',
           tabBarIcon: ({ color }) => (
             <Image source={edit} style={{ width: 22, height: 22, tintColor: color }} resizeMode="contain" />
           ),

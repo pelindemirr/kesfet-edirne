@@ -18,7 +18,8 @@ const routes = [
     time: '3 saat',
     places: '8 yer',
     distance: '5.2 km',
-    rating: '4.8',
+    badge: 'Kültür & Tarih',
+    description: 'Selimiye, Üç Şerefeli, Eski Cami',
     image: require('../../../assets/rota/camii.webp'),
   },
   {
@@ -27,13 +28,55 @@ const routes = [
     time: '2.5 saat',
     places: '6 yer',
     distance: '4.8 km',
-    rating: '4.6',
+    badge: 'Doğa & Yürüyüş',
+    description: 'Meriç Köprüsü, sahil parkı',
+    image: require('../../../assets/rota/meric.jpg'),
+  },
+  {
+    id: 3,
+    title: 'Osmanlı Çarşı Turu',
+    time: '2 saat',
+    places: '5 yer',
+    distance: '2.1 km',
+    badge: 'Kültür & Tarih',
+    description: 'Bedesten, Alipaşa ve Arasta Çarşısı',
+    image: require('../../../assets/rota/meric.jpg'),
+  },
+  {
+    id: 4,
+    title: 'Edirne Lezzetleri Rotası',
+    time: '3.5 saat',
+    places: '7 yer',
+    distance: '3.0 km',
+    badge: 'Yeme & İçme',
+    description: 'Ciğer, tava ciğeri, beyaz peynir, badem ezmesi',
+    image: require('../../../assets/rota/meric.jpg'),
+  },
+  {
+    id: 5,
+    title: 'Tunca Nehri & Sarayiçi',
+    time: '2 saat',
+    places: '4 yer',
+    distance: '3.8 km',
+    badge: 'Doğa & Yürüyüş',
+    description: 'Kırkpınar alanı, Adacık, nehir yürüyüşü',
+    image: require('../../../assets/rota/meric.jpg'),
+  },
+  {
+    id: 6,
+    title: 'Kırkpınar & Spor Tarihi',
+    time: '1.5 saat',
+    places: '3 yer',
+    distance: '2.5 km',
+    badge: 'Spor & Tarih',
+    description: 'Sarayiçi, güreş müzesi, Kırkpınar sahası',
     image: require('../../../assets/rota/meric.jpg'),
   },
 ];
 
 export default function RoutesPage() {
   const router = useRouter();
+
   return (
     <View className="flex-1 bg-[#f8f9fa]">
       <Header />
@@ -41,7 +84,7 @@ export default function RoutesPage() {
         <Text className="mb-1 text-[22px] font-bold text-black">Hazır Rotalar</Text>
         <Text className="mb-5 text-sm text-[#666]">Edirne'yi keşfetmek için hazırlanmış rotalar</Text>
 
-        {routes.map(route => (
+        {routes.map((route) => (
           <TouchableOpacity
             key={route.id}
             style={routeCardShadow}
@@ -50,10 +93,7 @@ export default function RoutesPage() {
             onPress={() => router.push('../route-detail')}
           >
             <View className="relative">
-              <Image source={route.image} className="h-[180px] w-full" />
-              <View className="absolute right-3 top-3 rounded-xl bg-white px-2.5 py-1">
-                <Text className="text-[13px] font-bold">⭐ {route.rating}</Text>
-              </View>
+              <Image source={route.image} className="h-[120px] w-full" />
             </View>
             <View className="p-4">
               <Text className="mb-2.5 text-lg font-bold text-black">{route.title}</Text>

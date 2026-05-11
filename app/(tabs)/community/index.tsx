@@ -145,15 +145,15 @@ export default function CommunityRoutesScreen() {
             <View className="mb-3 h-12 w-12 items-center justify-center rounded-[14px] bg-[#fef2f2]">
               <IconSymbol name="lock.fill" size={24} color="#dc2626" />
             </View>
-            <Text className="mb-1 text-[20px] font-bold text-[#111827]">Topluluk rotalari icin giris gerekli</Text>
+            <Text className="mb-1 text-[20px] font-bold text-[#111827]">Topluluk rotaları için giriş gerekli</Text>
             <Text className="mb-4 text-[14px] leading-[20px] text-[#6b7280]">
-              Diger kullanicilarin paylastigi rotalari gormek ve incelemek icin lutfen giris yapin.
+              Diğer kullanıcıların paylaştığı rotaları görmek ve incelemek için lütfen giriş yapın.
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(auth)/login')}
               className="items-center rounded-[12px] bg-[#dc2626] py-3"
             >
-              <Text className="text-[14px] font-bold text-white">Giris Yap</Text>
+              <Text className="text-[14px] font-bold text-white">Giriş Yap</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -166,8 +166,8 @@ export default function CommunityRoutesScreen() {
       <Header />
 
       <View className="border-b border-[#e5e7eb] bg-white px-4 pb-3 pt-4">
-        <Text className="text-[26px] font-bold text-[#111827]">Topluluk Rotalari</Text>
-        <Text className="mt-1 text-[15px] text-[#6b7280]">Paylasilan rotalari kesfedin</Text>
+        <Text className="text-[26px] font-bold text-[#111827]">Topluluk Rotaları</Text>
+        <Text className="mt-1 text-[15px] text-[#6b7280]">Paylaşılan rotaları keşfedin</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 12, paddingBottom: 88 }}>
@@ -319,8 +319,8 @@ export default function CommunityRoutesScreen() {
 
           {filteredRoutes.length === 0 && (
             <View className="items-center rounded-[14px] border border-[#e5e7eb] bg-white px-4 py-8">
-              <Text className="text-[16px] font-semibold text-[#111827]">Filtreye uygun rota bulunamadi</Text>
-              <Text className="mt-1 text-[13px] text-[#6b7280]">Arama metnini veya filtreleri degistirebilirsin.</Text>
+              <Text className="text-[16px] font-semibold text-[#111827]">Filtreye uygun rota bulunamadı</Text>
+              <Text className="mt-1 text-[13px] text-[#6b7280]">Arama metnini veya filtreleri değiştirebilirsin.</Text>
             </View>
           )}
         </View>
