@@ -1,13 +1,16 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuth } from '@/components/auth/auth-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { getProfileAvatar, useProfileStore } from '@/stores/use-profile-store';
 
 export default function AppHeader() {
   const router = useRouter();
   const { displayName, isAuthenticated, signOut } = useAuth();
+  const profileAvatarId = useProfileStore((state) => state.avatarId);
+  const profileAvatar = getProfileAvatar(profileAvatarId);
 
   const buttonText = isAuthenticated ? displayName ?? 'Profil' : 'Giriş';
 
@@ -35,19 +38,24 @@ export default function AppHeader() {
 
   return (
     <View className="flex-row items-center justify-between bg-[#b10016] px-4 py-3">
-      <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-xl" onPress={() => router.push('/menu')}>
+      <TouchableOpacity className="h-20 w-20 items-center justify-center rounded-xl" onPress={() => router.push('/menu')}>
         <IconSymbol name="line.3.horizontal" size={24} color="#fff" />
       </TouchableOpacity>
 
       <View className="flex-1 items-center px-2">
-        <Text className="text-[18px] font-extrabold text-white">Keşfi Edirne</Text>
+        <Text className="text-[18px] font-extrabold text-white mt-10">Keşfi Edirne</Text>
         <Text className="mt-0.5 text-[12px] text-white/95">Tarihi keşfedin</Text>
       </View>
 
       <TouchableOpacity
-        className="h-[30px] min-w-[48px] items-center justify-center rounded-lg bg-white/10 px-2"
+        className="min-w-[48px] flex-row items-center justify-center rounded-lg bg-white/10 px-2 py-1"
         onPress={handleProfilePress}
       >
+        {isAuthenticated ? (
+          <View className="mr-2 h-6 w-6 overflow-hidden rounded-full bg-white/10">
+            <Image source={profileAvatar.source} className="h-full w-full" resizeMode="cover" />
+          </View>
+        ) : null}
         <Text className="text-[15px] font-bold text-white">{buttonText}</Text>
       </TouchableOpacity>
     </View>

@@ -5,6 +5,7 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import { AuthProvider } from '@/components/auth/auth-context';
+import { RoutesProvider } from '@/components/routes/routes-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -17,13 +18,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(account)" options={{ headerShown: false }} />
-          <Stack.Screen name="profile-settings/index" options={{ headerShown: false }} />
-          <Stack.Screen name="modal/index" options={{ presentation: 'modal', title: 'Modal', headerShown: false }} />
-        </Stack>
+        <RoutesProvider>
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(account)" options={{ headerShown: false }} />
+            <Stack.Screen name="profile-settings/index" options={{ headerShown: false }} />
+            <Stack.Screen name="modal/index" options={{ presentation: 'modal', title: 'Modal', headerShown: false }} />
+          </Stack>
+        </RoutesProvider>
       </AuthProvider>
       <StatusBar style="auto" />
     </ThemeProvider>

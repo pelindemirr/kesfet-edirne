@@ -3,12 +3,13 @@ import { useAuth } from '@/components/auth/auth-context';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, TouchableOpacity, View } from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { register, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <View className="flex-1 bg-[#f3f4f6] pt-20 mt-5">
@@ -28,9 +29,33 @@ export default function RegisterScreen() {
       </View>
 
       <RegisterForm
-        onRegister={(name) => {
-          signIn({ displayName: name || 'Kullanıcı' });
-          router.replace('/');
+        onRegister={async (name, email, password) => {
+          setIsLoading(true);
+          console.log('[RegisterScreen] Register started for:', email, 'name:', name);
+          try {
+            const success = await register(name, email, password);
+
+            if (success) {
+              console.log('[RegisterScreen] Register successful!');
+              Alert.alert('Başarılı', 'Hesabınız başarıyla oluşturuldu!', [
+                {
+                  text: 'Tamam',
+                  onPress: () => {
+                    console.log('[RegisterScreen] Redirecting to home');
+                    router.replace('/');
+                  },
+                },
+              ]);
+            } else {
+              console.log('[RegisterScreen] Register failed - API error');
+              Alert.alert('Kayıt Başarısız', 'Kayıt işlemi başarısız oldu. Lütfen tekrar deneyin.');
+            }
+          } catch (error) {
+            console.error('[RegisterScreen] Register error:', error);
+            Alert.alert('Hata', error instanceof Error ? error.message : 'Bir hata oluştu. Lütfen tekrar deneyin.');
+          } finally {
+            setIsLoading(false);
+          }
         }}
       />
     </View>

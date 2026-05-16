@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function RegisterForm({ onRegister }: { onRegister?: (name: string, email: string, password: string) => void }) {
   const [name, setName] = useState('');
@@ -66,7 +66,30 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
 
       <TouchableOpacity
         className="mb-4 items-center rounded-[8px] bg-[#e30613] py-3"
-        onPress={() => onRegister?.(name, email, password)}
+        onPress={() => {
+          if (!name.trim()) {
+            console.log('[RegisterForm] Name validation failed - empty name');
+            Alert.alert('Hata', 'Lütfen adınızı giriniz');
+            return;
+          }
+          if (!email.trim()) {
+            console.log('[RegisterForm] Email validation failed - empty email');
+            Alert.alert('Hata', 'Lütfen e-posta adresinizi giriniz');
+            return;
+          }
+          if (!password.trim()) {
+            console.log('[RegisterForm] Password validation failed - empty password');
+            Alert.alert('Hata', 'Lütfen şifrenizi giriniz');
+            return;
+          }
+          if (password.length < 6) {
+            console.log('[RegisterForm] Password validation failed - too short');
+            Alert.alert('Hata', 'Şifre en az 6 karakter olmalıdır');
+            return;
+          }
+          console.log('[RegisterForm] Attempting register with email:', email, 'name:', name);
+          onRegister?.(name, email, password);
+        }}
       >
         <ThemedText className="text-[14px] font-bold text-white">Hesap Oluştur</ThemedText>
       </TouchableOpacity>

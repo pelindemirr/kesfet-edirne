@@ -3,12 +3,13 @@ import { useAuth } from '@/components/auth/auth-context';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { login, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <View className="flex-1 bg-[#f3f4f6] pt-20 mt-5">
@@ -28,10 +29,25 @@ export default function LoginScreen() {
       </View>
 
       <LoginForm
-        onLogin={(email) => {
-          const nameFromEmail = email.split('@')[0]?.trim() || 'Kullanıcı';
-          signIn({ displayName: nameFromEmail });
-          router.replace('/');
+        onLogin={async (email, password) => {
+          setIsLoading(true);
+          console.log('[LoginScreen] Login started for:', email);
+          try {
+            const success = await login(email, password);
+
+            if (success) {
+              console.log('[LoginScreen] Login successful! Redirecting to home');
+              router.replace('/');
+            } else {
+              console.log('[LoginScreen] Login failed - invalid credentials or API error');
+              Alert.alert('Giriş Başarısız', 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.');
+            }
+          } catch (error) {
+            console.error('[LoginScreen] Login error:', error);
+            Alert.alert('Hata', error instanceof Error ? error.message : 'Bir hata oluştu. Lütfen tekrar deneyin.');
+          } finally {
+            setIsLoading(false);
+          }
         }}
       />
     </View>

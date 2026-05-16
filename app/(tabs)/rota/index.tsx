@@ -29,7 +29,7 @@ const routes = [
     places: '6 yer',
     distance: '4.8 km',
     badge: 'Doğa & Yürüyüş',
-    description: 'Meriç Köprüsü, sahil parkı',
+    description: 'Meriç Köprüsü, tunca nehri',
     image: require('../../../assets/rota/meric.jpg'),
   },
   {
@@ -49,27 +49,28 @@ const routes = [
     places: '7 yer',
     distance: '3.0 km',
     badge: 'Yeme & İçme',
-    description: 'Ciğer, tava ciğeri, beyaz peynir, badem ezmesi',
+    description: 'Aydın Ciğer,Tadım Menemen ,Ondo Dondurma',
     image: require('../../../assets/rota/meric.jpg'),
   },
+  
   {
     id: 5,
-    title: 'Tunca Nehri & Sarayiçi',
-    time: '2 saat',
-    places: '4 yer',
-    distance: '3.8 km',
-    badge: 'Doğa & Yürüyüş',
-    description: 'Kırkpınar alanı, Adacık, nehir yürüyüşü',
-    image: require('../../../assets/rota/meric.jpg'),
-  },
-  {
-    id: 6,
     title: 'Kırkpınar & Spor Tarihi',
     time: '1.5 saat',
     places: '3 yer',
     distance: '2.5 km',
     badge: 'Spor & Tarih',
     description: 'Sarayiçi, güreş müzesi, Kırkpınar sahası',
+    image: require('../../../assets/rota/meric.jpg'),
+  },
+  {
+    id: 6,
+    title: 'Keşan ve İlçeleri Gezisi',
+    time: '3.5 saat',
+    places: '3 yer',
+    distance: '5.5 km',
+    badge: 'Spor & Tarih',
+    description: 'Enez Kalesi,Mecidiye Sahili,Keşan Müzesi',
     image: require('../../../assets/rota/meric.jpg'),
   },
 ];
@@ -90,7 +91,7 @@ export default function RoutesPage() {
             style={routeCardShadow}
             className="mb-5 overflow-hidden rounded-[20px] border border-[#eee] bg-white"
             activeOpacity={0.9}
-            onPress={() => router.push('../route-detail')}
+            onPress={() => router.push({ pathname: '/(tabs)/route-detail', params: { id: route.id } } as any)}
           >
             <View className="relative">
               <Image source={route.image} className="h-[120px] w-full" />
