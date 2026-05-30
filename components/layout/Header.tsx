@@ -48,15 +48,17 @@ export default function AppHeader() {
       </View>
 
       <TouchableOpacity
-        className="min-w-[48px] flex-row items-center justify-center rounded-lg bg-white/10 px-2 py-1"
+        className="w-[92px] items-center justify-center rounded-lg bg-white/10 px-2 py-1 overflow-hidden pt-4"
         onPress={handleProfilePress}
       >
         {isAuthenticated ? (
-          <View className="mr-2 h-6 w-6 overflow-hidden rounded-full bg-white/10">
+          <View className="mb-1 h-7 w-7 shrink-0 overflow-hidden rounded-full bg-white/10 ">
             <Image source={profileAvatar.source} className="h-full w-full" resizeMode="cover" />
           </View>
         ) : null}
-        <Text className="text-[15px] font-bold text-white">{buttonText}</Text>
+        <Text numberOfLines={1} ellipsizeMode="tail" className="text-center text-[13px] font-bold pt-2 text-white">
+          {buttonText}
+        </Text>
       </TouchableOpacity>
     </View>
   );

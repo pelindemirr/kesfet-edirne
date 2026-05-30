@@ -2,9 +2,11 @@ import { useAuth } from '@/components/auth/auth-context';
 import Header from '@/components/layout/Header';
 import { useRoutes } from '@/components/routes/routes-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { getProfile } from '@/services/api/endpoints/profile';
+import { useAuthStore } from '@/stores/use-auth-store';
 import { getProfileAvatar, useProfileStore } from '@/stores/use-profile-store';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type MenuAction = {
@@ -86,8 +88,43 @@ const menuActions: MenuAction[] = [
 export default function MenuScreen() {
   const router = useRouter();
   const { isAuthenticated, displayName, signOut } = useAuth();
+  const authToken = useAuthStore((state) => state.token);
+  const authUser = useAuthStore((state) => state.user);
   const routes = useRoutes();
   const profileAvatarId = useProfileStore((state) => state.avatarId);
+
+  const [profileNameFromApi, setProfileNameFromApi] = useState<string | null>(null);
+  const [profileEmailFromApi, setProfileEmailFromApi] = useState<string | null>(null);
+  const [profileBadgesFromApi, setProfileBadgesFromApi] = useState<Array<{ title: string; description?: string }>>([]);
+  const [loginStreakFromApi, setLoginStreakFromApi] = useState<number | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadProfileForMenu() {
+      if (!isAuthenticated || !authUser?.id || !authToken) return;
+
+      try {
+        const response = await getProfile(authUser.id, authToken);
+        if (!mounted) return;
+
+        if (response.bodyStatus === 'success' || response.status === 200 || response.status === 201) {
+          setProfileNameFromApi(response.data?.user?.full_name ?? null);
+          setProfileEmailFromApi(response.data?.user?.email ?? null);
+          setProfileBadgesFromApi(response.data?.badges ?? []);
+          setLoginStreakFromApi(response.data?.user?.login_streak ?? null);
+        }
+      } catch (error) {
+        console.error('[MenuScreen] Profil verisi alınamadı', error);
+      }
+    }
+
+    loadProfileForMenu();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated, authUser, authToken]);
 
   if (!isAuthenticated) {
     return (
@@ -115,8 +152,14 @@ export default function MenuScreen() {
     );
   }
 
-  const userName = displayName?.trim() || 'Kullanici';
-  const pseudoMail = `${userName.toLocaleLowerCase('tr-TR').replace(/\s+/g, '')}@gmail.com`;
+  const userName = useMemo(
+    () => profileNameFromApi?.trim() || displayName?.trim() || 'Kullanici',
+    [profileNameFromApi, displayName]
+  );
+  const userEmail = useMemo(() => {
+    if (profileEmailFromApi?.trim()) return profileEmailFromApi.trim();
+    return `${userName.toLocaleLowerCase('tr-TR').replace(/\s+/g, '')}@gmail.com`;
+  }, [profileEmailFromApi, userName]);
   const profileAvatar = getProfileAvatar(profileAvatarId);
 
   return (
@@ -137,33 +180,38 @@ export default function MenuScreen() {
 
             <View className="flex-1">
               <Text className="text-[24px] font-extrabold text-[#111827]">{userName}</Text>
-              <Text className="text-[14px] text-[#6b7280]">{pseudoMail}</Text>
+              <Text className="text-[14px] text-[#6b7280]">{userEmail}</Text>
 
-              <View className="mt-2 flex-row flex-wrap gap-2">
-                {profileTags.map((tag) => (
-                  <View key={tag} className="rounded-full border border-[#f2c94c] bg-[#fff7d6] px-2.5 py-1">
-                    <Text className="text-[12px] font-semibold text-[#946200]">{tag}</Text>
-                  </View>
-                ))}
-              </View>
+             
+
+              {profileBadgesFromApi.length > 0 ? (
+                <View className="mt-2 flex-row flex-wrap gap-2">
+                  {profileBadgesFromApi.map((badge, index) => (
+                    <View key={`menu-badge-${index}`} className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-2.5 py-1">
+                      <Text className="text-[11px] font-semibold text-[#1d4ed8]">{badge.title}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
             </View>
           </View>
 
           <View className="mt-5 flex-row justify-between gap-2">
-            <View className="flex-1 rounded-[12px] bg-[#f6f7f9] px-3 py-3.5">
-              <Image source={rotaIcon} className="h-4 w-4" resizeMode="contain" style={{ tintColor: '#ef4444' }} />
-              <Text className="mt-1 text-[22px] font-extrabold text-[#111827]">{routes.getTotalSavedCount()}</Text>
-              <Text className="mt-1 text-[12px] text-[#6b7280]">Kaydedilen Rotalar</Text>
-            </View>
-            <View className="flex-1 rounded-[12px] bg-[#f6f7f9] px-3 py-3.5">
-              <Image source={mapIcon} className="h-4 w-4" resizeMode="contain" style={{ tintColor: '#ef4444' }} />
-              <Text className="mt-1 text-[22px] font-extrabold text-[#111827]">{routes.getTotalVisitedPlaces()}</Text>
-              <Text className="mt-1 text-[12px] text-[#6b7280]">Gezilen Yerler</Text>
-            </View>
-            <View className="flex-1 rounded-[12px] bg-[#f6f7f9] px-3 py-3.5">
-              <Image source={eventsIcon} className="h-4 w-4" resizeMode="contain" style={{ tintColor: '#ef4444' }} />
-              <Text className="mt-1 text-[22px] font-extrabold text-[#111827]">{routes.getTotalLikesReceived()}</Text>
-              <Text className="mt-1 text-[12px] text-[#6b7280]">Aldığı Beğeni</Text>
+            <View className="flex-1 rounded-[12px] bg-gradient-to-br from-[#fff7ed] to-[#ffefd8] border border-[#fed7aa] px-3 py-3.5">
+              {loginStreakFromApi === 1 ? (
+                <View className="items-center">
+                  <Text className="text-[36px]">🔥</Text>
+                  <Text className="mt-1 text-[12px] font-semibold text-[#b45309]">İlk Gün!</Text>
+                </View>
+              ) : (
+                <>
+                  <View className="flex-row items-center">
+                    <Text className="text-[24px]">🔥</Text>
+                    <Text className="ml-2 text-[24px] font-extrabold text-[#b45309]">{loginStreakFromApi ?? 0}</Text>
+                  </View>
+                  <Text className="mt-1 text-[11px] text-[#b45309] font-semibold">Gün Serisi</Text>
+                </>
+              )}
             </View>
           </View>
         </View>
