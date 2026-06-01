@@ -13,7 +13,7 @@ type MenuAction = {
   id: string;
   label: string;
   icon: any;
-  href: '/(tabs)' | '/explore' | '/community' | '/rota' | '/events' | '/(account)/profile-settings';
+  href: string;
   iconTint: string;
   cardClass: string;
   iconClass: string;
@@ -49,12 +49,21 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'saved',
-    label: 'Rotalarım',
+    label: 'Hazır Rotalar',
     icon: rotaIcon,
     href: '/rota',
     iconTint: '#d08a1f',
     cardClass: 'border-[#ffe3bf] bg-[#fff8ee]',
     iconClass: 'bg-[#ffefd8]',
+  },
+  {
+    id: 'created-routes',
+    label: 'Kişisel Rotalarım',
+    icon: rotaIcon,
+    href: '/my-routes',
+    iconTint: '#c75a12',
+    cardClass: 'border-[#fff1e6] bg-[#fff9f2]',
+    iconClass: 'bg-[#fff3e0]',
   },
   {
     id: 'community',

@@ -4,7 +4,7 @@ import ChatbotScreen from '@/components/chatbot/ChatbotScreen';
 import AppHeader from '@/components/layout/Header';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { getUpcomingEvents } from '@/services/api';
+import { getCategoryLabel, getEventTimingLabel, getUpcomingEvents, type Event } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, Modal, ScrollView, TouchableOpacity, View } from 'react-native';
@@ -65,7 +65,7 @@ export default function HomeScreen() {
   const [chatbotModalOpen, setChatbotModalOpen] = useState(false);
   const [subtitleIndex, setSubtitleIndex] = useState(0);
   const [routes, setRoutes] = useState<any[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [routesLoading, setRoutesLoading] = useState(true);
   const [eventsLoading, setEventsLoading] = useState(true);
 
@@ -243,7 +243,7 @@ export default function HomeScreen() {
                 <View className="mb-[22px] h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#fff6ea]">
                   <Image source={rotaIcon} className="h-6 w-6" resizeMode="contain" style={{ tintColor: '#d08a1f' }} />
                 </View>
-                <ThemedText className="mb-2.5 text-base font-extrabold text-[#15324b]">Rotalar</ThemedText>
+                <ThemedText className="mb-2.5 text-base font-extrabold text-[#15324b]">Hazır Rotalar</ThemedText>
                 <ThemedText className="text-xs leading-4 text-[#6d7a88]">Özel hazırlanmış hazır rotalar.</ThemedText>
               </TouchableOpacity>
             </Link>
@@ -269,29 +269,33 @@ export default function HomeScreen() {
             </Link>
           </View>
 
-          <View className="mx-4 mb-4 mt-0.5 rounded-[18px] border border-[#ffd4cf] bg-[#fff6f4] p-4">
-            <View className="mb-2.5 flex-row items-start">
-              <View className="mr-3 h-10 w-10 items-center justify-center rounded-[14px] bg-[#e53935]">
-                <Image source={editIcon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: '#ffffff' }} />
+          {!isAuthenticated && (
+            <View className="mx-4 mb-4 mt-0.5 rounded-[18px] border border-[#ffd4cf] bg-[#fff6f4] p-4">
+              <View className="mb-2.5 flex-row items-start">
+                <View className="mr-3 h-10 w-10 items-center justify-center rounded-[14px] bg-[#e53935]">
+                  <Image source={editIcon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: '#ffffff' }} />
+                </View>
+                <View className="flex-1">
+                  <ThemedText className="mb-1 text-base font-extrabold text-[#e53935]">Neden Üye Olmalısınız?</ThemedText>
+                  <ThemedText className="text-[13px] leading-[18px] text-[#9b4c42]">
+                    Kendi rotalarınızı oluşturun, favorilerinizi kaydedin ve rozet kazanın
+                  </ThemedText>
+                </View>
               </View>
-              <View className="flex-1">
-                <ThemedText className="mb-1 text-base font-extrabold text-[#e53935]">Neden Üye Olmalısınız?</ThemedText>
-                <ThemedText className="text-[13px] leading-[18px] text-[#9b4c42]">
-                  Kendi rotalarınızı oluşturun, favorilerinizi kaydedin ve rozet kazanın
-                </ThemedText>
+
+              <View className="mb-3">
+                <ThemedText className="mb-1.5 text-[13px] text-[#2e7d32]">✓ Özel rota oluşturma ve kaydetme</ThemedText>
+                <ThemedText className="mb-1.5 text-[13px] text-[#2e7d32]">✓ Rotalarınızı toplulukla paylaşma</ThemedText>
+                <ThemedText className="text-[13px] text-[#2e7d32]">✓ Rozet kazanma ve ilerleme takibi</ThemedText>
               </View>
-            </View>
 
-            <View className="mb-3">
-              <ThemedText className="mb-1.5 text-[13px] text-[#2e7d32]">✓ Özel rota oluşturma ve kaydetme</ThemedText>
-              <ThemedText className="mb-1.5 text-[13px] text-[#2e7d32]">✓ Rotalarınızı toplulukla paylaşma</ThemedText>
-              <ThemedText className="text-[13px] text-[#2e7d32]">✓ Rozet kazanma ve ilerleme takibi</ThemedText>
+              <Link href="/register" asChild>
+                <TouchableOpacity className="items-center rounded-[14px] bg-[#e53935] py-3">
+                  <ThemedText className="text-[15px] font-extrabold text-white">Ücretsiz Üye Ol</ThemedText>
+                </TouchableOpacity>
+              </Link>
             </View>
-
-            <TouchableOpacity className="items-center rounded-[14px] bg-[#e53935] py-3">
-              <ThemedText className="text-[15px] font-extrabold text-white">Ücretsiz Üye Ol</ThemedText>
-            </TouchableOpacity>
-          </View>
+          )}
 
           <View className="mx-4 mb-4 rounded-[18px] border border-[#eee5e2] bg-white p-4 shadow-lg shadow-black/10">
             <View className="mb-2.5 flex-row items-center justify-between">
@@ -343,13 +347,21 @@ export default function HomeScreen() {
             {eventsLoading ? (
               <ThemedText className="text-[12px] text-[#888]">Etkinlikler yükleniyor...</ThemedText>
             ) : upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event: any) => (
-                <TouchableOpacity key={event.id} className="mb-2 flex-row items-center rounded-xl border border-[#f1eeee] bg-white p-2.5">
-                  <View className="flex-1 px-2.5">
-                    <ThemedText className="mb-0.5 text-sm font-extrabold text-[#222]">{event.title || 'Etkinlik'}</ThemedText>
-                    <ThemedText className="text-xs text-[#888]">{event.category || 'Kategori'} · {event.date || 'Tarih bilgisi yok'}</ThemedText>
+              upcomingEvents.map((event) => (
+                <TouchableOpacity key={event.id} className="mb-2 flex-row items-center rounded-[18px] border border-[#f1eeee] bg-white p-3 shadow-sm shadow-black/5">
+                  <View className="h-14 w-14 items-center justify-center rounded-[16px] bg-[#fff1f1]">
+                    <IconSymbol name="calendar" size={24} color="#d32f2f" />
                   </View>
-                  <IconSymbol name="calendar" size={22} color="#d32f2f" />
+                  <View className="flex-1 px-3">
+                    <View className="mb-1 flex-row items-center gap-2">
+                      <View className="rounded-full bg-[#fff1f2] px-2 py-0.5">
+                        <ThemedText className="text-[10px] font-bold text-[#d32f2f]">{getEventTimingLabel(event)}</ThemedText>
+                      </View>
+                      <ThemedText className="text-[11px] font-bold text-[#d32f2f]">{getCategoryLabel(event.category)}</ThemedText>
+                    </View>
+                    <ThemedText className="mb-0.5 text-sm font-extrabold text-[#222]">{event.title || 'Etkinlik'}</ThemedText>
+                    <ThemedText className="text-xs text-[#888]">{event.date || 'Tarih bilgisi yok'} · {event.time || 'Saat bilgisi yok'}</ThemedText>
+                  </View>
                 </TouchableOpacity>
               ))
             ) : (

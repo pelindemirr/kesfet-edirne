@@ -1,5 +1,6 @@
 import { useAuth } from '@/components/auth/auth-context';
 import Header from '@/components/layout/Header';
+import { useRoutes } from '@/components/routes/routes-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { createCommunityReview, getCommunityRouteById, type CommunityRoutePlaceItem } from '@/services/api/endpoints/community';
 import { useAuthStore } from '@/stores/use-auth-store';
@@ -62,6 +63,7 @@ export default function CommunityRouteDetail() {
   const router = useRouter();
   const { displayName } = useAuth();
   const token = useAuthStore((state) => state.token);
+  const { saveCommunityRoute, unsaveCommunityRoute, isCommunityRouteSaved } = useRoutes();
   const params = useLocalSearchParams<{
     id?: string;
     routeName?: string;
@@ -103,6 +105,7 @@ export default function CommunityRouteDetail() {
   const [commentText, setCommentText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const commentCount = String(comments.length);
+  const saved = isCommunityRouteSaved(routeId);
 
   useEffect(() => {
     let mounted = true;
@@ -150,6 +153,30 @@ export default function CommunityRouteDetail() {
     return places.map((place) => place.name).join(', ');
   }, [params.creatorAvatar, places]);
 
+  const toggleSaveRoute = () => {
+    if (saved) {
+      unsaveCommunityRoute(routeId);
+      return;
+    }
+
+    saveCommunityRoute({
+      id: routeId,
+      title,
+      description,
+      authorName,
+      authorInitial,
+      createdAt,
+      placePreview: placePreviewText,
+      stopCount,
+      district,
+      rating: Number(rating) || 0,
+      reviewCount: Number(reviewCount) || 0,
+      commentCount: Number(commentCount) || 0,
+      popularityScore: Number(views) || 0,
+      creatorAvatarId: params.creatorAvatar ?? params.creator_avatar,
+    });
+  };
+
   const handleSubmitReview = async () => {
     const trimmedComment = commentText.trim();
 
@@ -195,26 +222,44 @@ export default function CommunityRouteDetail() {
     <View className="flex-1 bg-[#f3f4f6]">
       <Header />
 
-      <View className="flex-row items-center justify-between border-b border-[#e5e7eb] bg-white px-4 py-3">
+      <View className="flex-row items-center justify-between border-b border-[#e5e7eb] bg-white px-4 py-3 shadow-sm shadow-black/5">
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/community')}
-          className="flex-row items-center gap-2 rounded-lg px-3 py-1.5"
+          onPress={() => router.replace('/community' as any)}
+          className="flex-row items-center gap-2 rounded-full border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2"
         >
           <IconSymbol name="chevron.left" size={18} color="#374151" />
-          <Text className="text-[14px] font-medium text-[#374151]">Topluluğa Dön</Text>
+          <Text className="text-[14px] font-medium text-[#374151]">Geri</Text>
         </TouchableOpacity>
-        <View className="flex-row items-center gap-3">
-          <TouchableOpacity className="h-9 w-9 items-center justify-center rounded-full">
-            <IconSymbol name="bookmark" size={18} color="#374151" />
+        <View className="flex-row items-center gap-2">
+          <TouchableOpacity
+            onPress={toggleSaveRoute}
+            className={`flex-row items-center gap-2 rounded-full border px-3 py-2 ${saved ? 'border-[#fecaca] bg-[#fff1f2]' : 'border-[#e5e7eb] bg-[#f9fafb]'}`}
+          >
+            <IconSymbol name={saved ? 'bookmark.fill' : 'bookmark'} size={18} color={saved ? '#dc2626' : '#374151'} />
+            <Text className={`text-[13px] font-semibold ${saved ? 'text-[#dc2626]' : 'text-[#374151]'}`}>
+              {saved ? 'Kaydedildi' : 'Kaydet'}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity className="h-9 w-9 items-center justify-center rounded-full">
+          <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f9fafb]">
             <IconSymbol name="square.and.arrow.up" size={18} color="#374151" />
           </TouchableOpacity>
         </View>
       </View>
 
+      <View className="mx-4 mt-3 overflow-hidden rounded-[18px] bg-[#111827] px-4 py-3">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-[12px] uppercase tracking-[1.5px] text-white/70">Topluluk rotası</Text>
+            <Text className="mt-1 text-[16px] font-semibold text-white">Diğer kullanıcıların önerisi</Text>
+          </View>
+          <View className="rounded-full bg-white/10 px-3 py-1.5">
+            <Text className="text-[12px] font-semibold text-white">{saved ? 'Cihazınıza kaydedildi' : 'Henüz kaydedilmedi'}</Text>
+          </View>
+        </View>
+      </View>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
-        <View className="border-b border-[#e5e7eb] bg-white px-4 pb-4 pt-4">
+        <View className="mt-3 border-b border-[#e5e7eb] bg-white px-4 pb-4 pt-4">
           <View className="mb-4 flex-row items-start">
             <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#dc2626]">
               <Text className="text-[16px] font-bold text-white">{authorInitial}</Text>
@@ -237,7 +282,17 @@ export default function CommunityRouteDetail() {
         </View>
 
         <View className="bg-white px-4 py-4">
-          <Text className="mb-4 text-[24px] font-bold text-[#111827]">📍 {stopCount} Durak</Text>
+          <View className="mb-4 flex-row items-center justify-between">
+            <Text className="text-[24px] font-bold text-[#111827]">📍 {stopCount} Durak</Text>
+            <TouchableOpacity
+              onPress={toggleSaveRoute}
+              className={`rounded-full px-4 py-2 ${saved ? 'bg-[#fff1f2]' : 'bg-[#f3f4f6]'}`}
+            >
+              <Text className={`text-[13px] font-semibold ${saved ? 'text-[#dc2626]' : 'text-[#374151]'}`}>
+                {saved ? 'Kaydedildi' : 'Kaydet'}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {places.length === 0 ? (
             <View className="rounded-[12px] border border-dashed border-[#fca5a5] bg-[#fff7f7] px-4 py-5">
@@ -250,16 +305,18 @@ export default function CommunityRouteDetail() {
             places.map((stop, index) => (
               <View key={stop.id} className="flex-row">
                 <View className="mr-3 items-center">
-                  <View className="h-8 w-8 items-center justify-center rounded-full bg-[#dc2626]">
+                  <View className="h-8 w-8 items-center justify-center rounded-full bg-[#dc2626] shadow-sm shadow-black/10">
                     <Text className="text-[14px] font-bold text-white">{stop.id}</Text>
                   </View>
                   {index !== places.length - 1 && <View className="mt-1 h-12 w-[1.5px] bg-[#fca5a5]" />}
                 </View>
 
-                <View className="mb-4 flex-1 pt-0.5">
+                <View className="mb-4 flex-1 rounded-[14px] border border-[#eef0f3] bg-[#fafafa] px-4 py-3 pt-3">
                   <Text className="text-[20px] font-semibold text-[#111827]">{stop.name}</Text>
-                  <Text className="mt-0.5 text-[14px] text-[#4b5563]">{stop.desc}</Text>
-                  <Text className="mt-1 text-[12px] text-[#9ca3af]">{stop.tag}</Text>
+                  <Text className="mt-0.5 text-[14px] leading-[20px] text-[#4b5563]">{stop.desc}</Text>
+                  <View className="mt-2 flex-row items-center gap-2">
+                    <Text className="rounded-full bg-[#fff1f2] px-2 py-0.5 text-[11px] font-semibold text-[#dc2626]">{stop.tag}</Text>
+                  </View>
                 </View>
               </View>
             ))
@@ -267,7 +324,7 @@ export default function CommunityRouteDetail() {
         </View>
 
         <View className="mx-4 mt-4 rounded-[14px] bg-[#eef0f3] p-4">
-          <Text className="mb-3 text-[18px] font-semibold text-[#111827]">Bu rotayi degerlendirin</Text>
+          <Text className="mb-3 text-[18px] font-semibold text-[#111827]">Bu rotayı değerlendirin</Text>
           <View className="flex-row gap-3">
             {Array.from({ length: 5 }).map((_, idx) => (
               <TouchableOpacity key={idx} onPress={() => setSelectedRating(idx + 1)}>
@@ -282,7 +339,7 @@ export default function CommunityRouteDetail() {
           <TextInput
             value={commentText}
             onChangeText={setCommentText}
-            placeholder="Goruslerinizi paylasin..."
+            placeholder="Görüşlerinizi paylaşın..."
             placeholderTextColor="#9ca3af"
             multiline
             className="min-h-[96px] rounded-[12px] border border-[#d1d5db] bg-white px-3 py-3 text-[15px] text-[#111827]"
@@ -294,7 +351,7 @@ export default function CommunityRouteDetail() {
             className="mt-3 items-center rounded-[10px] bg-[#dc2626] py-2.5"
             style={{ opacity: submittingReview ? 0.65 : 1 }}
           >
-            <Text className="text-[14px] font-bold text-white">{submittingReview ? 'Gonderiliyor...' : 'Yorum Yap'}</Text>
+            <Text className="text-[14px] font-bold text-white">{submittingReview ? 'Gönderiliyor...' : 'Yorum Yap'}</Text>
           </TouchableOpacity>
 
           <View className="mt-4 gap-4">

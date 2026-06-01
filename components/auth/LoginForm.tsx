@@ -2,17 +2,24 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, TextInput, TouchableOpacity, View } from 'react-native';
+import { TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginForm({
   onLogin,
+  errorMessage,
+  isSubmitting = false,
 }: {
   onLogin?: (email: string, password: string) => void;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const router = useRouter();
+
+  const displayedError = localError ?? errorMessage ?? null;
 
   return (
     <View
@@ -55,28 +62,36 @@ export default function LoginForm({
         </TouchableOpacity>
       </View>
 
+      {displayedError ? (
+        <View className="mb-4 rounded-[8px] bg-[#fef2f2] px-3 py-2">
+          <ThemedText className="text-[12px] font-medium text-[#b91c1c]">{displayedError}</ThemedText>
+        </View>
+      ) : null}
+
       <TouchableOpacity className="mb-4 self-end">
-        <ThemedText className="text-[12px] font-semibold text-[#e30613]">Şifremi unuttum</ThemedText>
+        <ThemedText className="text-[12px] font-semibold text-[#e30613]" onPress={() => router.push('/forgot-password' as any)}>Şifremi unuttum</ThemedText>
       </TouchableOpacity>
 
       <TouchableOpacity
         className="mb-4 items-center rounded-[8px] bg-[#e30613] py-3"
+        disabled={isSubmitting}
         onPress={() => {
+          setLocalError(null);
           if (!email.trim()) {
-            console.log('[LoginForm] Email validation failed - empty email');
-            Alert.alert('Hata', 'Lütfen e-posta adresinizi giriniz');
+            setLocalError('Lütfen e-posta adresinizi giriniz.');
             return;
           }
           if (!password.trim()) {
-            console.log('[LoginForm] Password validation failed - empty password');
-            Alert.alert('Hata', 'Lütfen şifrenizi giriniz');
+            setLocalError('Lütfen şifrenizi giriniz.');
             return;
           }
           console.log('[LoginForm] Attempting login with email:', email);
           onLogin?.(email, password);
         }}
       >
-        <ThemedText className="text-[14px] font-bold text-white">Giriş Yap</ThemedText>
+        <ThemedText className="text-[14px] font-bold text-white">
+          {isSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+        </ThemedText>
       </TouchableOpacity>
 
       <View className="flex-row items-center justify-center gap-1">

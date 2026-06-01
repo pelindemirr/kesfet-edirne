@@ -114,8 +114,9 @@ export default function AccountExploreScreen() {
   const [plannedRoute, setPlannedRoute] = useState<typeof places>([]);
   const [selectedDistrict, setSelectedDistrict] = useState('Merkez');
   const [selectedCategory, setSelectedCategory] = useState('Tüm Kategoriler');
-  const [districtMenuOpen, setDistrictMenuOpen] = useState(false);
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [districtModalVisible, setDistrictModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtersModalVisible, setFiltersModalVisible] = useState(false);
   const [saveModalVisible, setSaveModalVisible] = useState(false);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [routeName, setRouteName] = useState('Örn: Tarihi Merkez Turu');
@@ -188,71 +189,89 @@ export default function AccountExploreScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
         <View className="px-3 pt-3">
-          <Text className="mb-3 text-[22px] font-bold text-black">Rota Planlama</Text>
-
-          <View className="mb-2 rounded-[10px] border border-[#cfd4dc] bg-[#d9dde3] px-4 py-3.5">
-            <TouchableOpacity onPress={() => setDistrictMenuOpen(!districtMenuOpen)} className="min-h-[22px] flex-row items-center justify-between">
-              <Text className="text-[14px] font-medium text-[#111827]">{selectedDistrict}</Text>
-              <IconSymbol name="chevron.down" size={16} color="#9ca3af" />
-            </TouchableOpacity>
-            {districtMenuOpen && (
-              <View className="mt-2 rounded-[10px] border border-[#d1d5db] bg-white p-1.5">
-                {districts.map((district) => (
-                  <TouchableOpacity
-                    key={district}
-                    onPress={() => {
-                      setSelectedDistrict(district);
-                      setDistrictMenuOpen(false);
-                    }}
-                    className={`flex-row items-center justify-between rounded-[8px] px-2.5 py-2.5 ${
-                      selectedDistrict === district ? 'bg-[#f3f4f6]' : ''
-                    }`}
-                  >
-                    <Text
-                      className={`text-[14px] ${
-                        selectedDistrict === district ? 'font-semibold text-[#111827]' : 'text-[#6b7280]'
-                      }`}
-                    >
-                      {district}
-                    </Text>
-                    {selectedDistrict === district && <IconSymbol name="checkmark" size={16} color="#6b7280" />}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
+          <View className="mb-3">
+            <Text className="text-[22px] font-bold text-black">Rota Planlama</Text>
           </View>
 
-          <View className="mb-3 rounded-[10px] border border-[#cfd4dc] bg-[#d9dde3] px-4 py-3.5">
-            <TouchableOpacity onPress={() => setCategoryMenuOpen(!categoryMenuOpen)} className="min-h-[22px] flex-row items-center justify-between">
-              <Text className="text-[14px] font-medium text-[#111827]">{selectedCategory}</Text>
-              <IconSymbol name="chevron.down" size={16} color="#9ca3af" />
-            </TouchableOpacity>
-            {categoryMenuOpen && (
-              <View className="mt-2 rounded-[10px] border border-[#d1d5db] bg-white p-1.5">
-                {allCategories.map((category) => (
-                  <TouchableOpacity
-                    key={category}
-                    onPress={() => {
-                      setSelectedCategory(category);
-                      setCategoryMenuOpen(false);
-                    }}
-                    className={`flex-row items-center justify-between rounded-[8px] px-2.5 py-2.5 ${
-                      selectedCategory === category ? 'bg-[#f3f4f6]' : ''
-                    }`}
-                  >
-                    <Text
-                      className={`text-[14px] ${
-                        selectedCategory === category ? 'font-semibold text-[#111827]' : 'text-[#6b7280]'
-                      }`}
-                    >
-                      {category}
-                    </Text>
-                    {selectedCategory === category && <IconSymbol name="checkmark" size={16} color="#6b7280" />}
+          {/* Categories moved to modal - top inline boxes removed */}
+
+          <Modal visible={filtersModalVisible} animationType="slide" transparent onRequestClose={() => setFiltersModalVisible(false)}>
+            <View className="flex-1 justify-end">
+              <View className="h-[70%] w-full rounded-t-[18px] bg-white p-5 shadow-xl">
+                <View className="mb-4 flex-row items-center justify-between">
+                  <Text className="text-[18px] font-bold">Filtreler</Text>
+                  <View className="flex-row items-center gap-3">
+                    <TouchableOpacity onPress={() => setSelectedCategory('Tüm Kategoriler')}>
+                      <Text className="text-[14px] text-[#6b7280]">Temizle</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setFiltersModalVisible(false)}>
+                      <Text className="text-[16px]">Kapat</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
+                  <Text className="mb-2 text-[14px] font-semibold">Kategoriler</Text>
+                  <View className="mb-4">
+                    {allCategories.map((cat) => (
+                      <TouchableOpacity key={cat} onPress={() => setSelectedCategory(cat)} className={`mb-2 rounded-[10px] px-4 py-3 ${selectedCategory === cat ? 'bg-[#fff1f2] border border-[#fca5a5]' : 'bg-white border border-[#e6e6e6]'}`}>
+                        <Text className={`${selectedCategory === cat ? 'text-[#b91c1c] font-semibold' : 'text-[#4b5563]'}`}>{cat}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
+
+                <View className="flex-row gap-2">
+                  <TouchableOpacity onPress={() => setFiltersModalVisible(false)} className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-white py-3">
+                    <Text className="text-center text-[14px] text-[#111827]">İptal</Text>
                   </TouchableOpacity>
-                ))}
+                  <TouchableOpacity onPress={() => setFiltersModalVisible(false)} className="flex-1 rounded-[10px] bg-[#dc2626] py-3">
+                    <Text className="text-center text-[14px] text-white">Uygula</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            )}
+            </View>
+          </Modal>
+
+          <Modal visible={districtModalVisible} animationType="slide" transparent onRequestClose={() => setDistrictModalVisible(false)}>
+            <View className="flex-1 justify-end">
+              <View className="h-[45%] w-full rounded-t-[18px] bg-white p-5 shadow-xl">
+                <View className="mb-4 flex-row items-center justify-between">
+                  <Text className="text-[18px] font-bold">İlçe Seç</Text>
+                  <View className="flex-row items-center gap-3">
+                    <TouchableOpacity onPress={() => { setSelectedDistrict('Merkez'); setDistrictModalVisible(false); }}>
+                      <Text className="text-[14px] text-[#6b7280]">Temizle</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setDistrictModalVisible(false)}>
+                      <Text className="text-[16px]">Kapat</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+                  {districts.map((d) => (
+                    <TouchableOpacity key={d} onPress={() => { setSelectedDistrict(d); setDistrictModalVisible(false); }} className={`mb-3 rounded-[10px] px-4 py-3 ${selectedDistrict === d ? 'bg-[#fff1f2] border border-[#fca5a5]' : 'bg-white border border-[#e6e6e6]'}`}>
+                      <Text className={`${selectedDistrict === d ? 'text-[#b91c1c] font-semibold' : 'text-[#4b5563]'}`}>{d}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+          </Modal>
+
+          <View className="mb-3">
+            <TouchableOpacity onPress={() => setDistrictModalVisible(true)} className="flex-row items-center justify-between rounded-full border border-[#e6e6e6] bg-white px-4 py-2">
+              <Text className="text-[13px] font-semibold text-[#111827]">{selectedDistrict}</Text>
+              <Text className="text-[13px] text-[#6b7280]">▾</Text>
+            </TouchableOpacity>
           </View>
+          <View className="mb-3">
+            <TouchableOpacity onPress={() => setFiltersModalVisible(true)} className="flex-row items-center justify-between rounded-full border border-[#e6e6e6] bg-white px-4 py-2">
+              <Text className="text-[13px] font-semibold text-[#111827]">{selectedCategory}</Text>
+              <Text className="text-[13px] text-[#6b7280]">▾</Text>
+            </TouchableOpacity>
+          </View>
+
 
           <View className="relative mb-4 overflow-hidden rounded-[12px] border border-[#e8e3da] bg-[#efe7d7]">
             <WebView
@@ -279,7 +298,18 @@ export default function AccountExploreScreen() {
 
           <View className="mb-4 flex-row items-center rounded-[10px] bg-white px-3 py-2.5">
             <IconSymbol name="magnifyingglass" size={18} color="#9ca3af" />
-            <TextInput placeholder="Yer ara..." placeholderTextColor="#9ca3af" className="ml-2 flex-1 text-[14px] text-[#111827]" />
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Yer ara..."
+              placeholderTextColor="#9ca3af"
+              className="ml-2 flex-1 text-[14px] text-[#111827]"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} className="ml-2 rounded-full px-2 py-1 bg-[#f1f5f9]">
+                <Text className="text-[13px] text-[#6b7280]">Temizle</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {favorites.length > 0 && (

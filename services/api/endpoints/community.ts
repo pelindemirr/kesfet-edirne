@@ -151,3 +151,41 @@ export async function createCommunityReview(
     throw error;
   }
 }
+
+export async function getUserCreatedRoutes(userId: number | string, token?: string): Promise<CommunityRoutesResponse> {
+  try {
+    console.log(`[COMMUNITY_CREATED_ROUTES] Request başladı: GET /api/profile/${userId}/created-routes`);
+
+    const response = await apiRequest(`/api/profile/${userId}/created-routes`, {
+      method: 'GET',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }) as CommunityRoutesResponse;
+
+    console.log('[COMMUNITY_CREATED_ROUTES] Response geldi:', response);
+    return response;
+  } catch (error) {
+    console.error('[COMMUNITY_CREATED_ROUTES] HATA oluştu', error);
+    throw error;
+  }
+}
+
+export async function getUserSavedRoutes(userId: number | string, token?: string): Promise<CommunityRoutesResponse> {
+  try {
+    console.log(`[COMMUNITY_SAVED_ROUTES] Request başladı: GET /api/profile/${userId}/saved-routes`);
+
+    const response = await apiRequest(`/api/profile/${userId}/saved-routes`, {
+      method: 'GET',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }) as CommunityRoutesResponse;
+
+    console.log('[COMMUNITY_SAVED_ROUTES] Response geldi:', response);
+    return response;
+  } catch (error) {
+    console.error('[COMMUNITY_SAVED_ROUTES] HATA oluştu', error);
+    throw error;
+  }
+}

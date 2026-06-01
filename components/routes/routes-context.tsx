@@ -21,16 +21,37 @@ export interface UserRoute {
   duration: number; // saat cinsinden
 }
 
+export interface CommunitySavedRoute {
+  id: string;
+  title: string;
+  description: string;
+  authorName: string;
+  authorInitial: string;
+  createdAt: string;
+  placePreview: string;
+  stopCount: number;
+  district: string;
+  rating: number;
+  reviewCount: number;
+  commentCount: number;
+  popularityScore: number;
+  creatorAvatarId?: string;
+}
+
 export interface RoutesContextType {
   // Rota yönetimi
   userRoutes: UserRoute[];
   savedRoutes: UserRoute[];
+  savedCommunityRoutes: CommunitySavedRoute[];
   sharedRoutes: UserRoute[];
   
   // Rota ekleme/güncelleme
   addRoute: (route: Omit<UserRoute, 'id' | 'createdAt'>) => void;
   saveRoute: (routeId: string) => void;
   unsaveRoute: (routeId: string) => void;
+  saveCommunityRoute: (route: CommunitySavedRoute) => void;
+  unsaveCommunityRoute: (routeId: string) => void;
+  isCommunityRouteSaved: (routeId: string) => boolean;
   shareRoute: (routeId: string) => void;
   unshareRoute: (routeId: string) => void;
   deleteRoute: (routeId: string) => void;
@@ -95,6 +116,7 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
       duration: 2,
     },
   ]);
+  const [savedCommunityRoutes, setSavedCommunityRoutes] = useState<CommunitySavedRoute[]>([]);
 
   const addRoute = useCallback((route: Omit<UserRoute, 'id' | 'createdAt'>) => {
     const newRoute: UserRoute = {
@@ -120,6 +142,26 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
       )
     );
   }, []);
+
+  const saveCommunityRoute = useCallback((route: CommunitySavedRoute) => {
+    setSavedCommunityRoutes((prev) => {
+      const exists = prev.some((item) => item.id === route.id);
+      if (exists) {
+        return prev.map((item) => (item.id === route.id ? route : item));
+      }
+
+      return [route, ...prev];
+    });
+  }, []);
+
+  const unsaveCommunityRoute = useCallback((routeId: string) => {
+    setSavedCommunityRoutes((prev) => prev.filter((route) => route.id !== routeId));
+  }, []);
+
+  const isCommunityRouteSaved = useCallback(
+    (routeId: string) => savedCommunityRoutes.some((route) => route.id === routeId),
+    [savedCommunityRoutes],
+  );
 
   const shareRoute = useCallback((routeId: string) => {
     setUserRoutes((prev) =>
@@ -153,7 +195,7 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
   const sharedRoutes = userRoutes.filter((route) => route.isShared);
 
   const getTotalRoutesCount = () => userRoutes.length;
-  const getTotalSavedCount = () => savedRoutes.length;
+  const getTotalSavedCount = () => savedRoutes.length + savedCommunityRoutes.length;
   const getTotalSharedCount = () => sharedRoutes.length;
   
   const getHistoricalRoutesCount = () =>
@@ -175,10 +217,14 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
   const value: RoutesContextType = {
     userRoutes,
     savedRoutes,
+    savedCommunityRoutes,
     sharedRoutes,
     addRoute,
     saveRoute,
     unsaveRoute,
+    saveCommunityRoute,
+    unsaveCommunityRoute,
+    isCommunityRouteSaved,
     shareRoute,
     unshareRoute,
     deleteRoute,

@@ -1,5 +1,6 @@
 import { useAuth } from '@/components/auth/auth-context';
 import Header from '@/components/layout/Header';
+import { useRoutes } from '@/components/routes/routes-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { getCommunityRoutes, type CommunityRouteApiItem } from '@/services/api/endpoints/community';
 import { getProfileAvatar, type ProfileAvatarId } from '@/stores/use-profile-store';
@@ -7,7 +8,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-type SortOption = 'Populer' | 'En Iyi' | 'Yeni';
+type SortOption = 'Popüler' | 'En İyi' | 'Yeni';
 
 type CommunityRoute = {
   id: string;
@@ -26,7 +27,7 @@ type CommunityRoute = {
   popularityScore: number;
 };
 
-const sortOptions: SortOption[] = ['Populer', 'En Iyi', 'Yeni'];
+const sortOptions: SortOption[] = ['Popüler', 'En İyi', 'Yeni'];
 
 function parseDate(dateText: string) {
   if (!dateText) return 0;
@@ -102,10 +103,11 @@ function extractRouteItems(responseData: CommunityRouteApiItem[] | { routes?: Co
 export default function CommunityRoutesScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { isCommunityRouteSaved, saveCommunityRoute, unsaveCommunityRoute } = useRoutes();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSort, setSelectedSort] = useState<SortOption>('Populer');
-  const [selectedDistrict, setSelectedDistrict] = useState('Tum Ilceler');
+  const [selectedSort, setSelectedSort] = useState<SortOption>('Popüler');
+  const [selectedDistrict, setSelectedDistrict] = useState('Tüm İlçeler');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [districtMenuOpen, setDistrictMenuOpen] = useState(false);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
@@ -152,14 +154,14 @@ export default function CommunityRoutesScreen() {
 
   const districtOptions = useMemo(() => {
     const uniqueDistricts = Array.from(new Set(routes.map((route) => route.district).filter(Boolean)));
-    return ['Tum Ilceler', ...uniqueDistricts];
+    return ['Tüm İlçeler', ...uniqueDistricts];
   }, [routes]);
 
   const filteredRoutes = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLocaleLowerCase('tr-TR');
 
     const baseFiltered = routes.filter((route) => {
-      const matchesDistrict = selectedDistrict === 'Tum Ilceler' || route.district === selectedDistrict;
+      const matchesDistrict = selectedDistrict === 'Tüm İlçeler' || route.district === selectedDistrict;
 
       if (!normalizedSearch) {
         return matchesDistrict;
@@ -171,9 +173,9 @@ export default function CommunityRoutesScreen() {
 
     const sorted = [...baseFiltered];
 
-    if (selectedSort === 'Populer') {
+    if (selectedSort === 'Popüler') {
       sorted.sort((a, b) => b.popularityScore - a.popularityScore);
-    } else if (selectedSort === 'En Iyi') {
+    } else if (selectedSort === 'En İyi') {
       sorted.sort((a, b) => {
         if (b.rating === a.rating) {
           return b.reviewCount - a.reviewCount;
@@ -186,6 +188,30 @@ export default function CommunityRoutesScreen() {
 
     return sorted;
   }, [routes, searchQuery, selectedDistrict, selectedSort]);
+
+  const handleToggleSave = (route: CommunityRoute) => {
+    if (isCommunityRouteSaved(route.id)) {
+      unsaveCommunityRoute(route.id);
+      return;
+    }
+
+    saveCommunityRoute({
+      id: route.id,
+      title: route.title,
+      description: route.description,
+      authorName: route.authorName,
+      authorInitial: route.authorInitial,
+      createdAt: route.createdAt,
+      placePreview: route.placePreview,
+      stopCount: route.stopCount,
+      district: route.district,
+      rating: route.rating,
+      reviewCount: route.reviewCount,
+      commentCount: route.commentCount,
+      popularityScore: route.popularityScore,
+      creatorAvatarId: route.creatorAvatarId,
+    });
+  };
 
   if (!isAuthenticated) {
     return (
@@ -217,13 +243,13 @@ export default function CommunityRoutesScreen() {
     <View className="flex-1 bg-[#f3f4f6]">
       <Header />
 
-      <View className="border-b border-[#e5e7eb] bg-white px-4 pb-3 pt-4">
-        <Text className="text-[26px] font-bold text-[#111827]">Topluluk Rotaları</Text>
-        <Text className="mt-1 text-[15px] text-[#6b7280]">Paylaşılan rotaları keşfedin</Text>
+      <View className="bg-white px-4 pb-3 pt-4 shadow-sm">
+        <Text className="text-[22px] font-extrabold text-[#0f172a]">Topluluk Rotaları</Text>
+        <Text className="mt-1 text-[13px] text-[#6b7280]">Paylaşılan rotaları keşfedin</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 12, paddingBottom: 88 }}>
-        <View className="mb-3 flex-row items-center rounded-[14px] border border-[#d5d9df] bg-[#eef1f5] px-3 py-2.5">
+        <View className="mb-3 flex-row items-center rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm">
           <IconSymbol name="magnifyingglass" size={18} color="#9ca3af" />
           <TextInput
             value={searchQuery}
@@ -243,14 +269,14 @@ export default function CommunityRoutesScreen() {
                   setDistrictMenuOpen(false);
                 }
               }}
-              className="flex-row items-center justify-between rounded-[12px] border border-[#d5d9df] bg-[#eef1f5] px-3 py-2.5"
+              className="flex-row items-center justify-between rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm"
             >
-              <Text className="text-[14px] font-medium text-[#111827]">{selectedSort}</Text>
+              <Text className="text-[14px] font-medium text-[#0f172a]">{selectedSort}</Text>
               <IconSymbol name="chevron.down" size={16} color="#6b7280" />
             </TouchableOpacity>
 
             {sortMenuOpen && (
-              <View className="absolute top-12 z-20 w-full rounded-[12px] border border-[#d5d9df] bg-white p-1.5">
+              <View className="absolute top-12 z-20 w-full rounded-[12px] border border-[#e6e9ee] bg-white p-1.5 shadow-lg">
                 {sortOptions.map((option) => (
                   <TouchableOpacity
                     key={option}
@@ -280,14 +306,14 @@ export default function CommunityRoutesScreen() {
                   setSortMenuOpen(false);
                 }
               }}
-              className="flex-row items-center justify-between rounded-[12px] border border-[#d5d9df] bg-[#eef1f5] px-3 py-2.5"
+              className="flex-row items-center justify-between rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm"
             >
-              <Text className="text-[14px] font-medium text-[#111827]">{selectedDistrict}</Text>
+              <Text className="text-[14px] font-medium text-[#0f172a]">{selectedDistrict}</Text>
               <IconSymbol name="chevron.down" size={16} color="#6b7280" />
             </TouchableOpacity>
 
             {districtMenuOpen && (
-              <View className="absolute top-12 z-20 w-full rounded-[12px] border border-[#d5d9df] bg-white p-1.5">
+              <View className="absolute top-12 z-20 w-full rounded-[12px] border border-[#e6e9ee] bg-white p-1.5 shadow-lg">
                 {districtOptions.map((option) => (
                   <TouchableOpacity
                     key={option}
@@ -354,37 +380,48 @@ export default function CommunityRoutesScreen() {
               </View>
 
               <View className="border-t border-[#eef0f3] pt-3">
-                <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center justify-between gap-2">
                   <View className="flex-row items-center gap-3">
                     <Text className="text-[14px] font-semibold text-[#374151]">⭐ {route.rating.toFixed(1)} ({route.reviewCount})</Text>
                     <Text className="text-[14px] text-[#4b5563]">💬 {route.commentCount}</Text>
                   </View>
 
-                  <TouchableOpacity
-                    onPress={() =>
-                      router.push({
-                        pathname: '../community-route-detail',
-                        params: {
-                          id: String(route.id),
-                          routeName: route.title,
-                          creatorName: route.authorName,
-                          authorInitial: route.authorInitial,
-                          createdAt: route.createdAt,
-                          description: route.description,
-                          placeCount: String(route.stopCount),
-                          district: route.district,
-                          averageRating: route.rating.toFixed(1),
-                          reviewCount: String(route.reviewCount),
-                          commentCount: String(route.commentCount),
-                          views: String(route.popularityScore * 12),
-                          creatorAvatar: route.creatorAvatarId ?? '',
-                        },
-                      })
-                    }
-                    className="rounded-[10px] bg-[#dc2626] px-4 py-2"
-                  >
-                    <Text className="text-[13px] font-bold text-white">Incele</Text>
-                  </TouchableOpacity>
+                  <View className="flex-row gap-2">
+                    <TouchableOpacity
+                      onPress={() => handleToggleSave(route)}
+                      className={`rounded-[10px] border px-3 py-2 ${isCommunityRouteSaved(route.id) ? 'border-[#fecaca] bg-[#fff1f2]' : 'border-[#d1d5db] bg-white'}`}
+                    >
+                      <Text className={`text-[13px] font-bold ${isCommunityRouteSaved(route.id) ? 'text-[#dc2626]' : 'text-[#111827]'}`}>
+                        {isCommunityRouteSaved(route.id) ? 'Kaydedildi' : 'Kaydet'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: '../community-route-detail',
+                          params: {
+                            id: String(route.id),
+                            routeName: route.title,
+                            creatorName: route.authorName,
+                            authorInitial: route.authorInitial,
+                            createdAt: route.createdAt,
+                            description: route.description,
+                            placeCount: String(route.stopCount),
+                            district: route.district,
+                            averageRating: route.rating.toFixed(1),
+                            reviewCount: String(route.reviewCount),
+                            commentCount: String(route.commentCount),
+                            views: String(route.popularityScore * 12),
+                            creatorAvatar: route.creatorAvatarId ?? '',
+                          },
+                        })
+                      }
+                      className="rounded-[10px] bg-[#dc2626] px-4 py-2"
+                    >
+                      <Text className="text-[13px] font-bold text-white">İncele</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>

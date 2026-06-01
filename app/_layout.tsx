@@ -19,10 +19,11 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthProvider>
         <RoutesProvider>
-          <Stack>
+          <Stack initialRouteName="(tabs)">
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(account)" options={{ headerShown: false }} />
+            <Stack.Screen name="my-routes/index" options={{ headerShown: false }} />
             <Stack.Screen name="profile-settings/index" options={{ headerShown: false }} />
             <Stack.Screen name="modal/index" options={{ presentation: 'modal', title: 'Modal', headerShown: false }} />
           </Stack>

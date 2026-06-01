@@ -134,3 +134,31 @@ export async function getCurrentUser(token: string): Promise<MeResponse> {
   }
 }
 
+export async function forgotPassword(email: string) {
+  console.log('[FORGOT] Request başladı', { email });
+
+  try {
+    const response = await apiRequest('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    console.log('[FORGOT] Response geldi', response);
+
+    // Accept when API returns 200/201 or a success flag
+    const statusOk = response && typeof response === 'object' && ('status' in response) && (response as any).status >= 200 && (response as any).status < 300;
+
+    if (!statusOk) {
+      throw new Error((response as any)?.message || 'Şifre sıfırlama isteği başarısız.');
+    }
+
+    return response;
+  } catch (error) {
+    console.error('[FORGOT] HATA oluştu', error);
+    throw error;
+  } finally {
+    console.log('[FORGOT] Request bitti');
+  }
+}
+

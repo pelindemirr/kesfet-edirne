@@ -2,14 +2,26 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, TextInput, TouchableOpacity, View } from 'react-native';
+import { TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function RegisterForm({ onRegister }: { onRegister?: (name: string, email: string, password: string) => void }) {
+export default function RegisterForm({
+  onRegister,
+  errorMessage,
+  isSubmitting = false,
+}: {
+  onRegister?: (name: string, email: string, password: string) => void;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
+}) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const router = useRouter();
+
+  const displayedError = localError ?? errorMessage ?? null;
 
   return (
     <View
@@ -49,7 +61,7 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
         <IconSymbol name="lock" size={16} color="#6b7280" />
         <TextInput
           className="ml-2 flex-1 text-[13px] text-[#111827]"
-          placeholder="••••••••"
+          placeholder="Şifrenizi giriniz"
           placeholderTextColor="#9ca3af"
           value={password}
           onChangeText={setPassword}
@@ -64,34 +76,72 @@ export default function RegisterForm({ onRegister }: { onRegister?: (name: strin
         </TouchableOpacity>
       </View>
 
+      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre Tekrar</ThemedText>
+      <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
+        <IconSymbol name="lock" size={16} color="#6b7280" />
+        <TextInput
+          className="ml-2 flex-1 text-[13px] text-[#111827]"
+          placeholder="Şifrenizi tekrar giriniz"
+          placeholderTextColor="#9ca3af"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={!showPassword}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(v => !v)}>
+          <IconSymbol
+            name={showPassword ? 'eye.slash' : 'eye'}
+            size={16}
+            color="#6b7280"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {displayedError ? (
+        <View className="mb-4 rounded-[8px] bg-[#fef2f2] px-3 py-2">
+          <ThemedText className="text-[12px] font-medium text-[#b91c1c]">{displayedError}</ThemedText>
+        </View>
+      ) : null}
+
       <TouchableOpacity
         className="mb-4 items-center rounded-[8px] bg-[#e30613] py-3"
+        disabled={isSubmitting}
         onPress={() => {
+          setLocalError(null);
           if (!name.trim()) {
-            console.log('[RegisterForm] Name validation failed - empty name');
-            Alert.alert('Hata', 'Lütfen adınızı giriniz');
+            setLocalError('Lütfen adınızı giriniz.');
             return;
           }
           if (!email.trim()) {
-            console.log('[RegisterForm] Email validation failed - empty email');
-            Alert.alert('Hata', 'Lütfen e-posta adresinizi giriniz');
+            setLocalError('Lütfen e-posta adresinizi giriniz.');
             return;
           }
           if (!password.trim()) {
-            console.log('[RegisterForm] Password validation failed - empty password');
-            Alert.alert('Hata', 'Lütfen şifrenizi giriniz');
+            setLocalError('Lütfen şifrenizi giriniz.');
             return;
           }
           if (password.length < 6) {
-            console.log('[RegisterForm] Password validation failed - too short');
-            Alert.alert('Hata', 'Şifre en az 6 karakter olmalıdır');
+            setLocalError('Şifre en az 6 karakter olmalıdır.');
+            return;
+          }
+          if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+            setLocalError('Şifre en az bir harf ve bir rakam içermelidir.');
+            return;
+          }
+          if (!confirmPassword.trim()) {
+            setLocalError('Lütfen şifrenizi tekrar giriniz.');
+            return;
+          }
+          if (password !== confirmPassword) {
+            setLocalError('Şifreler eşleşmiyor.');
             return;
           }
           console.log('[RegisterForm] Attempting register with email:', email, 'name:', name);
           onRegister?.(name, email, password);
         }}
       >
-        <ThemedText className="text-[14px] font-bold text-white">Hesap Oluştur</ThemedText>
+        <ThemedText className="text-[14px] font-bold text-white">
+          {isSubmitting ? 'Hesap oluşturuluyor...' : 'Hesap Oluştur'}
+        </ThemedText>
       </TouchableOpacity>
 
       <View className="flex-row items-center justify-center gap-1">

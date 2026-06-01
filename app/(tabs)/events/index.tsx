@@ -1,6 +1,6 @@
 import AppHeader from '@/components/layout/Header';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { getAllEvents, type Event } from '@/services/api';
+import { getAllEvents, getCategoryLabel, getEventTiming, getEventTimingLabel, type Event, type EventTiming } from '@/services/api';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ImageSourcePropType, Linking, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -18,6 +18,12 @@ const categoryOptions = [
   { key: 'sanat', label: 'Sanat' },
   { key: 'gastronomi', label: 'Gastronomi' },
   { key: 'spor', label: 'Spor' },
+] as const;
+
+const timingOptions = [
+  { key: 'all', label: 'Tümü', subtitle: 'Bütün etkinlikler', icon: 'calendar' as const },
+  { key: 'upcoming', label: 'Yaklaşan', subtitle: 'Gelecek tarihli', icon: 'clock' as const },
+  { key: 'past', label: 'Geçmiş', subtitle: 'Kaçırılan etkinlikler', icon: 'chevron.right' as const },
 ] as const;
 
 function normalizeCategory(category: string | undefined | null) {
@@ -99,6 +105,16 @@ function resolveCategoryImage(category: string | undefined | null) {
   return categoryImages[normalizedCategory] ?? categoryImages.Kültür;
 }
 
+function getTimingTone(timing: EventTiming) {
+  if (timing === 'past') {
+    // Daha belirgin "Geçmiş" tonu — açık kırmızı arka plan, koyu kırmızı metin
+    return 'border-[#fca5a5] bg-[#fff1f2] text-[#991b1b]';
+  }
+
+  // "Yaklaşan" için daha kontrastlı yeşil/teal ton
+  return 'border-[#34d399] bg-[#ecfdf5] text-[#065f46]';
+}
+
 function normalizeEventDateAndTime(event: Event) {
   return {
     date: event.date || 'Tarih bilgisi yok',
@@ -122,7 +138,7 @@ function buildGoogleCalendarUrl(event: Event) {
   const endMinute = pad2(timeMatch?.[4] || '00');
 
   const dates = `${year}${month}${startDay}T${startHour}${startMinute}00/${year}${month}${endDay}T${endHour}${endMinute}00`;
-  const details = `Kategori: ${event.category}\nEtkinlik: ${event.title}`;
+  const details = `Kategori: ${getCategoryLabel(event.category)}\nEtkinlik: ${event.title}`;
 
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${encodeURIComponent(dates)}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(event.location)}`;
 }
@@ -135,6 +151,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<(typeof categoryOptions)[number]['key']>('all');
+  const [selectedTiming, setSelectedTiming] = useState<(typeof timingOptions)[number]['key']>('all');
 
   useEffect(() => {
     let isMounted = true;
@@ -184,13 +201,27 @@ export default function EventsPage() {
     return `${events.length} etkinlik bulundu`;
   }, [events.length, error, loading]);
 
-  const filteredEvents = useMemo(() => {
-    if (selectedCategory === 'all') {
-      return events;
-    }
+  const timingCounts = useMemo(() => {
+    return events.reduce(
+      (accumulator, event) => {
+        const timing = getEventTiming(event);
+        accumulator.all += 1;
+        accumulator[timing] += 1;
+        return accumulator;
+      },
+      { all: 0, upcoming: 0, past: 0 } as Record<(typeof timingOptions)[number]['key'], number>,
+    );
+  }, [events]);
 
-    return events.filter((event) => normalizeCategory(event.category) === selectedCategory);
-  }, [events, selectedCategory]);
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      const matchesCategory = selectedCategory === 'all' || normalizeCategory(event.category) === selectedCategory;
+      const eventTiming = getEventTiming(event);
+      const matchesTiming = selectedTiming === 'all' || selectedTiming === eventTiming;
+
+      return matchesCategory && matchesTiming;
+    });
+  }, [events, selectedCategory, selectedTiming]);
 
   const filteredCountText = useMemo(() => {
     if (selectedCategory === 'all') {
@@ -239,6 +270,31 @@ export default function EventsPage() {
         <View className="px-4 pb-24 pt-4">
           <Text className="mb-1 mt-2 text-xl font-bold text-[#880000]">Tüm Etkinlikler</Text>
           <Text className="mb-4 text-sm text-[#555]">Edirne'deki güncel etkinlikler</Text>
+
+          <View className="mb-3">
+            <View className="flex-row items-center space-x-2">
+              {timingOptions.map((option) => {
+                const isSelected = selectedTiming === option.key;
+                const count = timingCounts[option.key];
+
+                return (
+                  <TouchableOpacity
+                    key={option.key}
+                    onPress={() => setSelectedTiming(option.key)}
+                    className={`flex-row items-center rounded-full border px-3 py-2 ${isSelected ? 'bg-[#880000] border-[#880000]' : 'bg-white border-[#eef2f2]'}`}
+                  >
+                    <IconSymbol name={option.icon} size={16} color={isSelected ? '#ffffff' : '#880000'} />
+                    <Text className={`ml-2 text-[12px] font-semibold ${isSelected ? 'text-white' : 'text-[#2f1b1b]'}`}>{option.label}</Text>
+
+                    <View className={`ml-2 rounded-full px-2 py-0.5 ${isSelected ? 'bg-white/20' : 'bg-[#fff5f5]'}`}>
+                      <Text className={`text-[11px] ${isSelected ? 'text-white' : 'text-[#9f1239]'}`}>{count}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
           <View className="mb-3 flex-row flex-wrap gap-2">
             {categoryOptions.map((option) => {
               const isSelected = selectedCategory === option.key;
@@ -275,19 +331,24 @@ export default function EventsPage() {
             const currentStatus = participationByEvent[event.id];
             const savedToGoogle = savedToGoogleByEvent[event.id];
             const normalizedDateTime = normalizeEventDateAndTime(event);
+            const timingLabel = getEventTimingLabel(event);
+            const timingTone = getTimingTone(timingLabel === 'Geçmiş' ? 'past' : 'upcoming');
 
             return (
               <TouchableOpacity
                 key={event.id}
                 onPress={() => setSelectedEvent(event)}
-                className="mb-4 flex-row overflow-hidden rounded-xl border border-[#eee] bg-white shadow-lg shadow-black/10"
+                className="mb-4 flex-row overflow-hidden rounded-[22px] border border-[#eee] bg-white shadow-lg shadow-black/10"
                 activeOpacity={0.85}
               >
-                <Image source={resolveCategoryImage(event.category)} className="h-[140px] w-[140px] rounded-l-xl" />
+                <Image source={resolveCategoryImage(event.category)} className="h-[146px] w-[140px] rounded-l-[22px]" />
                 <View className="flex-1 justify-center p-3">
-                  <View className="mb-1 flex-row items-center justify-between">
-                    <Text className="text-[13px] font-bold text-[#d32f2f]">{event.category}</Text>
+                  <View className="mb-1 flex-row items-center justify-between gap-2">
+                    <Text className="text-[13px] font-bold text-[#d32f2f]">{getCategoryLabel(event.category)}</Text>
                     <View className="flex-row items-center gap-1.5">
+                      <View className={`rounded-full border px-2 py-1 ${timingTone}`}>
+                        <Text className="text-[10px] font-semibold">{timingLabel}</Text>
+                      </View>
                       {savedToGoogle ? (
                         <View className="rounded-full bg-[#ecfeff] px-2 py-1">
                           <Text className="text-[10px] font-semibold text-[#0e7490]">Google'a kayıtlı</Text>
@@ -313,15 +374,22 @@ export default function EventsPage() {
 
       <Modal visible={selectedEvent !== null} transparent animationType="fade" onRequestClose={closeModal}>
         <View className="flex-1 items-center justify-center bg-black/45 px-5">
-          <View className="w-full max-w-[380px] rounded-2xl bg-white p-4">
+          <View className="w-full max-w-[380px] rounded-[24px] bg-white p-4 shadow-xl shadow-black/20">
             {selectedEvent ? (
               <>
-                <Image source={resolveCategoryImage(selectedEvent.category)} className="mb-3 h-[160px] w-full rounded-xl" />
+                <Image source={resolveCategoryImage(selectedEvent.category)} className="mb-3 h-[170px] w-full rounded-[18px]" />
 
-                <Text className="text-[12px] font-bold text-[#d32f2f]">{selectedEvent.category}</Text>
+                <View className="flex-row flex-wrap items-center gap-2">
+                  <View className="rounded-full bg-[#fff1f2] px-2.5 py-1">
+                    <Text className="text-[11px] font-bold text-[#d32f2f]">{getCategoryLabel(selectedEvent.category)}</Text>
+                  </View>
+                  <View className={`rounded-full border px-2.5 py-1 ${getTimingTone(getEventTiming(selectedEvent))}`}>
+                    <Text className="text-[11px] font-bold">{getEventTimingLabel(selectedEvent)}</Text>
+                  </View>
+                </View>
                 <Text className="mt-1 text-[21px] font-extrabold text-[#111827]">{selectedEvent.title}</Text>
 
-                <View className="mt-3 gap-1.5 rounded-xl bg-[#f9fafb] p-3">
+                <View className="mt-3 gap-1.5 rounded-[18px] bg-[#f9fafb] p-3">
                   <Text className="text-[13px] text-[#374151]">Tarih: {normalizeEventDateAndTime(selectedEvent).date}</Text>
                   <Text className="text-[13px] text-[#374151]">Saat: {normalizeEventDateAndTime(selectedEvent).time}</Text>
                   <Text className="text-[13px] text-[#374151]">Konum: {selectedEvent.location}</Text>
