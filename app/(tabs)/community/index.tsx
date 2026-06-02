@@ -6,7 +6,7 @@ import { getCommunityRoutes, type CommunityRouteApiItem } from '@/services/api/e
 import { getProfileAvatar, type ProfileAvatarId } from '@/stores/use-profile-store';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type SortOption = 'Popüler' | 'En İyi' | 'Yeni';
 
@@ -111,6 +111,7 @@ export default function CommunityRoutesScreen() {
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [districtMenuOpen, setDistrictMenuOpen] = useState(false);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
+  const [savingRouteId, setSavingRouteId] = useState<string | null>(null);
   const [routes, setRoutes] = useState<CommunityRoute[]>([]);
 
   useEffect(() => {
@@ -189,13 +190,23 @@ export default function CommunityRoutesScreen() {
     return sorted;
   }, [routes, searchQuery, selectedDistrict, selectedSort]);
 
-  const handleToggleSave = (route: CommunityRoute) => {
-    if (isCommunityRouteSaved(route.id)) {
-      unsaveCommunityRoute(route.id);
+  const handleToggleSave = async (route: CommunityRoute) => {
+    if (savingRouteId === route.id) {
       return;
     }
 
-    saveCommunityRoute({
+    setSavingRouteId(route.id);
+
+    if (isCommunityRouteSaved(route.id)) {
+      const success = await unsaveCommunityRoute(route.id);
+      if (!success) {
+        Alert.alert('Hata', 'Rota kaldırılamadı. Lütfen tekrar deneyin.');
+      }
+      setSavingRouteId(null);
+      return;
+    }
+
+    const success = await saveCommunityRoute({
       id: route.id,
       title: route.title,
       description: route.description,
@@ -211,6 +222,12 @@ export default function CommunityRoutesScreen() {
       popularityScore: route.popularityScore,
       creatorAvatarId: route.creatorAvatarId,
     });
+
+    if (!success) {
+      Alert.alert('Hata', 'Rota kaydedilemedi. Lütfen tekrar deneyin.');
+    }
+
+    setSavingRouteId(null);
   };
 
   if (!isAuthenticated) {
@@ -388,11 +405,18 @@ export default function CommunityRoutesScreen() {
 
                   <View className="flex-row gap-2">
                     <TouchableOpacity
-                      onPress={() => handleToggleSave(route)}
-                      className={`rounded-[10px] border px-3 py-2 ${isCommunityRouteSaved(route.id) ? 'border-[#fecaca] bg-[#fff1f2]' : 'border-[#d1d5db] bg-white'}`}
+                      disabled={savingRouteId === route.id}
+                      onPress={() => {
+                        void handleToggleSave(route);
+                      }}
+                      className={`rounded-[10px] border px-3 py-2 ${isCommunityRouteSaved(route.id) ? 'border-[#fecaca] bg-[#fff1f2]' : 'border-[#d1d5db] bg-white'} ${savingRouteId === route.id ? 'opacity-60' : ''}`}
                     >
                       <Text className={`text-[13px] font-bold ${isCommunityRouteSaved(route.id) ? 'text-[#dc2626]' : 'text-[#111827]'}`}>
-                        {isCommunityRouteSaved(route.id) ? 'Kaydedildi' : 'Kaydet'}
+                        {savingRouteId === route.id
+                          ? 'İşleniyor...'
+                          : isCommunityRouteSaved(route.id)
+                            ? 'Kaydedildi'
+                            : 'Kaydet'}
                       </Text>
                     </TouchableOpacity>
 

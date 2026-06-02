@@ -162,3 +162,39 @@ export async function forgotPassword(email: string) {
   }
 }
 
+export interface ResetPasswordResponse {
+  status: number;
+  bodyStatus?: string;
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<ResetPasswordResponse> {
+  console.log('[RESET_PASSWORD] Request başladı');
+
+  try {
+    const response = await apiRequest('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    }) as ResetPasswordResponse;
+
+    console.log('[RESET_PASSWORD] Response geldi', response);
+
+    const statusOk = response.status === 200 || response.status === 201;
+    const explicitSuccess = response.success === true || response.bodyStatus === 'success';
+
+    if (!statusOk && !explicitSuccess) {
+      throw new Error(response.error || response.message || 'Şifre güncelleme isteği başarısız.');
+    }
+
+    return response;
+  } catch (error) {
+    console.error('[RESET_PASSWORD] HATA oluştu', error);
+    throw error;
+  } finally {
+    console.log('[RESET_PASSWORD] Request bitti');
+  }
+}
+

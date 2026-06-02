@@ -1,12 +1,24 @@
 import { useAuth } from '@/components/auth/auth-context';
 import Header from '@/components/layout/Header';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { getPlaces, type PlaceApiItem } from '@/services/api/endpoints/places';
+import { createUserRoute, shareUserRoute, togglePlaceFavorite } from '@/services/api/endpoints/user-routes';
+import { useAuthStore } from '@/stores/use-auth-store';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-const mapHtml = `
+type MapPin = {
+  name: string;
+  latitude: number;
+  longitude: number;
+};
+
+function buildMapHtml(pins: MapPin[]) {
+  const safePinsJson = JSON.stringify(pins);
+
+  return `
 <!DOCTYPE html>
 <html>
   <head>
@@ -45,13 +57,17 @@ const mapHtml = `
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+      const pins = ${safePinsJson};
+      const defaultCenter = [41.6766, 26.5557];
+      const defaultZoom = 13;
+
       const map = L.map('map', {
         zoomControl: false,
         preferCanvas: true,
         touchZoom: true,
         doubleClickZoom: true,
         dragging: true,
-      }).setView([41.6766, 26.5557], 13);
+      }).setView(defaultCenter, defaultZoom);
       window.__EDIRNE_MAP__ = map;
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -67,18 +83,28 @@ const mapHtml = `
         popupAnchor: [0, -16],
       });
 
-      const places = [
-        { name: 'Merkez', coords: [41.6766, 26.5557] },
-        { name: 'Selimiye', coords: [41.6771, 26.5567] },
-        { name: 'Eski Cami', coords: [41.6778, 26.5590] },
-        { name: 'Ali Paşa', coords: [41.6760, 26.5538] },
-        { name: 'Meriç Köprüsü', coords: [41.6725, 26.5447] },
-        { name: 'Karaağaç', coords: [41.6618, 26.5338] },
-      ];
+      if (pins.length > 0) {
+        const latLngs = [];
 
-      places.forEach((place) => {
-        L.marker(place.coords, { icon }).addTo(map).bindPopup('<b>' + place.name + '</b>');
-      });
+        pins.forEach((place) => {
+          const lat = Number(place.latitude);
+          const lng = Number(place.longitude);
+
+          if (Number.isNaN(lat) || Number.isNaN(lng)) {
+            return;
+          }
+
+          const marker = L.marker([lat, lng], { icon }).addTo(map).bindPopup('<b>' + place.name + '</b>');
+          latLngs.push([lat, lng]);
+          marker.on('click', () => marker.openPopup());
+        });
+
+        if (latLngs.length > 0) {
+          map.fitBounds(latLngs, { padding: [24, 24] });
+        }
+      } else {
+        L.marker(defaultCenter, { icon }).addTo(map).bindPopup('<b>Merkez</b>');
+      }
 
       const fixSize = () => map.invalidateSize(true);
       window.addEventListener('load', () => setTimeout(fixSize, 120));
@@ -86,32 +112,49 @@ const mapHtml = `
     </script>
   </body>
 </html>`;
+}
 
 const districts = ['Merkez', 'Balık Pazarı', 'Vedane', 'Süloğlu', 'Uzunkopru', 'Lalapaşa', 'Keşan', 'Meriç'];
 const allCategories = ['Tüm Kategoriler', 'Tarihi Yerler', 'Müzeler', 'Doğa & Parklar', 'Restoranlar', 'Kafeler', 'Alışveriş'];
 
-const places = [
-  { id: 1, name: 'Beyazıt Köprüsü', category: 'Tarihi', description: 'Meriç üzerindeki tarihi köprü' },
-  { id: 2, name: 'Ciğercı Niyazi Usta', category: 'Restoran', description: 'Meşhur Edirne tava ciğeri' },
-  { id: 3, name: 'Edirne Belediye Müzesi', category: 'Müze', description: 'Şehrin tarihi ve kültürü' },
-  { id: 4, name: 'Eski Cami', category: 'Tarihi', description: 'Büyük hat sanatı örnekleriyle süslenmiş' },
-  { id: 5, name: 'Kahve Diyarı', category: 'Kafe', description: 'Selimiye manzaralı kafe' },
-  { id: 6, name: 'Lalezar Restaurant', category: 'Restoran', description: 'Geleneksel Edirne lezzetleri' },
-];
+type PlaceItem = {
+  id: number | string;
+  name: string;
+  category: string;
+  district: string;
+  description: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  image?: string;
+};
 
 const badgeClassByCategory: Record<string, string> = {
   Tarihi: 'bg-[#fff3c6] text-[#d39b00]',
   Restoran: 'bg-[#ffe9dd] text-[#d96a11]',
   Müze: 'bg-[#e8f0ff] text-[#3c6fd9]',
   Kafe: 'bg-[#f4e7ff] text-[#8b4cc6]',
+  Doğa: 'bg-[#def7e9] text-[#11885b]',
+  Alışveriş: 'bg-[#eef2ff] text-[#4f46e5]',
+};
+
+const categoryParamByLabel: Record<string, string | undefined> = {
+  'Tüm Kategoriler': undefined,
+  'Tarihi Yerler': 'Tarihi',
+  Müzeler: 'Müze',
+  'Doğa & Parklar': 'Doğa',
+  Restoranlar: 'Restoran',
+  Kafeler: 'Kafe',
+  Alışveriş: 'Alışveriş',
 };
 
 export default function AccountExploreScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
+  const authToken = useAuthStore((state) => state.token);
   const mapWebViewRef = useRef<WebView>(null);
-  const [favorites, setFavorites] = useState<typeof places>([]);
-  const [plannedRoute, setPlannedRoute] = useState<typeof places>([]);
+  const [favorites, setFavorites] = useState<PlaceItem[]>([]);
+  const [plannedRoute, setPlannedRoute] = useState<PlaceItem[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState('Merkez');
   const [selectedCategory, setSelectedCategory] = useState('Tüm Kategoriler');
   const [districtModalVisible, setDistrictModalVisible] = useState(false);
@@ -121,27 +164,147 @@ export default function AccountExploreScreen() {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [routeName, setRouteName] = useState('Örn: Tarihi Merkez Turu');
   const [routeDescription, setRouteDescription] = useState('');
+  const [favoriteLoadingId, setFavoriteLoadingId] = useState<number | string | null>(null);
+  const [creatingRoute, setCreatingRoute] = useState(false);
+  const [createdRouteId, setCreatedRouteId] = useState<number | string | null>(null);
+  const [sharingRoute, setSharingRoute] = useState(false);
+  const [places, setPlaces] = useState<PlaceItem[]>([]);
+  const [placesLoading, setPlacesLoading] = useState(false);
+  const [placesError, setPlacesError] = useState<string | null>(null);
+  const mapHtml = useMemo(() => {
+    const pins = places
+      .map((place) => ({
+        name: place.name,
+        latitude: Number(place.latitude),
+        longitude: Number(place.longitude),
+      }))
+      .filter((pin) => !Number.isNaN(pin.latitude) && !Number.isNaN(pin.longitude));
 
-  const toggleFavorite = (place: typeof places[0]) => {
-    if (favorites.find((fav) => fav.id === place.id)) {
-      setFavorites(favorites.filter((fav) => fav.id !== place.id));
-    } else {
-      setFavorites([...favorites, place]);
+    return buildMapHtml(pins);
+  }, [places]);
+
+  const selectedCategoryParam = categoryParamByLabel[selectedCategory];
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+
+    const loadPlaces = async () => {
+      try {
+        setPlacesLoading(true);
+        setPlacesError(null);
+
+        const response = await getPlaces({
+          district: selectedDistrict,
+          category: selectedCategoryParam,
+          search: searchQuery,
+        });
+
+        if (!mounted) return;
+
+        if (response.status === 200 || response.bodyStatus === 'success') {
+          const responseData = response.data;
+          const items = Array.isArray(responseData)
+            ? responseData
+            : Array.isArray((responseData as { places?: PlaceApiItem[] } | undefined)?.places)
+              ? (responseData as { places?: PlaceApiItem[] }).places ?? []
+              : [];
+
+          setPlaces(
+            items.map((item, index) => ({
+              id: item.id ?? index,
+              name: item.name ?? item.title ?? 'Mekan',
+              category: item.category ?? 'Tarihi',
+              district: item.district ?? selectedDistrict,
+              description: item.description ?? item.address ?? '',
+              latitude: item.latitude != null ? Number(item.latitude) : null,
+              longitude: item.longitude != null ? Number(item.longitude) : null,
+              image: item.image ?? item.image_url,
+            })),
+          );
+        } else {
+          setPlaces([]);
+          setPlacesError(response.message || response.error || 'Mekanlar yüklenemedi.');
+        }
+      } catch (error) {
+        if (!mounted) return;
+
+        setPlaces([]);
+        setPlacesError('Mekanlar yüklenemedi.');
+        console.error('[EXPLORE_PLACES] loadPlaces error', error);
+      } finally {
+        if (mounted) {
+          setPlacesLoading(false);
+        }
+      }
+    };
+
+    const timer = setTimeout(() => {
+      void loadPlaces();
+    }, 250);
+
+    return () => {
+      mounted = false;
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [searchQuery, selectedCategoryParam, selectedDistrict]);
+
+  const toggleFavorite = (place: PlaceItem) => {
+    if (!authUser?.id) {
+      Alert.alert('Giriş gerekli', 'Favorilemek için giriş yapmalısınız.');
+      return;
     }
+
+    if (favoriteLoadingId !== null) {
+      return;
+    }
+
+    const userId = Number(authUser.id);
+    if (Number.isNaN(userId)) {
+      Alert.alert('Hata', 'Kullanıcı bilgisi okunamadı.');
+      return;
+    }
+
+    const isCurrentlyFavorite = favorites.some((fav) => fav.id === place.id);
+    const previousFavorites = favorites;
+
+    setFavoriteLoadingId(place.id);
+    setFavorites((current) =>
+      isCurrentlyFavorite ? current.filter((fav) => fav.id !== place.id) : [...current, place],
+    );
+
+    void (async () => {
+      try {
+        const response = await togglePlaceFavorite(userId, place.id);
+        const success = response.status === 200 || response.status === 201 || response.bodyStatus === 'success' || response.success === true;
+
+        if (!success) {
+          setFavorites(previousFavorites);
+          Alert.alert('Hata', response.message || response.error || 'Favori durumu güncellenemedi.');
+        }
+      } catch (error) {
+        setFavorites(previousFavorites);
+        Alert.alert('Hata', 'Favori durumu güncellenemedi.');
+        console.error('[EXPLORE_PLACES] toggleFavorite error', error);
+      } finally {
+        setFavoriteLoadingId(null);
+      }
+    })();
   };
 
-  const addToRoute = (place: typeof places[0]) => {
+  const addToRoute = (place: PlaceItem) => {
     if (!plannedRoute.find((p) => p.id === place.id)) {
       setPlannedRoute([...plannedRoute, place]);
     }
   };
 
-  const removeFromRoute = (placeId: number) => {
+  const removeFromRoute = (placeId: number | string) => {
     setPlannedRoute(plannedRoute.filter((p) => p.id !== placeId));
   };
 
-  const isFavorite = (placeId: number) => favorites.some((fav) => fav.id === placeId);
-  const isInRoute = (placeId: number) => plannedRoute.some((p) => p.id === placeId);
+  const isFavorite = (placeId: number | string) => favorites.some((fav) => fav.id === placeId);
+  const isInRoute = (placeId: number | string) => plannedRoute.some((p) => p.id === placeId);
 
   const zoomInMap = () => {
     mapWebViewRef.current?.injectJavaScript('window.__EDIRNE_MAP__ && window.__EDIRNE_MAP__.zoomIn(); true;');
@@ -151,10 +314,97 @@ export default function AccountExploreScreen() {
     mapWebViewRef.current?.injectJavaScript('window.__EDIRNE_MAP__ && window.__EDIRNE_MAP__.zoomOut(); true;');
   };
 
-  const handleSaveRoute = () => {
-    setSaveModalVisible(false);
-    setRouteName('Örn: Tarihi Merkez Turu');
-    setRouteDescription('');
+  const handleSaveRoute = async () => {
+    if (!authUser?.id) {
+      Alert.alert('Giriş gerekli', 'Rota oluşturmak için giriş yapmalısınız.');
+      return;
+    }
+
+    if (plannedRoute.length === 0) {
+      Alert.alert('Rota boş', 'Kaydetmek için en az bir mekan eklemelisiniz.');
+      return;
+    }
+
+    const userId = Number(authUser.id);
+    if (Number.isNaN(userId)) {
+      Alert.alert('Hata', 'Kullanıcı bilgisi okunamadı.');
+      return;
+    }
+
+    const safeRouteName = routeName.trim();
+    const routeTitle = safeRouteName && !safeRouteName.toLocaleLowerCase('tr-TR').startsWith('örn:') ? safeRouteName : 'Tarihi Merkez Turu';
+    const placeIds = plannedRoute.map((place) => Number(place.id)).filter((placeId) => !Number.isNaN(placeId));
+
+    if (placeIds.length === 0) {
+      Alert.alert('Hata', 'Rota için geçerli mekan bulunamadı.');
+      return;
+    }
+
+    try {
+      setCreatingRoute(true);
+
+      const response = await createUserRoute(
+        {
+          user_id: userId,
+          route_name: routeTitle,
+          description: routeDescription.trim(),
+          places: placeIds,
+        },
+        authToken ?? undefined,
+      );
+
+      const createdId =
+        response.route_id ??
+        response.routeId ??
+        (response.data && typeof response.data === 'object'
+          ? (response.data as { route_id?: number | string; routeId?: number | string }).route_id ?? (response.data as { route_id?: number | string; routeId?: number | string }).routeId
+          : null);
+
+      const success = response.status === 200 || response.status === 201 || response.bodyStatus === 'success' || response.success === true;
+      if (!success) {
+        Alert.alert('Hata', response.message || response.error || 'Rota kaydedilemedi.');
+        return;
+      }
+
+      if (createdId != null) {
+        setCreatedRouteId(createdId);
+      }
+
+      Alert.alert('Başarılı', 'Rota oluşturuldu. İstersen şimdi topluluğa açabilirsin.');
+      setSaveModalVisible(false);
+      setShareModalVisible(true);
+    } catch (error) {
+      Alert.alert('Hata', 'Rota kaydedilemedi.');
+      console.error('[EXPLORE_PLACES] handleSaveRoute error', error);
+    } finally {
+      setCreatingRoute(false);
+    }
+  };
+
+  const handleShareRoute = async () => {
+    if (!createdRouteId) {
+      Alert.alert('Önce kaydedin', 'Topluluğa açmak için önce rotayı oluşturmalısınız.');
+      return;
+    }
+
+    try {
+      setSharingRoute(true);
+      const response = await shareUserRoute(createdRouteId, authToken ?? undefined);
+      const success = response.status === 200 || response.status === 201 || response.bodyStatus === 'success' || response.success === true;
+
+      if (!success) {
+        Alert.alert('Hata', response.message || response.error || 'Rota paylaşılamadı.');
+        return;
+      }
+
+      Alert.alert('Başarılı', 'Rota topluluğa açıldı.');
+      setShareModalVisible(false);
+    } catch (error) {
+      Alert.alert('Hata', 'Rota paylaşılamadı.');
+      console.error('[EXPLORE_PLACES] handleShareRoute error', error);
+    } finally {
+      setSharingRoute(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -377,9 +627,22 @@ export default function AccountExploreScreen() {
             </View>
           )}
 
-          <Text className="mb-3 text-[18px] font-bold text-[#111827]">Gezilecek Yerler (15)</Text>
+          <Text className="mb-3 text-[18px] font-bold text-[#111827]">Gezilecek Yerler ({places.length})</Text>
 
           <View className="gap-3">
+            {placesLoading ? (
+              <View className="rounded-[14px] border border-[#e5e7eb] bg-white px-4 py-5">
+                <ActivityIndicator color="#dc2626" />
+                <Text className="mt-2 text-[13px] text-[#6b7280]">Yerler yükleniyor...</Text>
+              </View>
+            ) : null}
+
+            {placesError ? (
+              <View className="rounded-[14px] border border-[#fecaca] bg-[#fff1f2] px-4 py-4">
+                <Text className="text-[14px] font-semibold text-[#b91c1c]">{placesError}</Text>
+              </View>
+            ) : null}
+
             {places.map((place) => {
               const badgeClass = badgeClassByCategory[place.category] ?? badgeClassByCategory.Tarihi;
 
@@ -397,8 +660,12 @@ export default function AccountExploreScreen() {
                     </View>
 
                     <View className="flex-row items-center gap-3 pt-0.5">
-                      <TouchableOpacity onPress={() => toggleFavorite(place)} className="h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white">
-                        <IconSymbol name="heart" size={17} color={isFavorite(place.id) ? '#dc2626' : '#94a3b8'} />
+                      <TouchableOpacity
+                        onPress={() => toggleFavorite(place)}
+                        className={`h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white ${favoriteLoadingId === place.id ? 'opacity-60' : ''}`}
+                        disabled={favoriteLoadingId === place.id}
+                      >
+                        <IconSymbol name={isFavorite(place.id) ? 'heart.fill' : 'heart'} size={17} color={isFavorite(place.id) ? '#dc2626' : '#94a3b8'} />
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => addToRoute(place)}
@@ -459,8 +726,8 @@ export default function AccountExploreScreen() {
               <TouchableOpacity onPress={() => setSaveModalVisible(false)} className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-white py-2.5">
                 <Text className="text-center text-[14px] font-semibold text-[#111827]">İptal</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleSaveRoute} className="flex-1 rounded-[10px] bg-[#dc2626] py-2.5">
-                <Text className="text-center text-[14px] font-bold text-white">Kaydet</Text>
+              <TouchableOpacity onPress={() => { void handleSaveRoute(); }} disabled={creatingRoute} className={`flex-1 rounded-[10px] bg-[#dc2626] py-2.5 ${creatingRoute ? 'opacity-70' : ''}`}>
+                <Text className="text-center text-[14px] font-bold text-white">{creatingRoute ? 'Kaydediliyor...' : 'Kaydet'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -494,9 +761,9 @@ export default function AccountExploreScreen() {
               <TouchableOpacity onPress={() => setShareModalVisible(false)} className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-white py-2.5">
                 <Text className="text-center text-[14px] font-semibold text-[#111827]">İptal</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[10px] bg-[#dc2626] py-2.5">
+              <TouchableOpacity onPress={() => { void handleShareRoute(); }} disabled={sharingRoute} className={`flex-1 flex-row items-center justify-center gap-2 rounded-[10px] bg-[#dc2626] py-2.5 ${sharingRoute ? 'opacity-70' : ''}`}>
                 <IconSymbol name="square.and.arrow.up" size={16} color="#fff" />
-                <Text className="text-center text-[14px] font-bold text-white">Paylaş</Text>
+                <Text className="text-center text-[14px] font-bold text-white">{sharingRoute ? 'Paylaşılıyor...' : 'Paylaş'}</Text>
               </TouchableOpacity>
             </View>
           </View>

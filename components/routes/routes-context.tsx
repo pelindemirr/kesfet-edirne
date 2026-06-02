@@ -1,4 +1,7 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+
+import { getSavedCommunityRoutes, saveCommunityRoute as saveCommunityRouteRequest, unsaveCommunityRoute as unsaveCommunityRouteRequest } from '@/services/api/endpoints/community';
+import { useAuthStore } from '@/stores/use-auth-store';
 
 export interface RoutePoint {
   id: string;
@@ -43,14 +46,15 @@ export interface RoutesContextType {
   userRoutes: UserRoute[];
   savedRoutes: UserRoute[];
   savedCommunityRoutes: CommunitySavedRoute[];
+  savedCommunityRoutesLoading: boolean;
   sharedRoutes: UserRoute[];
   
   // Rota ekleme/güncelleme
   addRoute: (route: Omit<UserRoute, 'id' | 'createdAt'>) => void;
   saveRoute: (routeId: string) => void;
   unsaveRoute: (routeId: string) => void;
-  saveCommunityRoute: (route: CommunitySavedRoute) => void;
-  unsaveCommunityRoute: (routeId: string) => void;
+  saveCommunityRoute: (route: CommunitySavedRoute) => Promise<boolean>;
+  unsaveCommunityRoute: (routeId: string) => Promise<boolean>;
   isCommunityRouteSaved: (routeId: string) => boolean;
   shareRoute: (routeId: string) => void;
   unshareRoute: (routeId: string) => void;
@@ -69,7 +73,32 @@ export interface RoutesContextType {
 
 const RoutesContext = createContext<RoutesContextType | undefined>(undefined);
 
+function normalizeSavedCommunityRoute(route: any): CommunitySavedRoute {
+  const fallbackAuthorName = route.authorName ?? route.creatorName ?? route.creator_name ?? 'K';
+  const computedAuthorInitial = fallbackAuthorName.trim().charAt(0).toLocaleUpperCase('tr-TR');
+  const authorInitial = route.authorInitial ?? route.author_initial ?? (computedAuthorInitial || 'K');
+
+  return {
+    id: String(route.id ?? ''),
+    title: route.title ?? route.routeName ?? route.route_name ?? 'Rota',
+    description: route.description ?? '',
+    authorName: route.authorName ?? route.creatorName ?? route.creator_name ?? 'Anonim Kullanici',
+    authorInitial,
+    createdAt: route.createdAt ?? route.created_at ?? '',
+    placePreview: route.placePreview ?? route.place_preview ?? '',
+    stopCount: Number(route.stopCount ?? route.stop_count ?? route.placeCount ?? route.place_count ?? 0),
+    district: route.district ?? 'Bilinmiyor',
+    rating: Number(route.rating ?? route.averageRating ?? route.average_rating ?? 0) || 0,
+    reviewCount: Number(route.reviewCount ?? route.review_count ?? route.commentCount ?? route.comment_count ?? 0) || 0,
+    commentCount: Number(route.commentCount ?? route.comment_count ?? route.reviewCount ?? route.review_count ?? 0) || 0,
+    popularityScore: Number(route.popularityScore ?? route.popularity_score ?? route.views ?? 0) || 0,
+    creatorAvatarId: route.creatorAvatarId ?? route.creatorAvatar ?? route.creator_avatar,
+  };
+}
+
 export function RoutesProvider({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((state) => state.token);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const [userRoutes, setUserRoutes] = useState<UserRoute[]>([
     // Demo veri
     {
@@ -117,6 +146,54 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
     },
   ]);
   const [savedCommunityRoutes, setSavedCommunityRoutes] = useState<CommunitySavedRoute[]>([]);
+  const [savedCommunityRoutesLoading, setSavedCommunityRoutesLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadSavedCommunityRoutes() {
+      if (!isLoggedIn || !token) {
+        setSavedCommunityRoutes([]);
+        setSavedCommunityRoutesLoading(false);
+        return;
+      }
+
+      try {
+        setSavedCommunityRoutesLoading(true);
+        const response = await getSavedCommunityRoutes(token);
+
+        if (!mounted) return;
+
+        if (response.status === 200 || response.bodyStatus === 'success') {
+          const responseData = response.data;
+          const items = Array.isArray(responseData)
+            ? responseData
+            : Array.isArray((responseData as { routes?: unknown[] } | undefined)?.routes)
+              ? (responseData as { routes?: unknown[] }).routes ?? []
+              : [];
+
+          setSavedCommunityRoutes(items.map((item) => normalizeSavedCommunityRoute(item)));
+        } else {
+          setSavedCommunityRoutes([]);
+        }
+      } catch (error) {
+        console.error('[RoutesContext] loadSavedCommunityRoutes error', error);
+        if (mounted) {
+          setSavedCommunityRoutes([]);
+        }
+      } finally {
+        if (mounted) {
+          setSavedCommunityRoutesLoading(false);
+        }
+      }
+    }
+
+    loadSavedCommunityRoutes();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isLoggedIn, token]);
 
   const addRoute = useCallback((route: Omit<UserRoute, 'id' | 'createdAt'>) => {
     const newRoute: UserRoute = {
@@ -143,20 +220,40 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const saveCommunityRoute = useCallback((route: CommunitySavedRoute) => {
-    setSavedCommunityRoutes((prev) => {
-      const exists = prev.some((item) => item.id === route.id);
-      if (exists) {
-        return prev.map((item) => (item.id === route.id ? route : item));
-      }
+  const saveCommunityRoute = useCallback(async (route: CommunitySavedRoute) => {
+    if (!token) {
+      return false;
+    }
 
-      return [route, ...prev];
-    });
-  }, []);
+    const response = await saveCommunityRouteRequest(route.id, token);
+    if (response.status === 200 || response.status === 201 || response.bodyStatus === 'success') {
+      setSavedCommunityRoutes((prev) => {
+        const exists = prev.some((item) => item.id === route.id);
+        if (exists) {
+          return prev.map((item) => (item.id === route.id ? route : item));
+        }
 
-  const unsaveCommunityRoute = useCallback((routeId: string) => {
-    setSavedCommunityRoutes((prev) => prev.filter((route) => route.id !== routeId));
-  }, []);
+        return [route, ...prev];
+      });
+      return true;
+    }
+
+    return false;
+  }, [token]);
+
+  const unsaveCommunityRoute = useCallback(async (routeId: string) => {
+    if (!token) {
+      return false;
+    }
+
+    const response = await unsaveCommunityRouteRequest(routeId, token);
+    if (response.status === 200 || response.status === 204 || response.bodyStatus === 'success') {
+      setSavedCommunityRoutes((prev) => prev.filter((route) => route.id !== routeId));
+      return true;
+    }
+
+    return false;
+  }, [token]);
 
   const isCommunityRouteSaved = useCallback(
     (routeId: string) => savedCommunityRoutes.some((route) => route.id === routeId),
@@ -218,6 +315,7 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
     userRoutes,
     savedRoutes,
     savedCommunityRoutes,
+    savedCommunityRoutesLoading,
     sharedRoutes,
     addRoute,
     saveRoute,

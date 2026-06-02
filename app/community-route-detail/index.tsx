@@ -104,6 +104,7 @@ export default function CommunityRouteDetail() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [savingRoute, setSavingRoute] = useState(false);
   const commentCount = String(comments.length);
   const saved = isCommunityRouteSaved(routeId);
 
@@ -153,13 +154,23 @@ export default function CommunityRouteDetail() {
     return places.map((place) => place.name).join(', ');
   }, [params.creatorAvatar, places]);
 
-  const toggleSaveRoute = () => {
-    if (saved) {
-      unsaveCommunityRoute(routeId);
+  const toggleSaveRoute = async () => {
+    if (savingRoute) {
       return;
     }
 
-    saveCommunityRoute({
+    setSavingRoute(true);
+
+    if (saved) {
+      const success = await unsaveCommunityRoute(routeId);
+      if (!success) {
+        Alert.alert('Hata', 'Rota kaldırılamadı. Lütfen tekrar deneyin.');
+      }
+      setSavingRoute(false);
+      return;
+    }
+
+    const success = await saveCommunityRoute({
       id: routeId,
       title,
       description,
@@ -175,6 +186,12 @@ export default function CommunityRouteDetail() {
       popularityScore: Number(views) || 0,
       creatorAvatarId: params.creatorAvatar ?? params.creator_avatar,
     });
+
+    if (!success) {
+      Alert.alert('Hata', 'Rota kaydedilemedi. Lütfen tekrar deneyin.');
+    }
+
+    setSavingRoute(false);
   };
 
   const handleSubmitReview = async () => {
@@ -232,12 +249,15 @@ export default function CommunityRouteDetail() {
         </TouchableOpacity>
         <View className="flex-row items-center gap-2">
           <TouchableOpacity
-            onPress={toggleSaveRoute}
-            className={`flex-row items-center gap-2 rounded-full border px-3 py-2 ${saved ? 'border-[#fecaca] bg-[#fff1f2]' : 'border-[#e5e7eb] bg-[#f9fafb]'}`}
+            disabled={savingRoute}
+            onPress={() => {
+              void toggleSaveRoute();
+            }}
+            className={`flex-row items-center gap-2 rounded-full border px-3 py-2 ${saved ? 'border-[#fecaca] bg-[#fff1f2]' : 'border-[#e5e7eb] bg-[#f9fafb]'} ${savingRoute ? 'opacity-60' : ''}`}
           >
             <IconSymbol name={saved ? 'bookmark.fill' : 'bookmark'} size={18} color={saved ? '#dc2626' : '#374151'} />
             <Text className={`text-[13px] font-semibold ${saved ? 'text-[#dc2626]' : 'text-[#374151]'}`}>
-              {saved ? 'Kaydedildi' : 'Kaydet'}
+              {savingRoute ? 'İşleniyor...' : saved ? 'Kaydedildi' : 'Kaydet'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f9fafb]">
@@ -285,11 +305,14 @@ export default function CommunityRouteDetail() {
           <View className="mb-4 flex-row items-center justify-between">
             <Text className="text-[24px] font-bold text-[#111827]">📍 {stopCount} Durak</Text>
             <TouchableOpacity
-              onPress={toggleSaveRoute}
-              className={`rounded-full px-4 py-2 ${saved ? 'bg-[#fff1f2]' : 'bg-[#f3f4f6]'}`}
+              disabled={savingRoute}
+              onPress={() => {
+                void toggleSaveRoute();
+              }}
+              className={`rounded-full px-4 py-2 ${saved ? 'bg-[#fff1f2]' : 'bg-[#f3f4f6]'} ${savingRoute ? 'opacity-60' : ''}`}
             >
               <Text className={`text-[13px] font-semibold ${saved ? 'text-[#dc2626]' : 'text-[#374151]'}`}>
-                {saved ? 'Kaydedildi' : 'Kaydet'}
+                {savingRoute ? 'İşleniyor...' : saved ? 'Kaydedildi' : 'Kaydet'}
               </Text>
             </TouchableOpacity>
           </View>

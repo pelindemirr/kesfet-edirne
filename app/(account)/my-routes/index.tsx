@@ -1,11 +1,13 @@
 import { useAuth } from '@/components/auth/auth-context';
 import Header from '@/components/layout/Header';
+import { useRoutes, type CommunitySavedRoute } from '@/components/routes/routes-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { getUserCreatedRoutes, getUserSavedRoutes, type CommunityRouteApiItem } from '@/services/api/endpoints/community';
+import { getUserCreatedRoutes, type CommunityRouteApiItem } from '@/services/api/endpoints/community';
 import { useAuthStore } from '@/stores/use-auth-store';
+import { getProfileAvatar, type ProfileAvatarId } from '@/stores/use-profile-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type TabKey = 'created' | 'saved';
 
@@ -17,18 +19,28 @@ function getRouteDescription(route: CommunityRouteApiItem) {
   return route.description || route.place_preview || route.placePreview || '';
 }
 
+function resolveAvatarId(avatar?: string): ProfileAvatarId | undefined {
+  if (!avatar) return undefined;
+
+  const normalizedAvatar = avatar.toLocaleLowerCase('tr-TR');
+  if (normalizedAvatar === 'man' || normalizedAvatar === 'klasik') return 'man';
+  if (normalizedAvatar === 'woman' || normalizedAvatar === 'modern') return 'woman';
+  if (normalizedAvatar === 'man2' || normalizedAvatar === 'sportif') return 'man2';
+  if (normalizedAvatar === 'woman2' || normalizedAvatar === 'zarif') return 'woman2';
+  return undefined;
+}
+
 export default function MyRoutesScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
   const { isAuthenticated } = useAuth();
+  const { savedCommunityRoutes, savedCommunityRoutesLoading } = useRoutes();
   const authUser = useAuthStore((state) => state.user);
   const authToken = useAuthStore((state) => state.token);
 
   const [selectedTab, setSelectedTab] = useState<TabKey>(params.tab === 'saved' ? 'saved' : 'created');
   const [createdRoutes, setCreatedRoutes] = useState<CommunityRouteApiItem[]>([]);
-  const [savedRoutes, setSavedRoutes] = useState<CommunityRouteApiItem[]>([]);
   const [loadingCreated, setLoadingCreated] = useState(false);
-  const [loadingSaved, setLoadingSaved] = useState(false);
 
   useEffect(() => {
     setSelectedTab(params.tab === 'saved' ? 'saved' : 'created');
@@ -42,25 +54,18 @@ export default function MyRoutesScreen() {
 
       try {
         setLoadingCreated(true);
-        setLoadingSaved(true);
 
-        const [createdResponse, savedResponse] = await Promise.all([
-          getUserCreatedRoutes(authUser.id, authToken ?? undefined),
-          getUserSavedRoutes(authUser.id, authToken ?? undefined),
-        ]);
+        const createdResponse = await getUserCreatedRoutes(authUser.id, authToken ?? undefined);
 
         if (!mounted) return;
 
         const createdData = Array.isArray(createdResponse.data) ? createdResponse.data : (createdResponse.data as any)?.routes ?? [];
-        const savedData = Array.isArray(savedResponse.data) ? savedResponse.data : (savedResponse.data as any)?.routes ?? [];
 
         setCreatedRoutes(createdData as CommunityRouteApiItem[]);
-        setSavedRoutes(savedData as CommunityRouteApiItem[]);
       } catch (error) {
         console.error('[MyRoutes] loadRoutes error', error);
       } finally {
         setLoadingCreated(false);
-        setLoadingSaved(false);
       }
     }
 
@@ -114,6 +119,67 @@ export default function MyRoutesScreen() {
     );
   };
 
+  const renderSavedRouteList = (routes: CommunitySavedRoute[], loading: boolean, emptyText: string) => {
+    if (loading) {
+      return <ActivityIndicator />;
+    }
+
+    if (routes.length === 0) {
+      return <Text className="text-[14px] text-[#6b7280]">{emptyText}</Text>;
+    }
+
+    return (
+      <View className="gap-3">
+        {routes.map((route) => {
+          const avatarId = resolveAvatarId(route.creatorAvatarId);
+          const avatarSource = avatarId ? getProfileAvatar(avatarId).source : null;
+
+          return (
+            <View key={route.id} className="overflow-hidden rounded-[16px] border border-[#e5e7eb] bg-white">
+              <View className="px-4 py-4">
+                <View className="mb-3 flex-row items-center gap-3">
+                  <View className="h-11 w-11 overflow-hidden rounded-full bg-[#f3f4f6]">
+                    {avatarSource ? (
+                      <Image source={avatarSource} className="h-full w-full" resizeMode="cover" />
+                    ) : (
+                      <View className="h-full w-full items-center justify-center bg-[#dc2626]">
+                        <Text className="text-[15px] font-bold text-white">{route.authorInitial}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View className="flex-1">
+                    <Text className="text-[16px] font-bold text-[#111827]">{route.authorName}</Text>
+                    <Text className="text-[12px] text-[#6b7280]">{route.district}</Text>
+                  </View>
+
+                  <View className="rounded-full bg-[#fff1f2] px-2.5 py-1">
+                    <Text className="text-[12px] font-semibold text-[#dc2626]">⭐ {route.rating.toFixed(1)}</Text>
+                  </View>
+                </View>
+
+                <Text className="text-[17px] font-extrabold text-[#111827]">{route.title}</Text>
+                {route.placePreview ? <Text className="mt-1 text-[13px] leading-[19px] text-[#4b5563]">{route.placePreview}</Text> : null}
+
+                <View className="mt-3 flex-row flex-wrap items-center gap-2">
+                  <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
+                    <Text className="text-[12px] text-[#374151]">📍 {route.stopCount} durak</Text>
+                  </View>
+                  <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
+                    <Text className="text-[12px] text-[#374151]">💬 {route.commentCount}</Text>
+                  </View>
+                  <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
+                    <Text className="text-[12px] text-[#374151]">{route.createdAt}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   return (
     <View className="flex-1 bg-[#f3f4f6]">
       <Header />
@@ -151,7 +217,7 @@ export default function MyRoutesScreen() {
               {renderRouteList(createdRoutes, loadingCreated, 'Henüz oluşturduğunuz rota yok.')}
             </View>
           ) : (
-            <View>{renderRouteList(savedRoutes, loadingSaved, 'Henüz kaydettiğiniz rota yok.')}</View>
+            <View>{renderSavedRouteList(savedCommunityRoutes, savedCommunityRoutesLoading, 'Henüz kaydettiğiniz rota yok.')}</View>
           )}
         </View>
       </ScrollView>

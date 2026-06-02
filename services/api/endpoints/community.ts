@@ -88,6 +88,8 @@ export interface CommunityReviewResponse {
   error?: string;
 }
 
+export interface SavedCommunityRoutesResponse extends CommunityRoutesResponse {}
+
 export async function getCommunityRoutes(): Promise<CommunityRoutesResponse> {
   try {
     console.log('[COMMUNITY_ROUTES] Request başladı: GET /api/community/routes');
@@ -116,6 +118,63 @@ export async function getCommunityRouteById(routeId: number | string): Promise<C
     return response;
   } catch (error) {
     console.error('[COMMUNITY_ROUTE_DETAIL] HATA oluştu', error);
+    throw error;
+  }
+}
+
+export async function saveCommunityRoute(routeId: number | string, token?: string): Promise<CommunityReviewResponse> {
+  try {
+    console.log(`[COMMUNITY_ROUTE_SAVE] Request başladı: POST /api/community/routes/${routeId}/save`);
+
+    const response = await apiRequest(`/api/community/routes/${routeId}/save`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }) as CommunityReviewResponse;
+
+    console.log('[COMMUNITY_ROUTE_SAVE] Response geldi:', response);
+    return response;
+  } catch (error) {
+    console.error('[COMMUNITY_ROUTE_SAVE] HATA oluştu', error);
+    throw error;
+  }
+}
+
+export async function unsaveCommunityRoute(routeId: number | string, token?: string): Promise<CommunityReviewResponse> {
+  try {
+    console.log(`[COMMUNITY_ROUTE_UNSAVE] Request başladı: DELETE /api/community/routes/${routeId}/save`);
+
+    const response = await apiRequest(`/api/community/routes/${routeId}/save`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }) as CommunityReviewResponse;
+
+    console.log('[COMMUNITY_ROUTE_UNSAVE] Response geldi:', response);
+    return response;
+  } catch (error) {
+    console.error('[COMMUNITY_ROUTE_UNSAVE] HATA oluştu', error);
+    throw error;
+  }
+}
+
+export async function getSavedCommunityRoutes(token?: string): Promise<SavedCommunityRoutesResponse> {
+  try {
+    console.log('[COMMUNITY_SAVED_ROUTES] Request başladı: GET /api/community/saved-routes');
+
+    const response = await apiRequest('/api/community/saved-routes', {
+      method: 'GET',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }) as SavedCommunityRoutesResponse;
+
+    console.log('[COMMUNITY_SAVED_ROUTES] Response geldi:', response);
+    return response;
+  } catch (error) {
+    console.error('[COMMUNITY_SAVED_ROUTES] HATA oluştu', error);
     throw error;
   }
 }

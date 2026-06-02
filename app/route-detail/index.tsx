@@ -26,26 +26,27 @@ const MOCK_ROUTES_DATA = [
   },
   {
     id: 2,
-    title: 'Meriç Kıyısı Gezisi',
+    title: 'Karaağaç Gezisi',
     time: '2.5 saat',
-    stops: '6',
+    stops: '3',
     distance: '4.8 km',
     rating: '4.5',
     badge: 'Doğa & Yürüyüş',
-    description: 'Meriç Köprüsü, Tunca Nehri',
+    description: 'Meriç Köprüsü, Tunca Nehri,Söğütlük Millet Bahçesi',
     image: require('../../assets/rota/meric.jpg'),
-    about: 'Doğanın güzelliği içinde rehayete çıktığınız, Meriç Nehri\'nin keyifli yürüyüşleri. Şehrin kalkışından uzak, huzurlu bir rota deneyimi.',
+    about: "Meriç Köprüsü'nde fotoğraf çekebilir, Tunca Nehri boyunca yürüyüş yapabilir ve Karaağaç'ın tarihi sokaklarındaki kafelerde dinlenebilirsiniz",
     routeStops: [
       { id: 1, name: 'Meriç Köprüsü', desc: 'Tarihi köprü', time: '30 dk' },
-      { id: 2, name: 'Tunca Nehri', desc: 'Dinlenme ve piknik alanı', time: '45 dk' },
      
+      { id: 2, name: 'Söğütlük Millet Bahçesi', desc: 'Piknik ve dinlenme alanı', time: '60 dk' },
+       { id: 3, name: 'Karaağaç Sokakları', desc: 'Dinlenme ', time: '60 dk' },
     ],
   },
   {
     id: 3,
     title: 'Osmanlı Çarşı Turu',
     time: '2 saat',
-    stops: '5',
+    stops: '3',
     distance: '2.1 km',
     rating: '4.6',
     badge: 'Kültür & Tarih',
@@ -54,8 +55,8 @@ const MOCK_ROUTES_DATA = [
     about: 'Osmanlı döneminin ticari merkezi olan çarşıları keşfederek tarihi alışveriş deneyimini yaşayın.',
     routeStops: [
       { id: 1, name: 'Bedesten', desc: 'Osmanlı döneminin ticari merkezi', time: '35 dk' },
-      { id: 2, name: 'Alipaşa Çarşısı', desc: 'Geleneksel kumaş ve baharat satıcıları', time: '30 dk' },
-      { id: 3, name: 'Arasta Çarşısı', desc: 'Antika ve el sanatları', time: '40 dk' },
+      { id: 2, name: 'Alipaşa Çarşısı', desc: 'Geleneksel hediyelik eşyalar', time: '30 dk' },
+      { id: 3, name: 'Arasta Çarşısı', desc: 'Kavala, badem ezmesi ve tarih kokan sokaklar', time: '40 dk' },
      
     ],
   },
@@ -63,17 +64,17 @@ const MOCK_ROUTES_DATA = [
     id: 4,
     title: 'Edirne Lezzetleri Rotası',
     time: '3.5 saat',
-    stops: '7',
+    stops: '3',
     distance: '3.0 km',
     rating: '4.9',
     badge: 'Yeme & İçme',
-    description: 'Aydın Ciğer, Tadım Menemen, Ondo Dondurma',
+    description: ' Tadım Menemen, Aydın Ciğer, Keçecizade Badem Ezmesi',
     image: require('../../assets/rota/meric.jpg'),
     about: 'Edirne\'nin meşhur lezzetlerini tatarak yerel mutfağın tadını çıkarın. Ciğer, menemen ve dondurma gibi özel yemekleri keşfedin.',
     routeStops: [
       { id: 1, name: 'Aydın Ciğer Evi', desc: 'Meşhur ciğer ve böbrek', time: '45 dk' },
       { id: 2, name: 'Tadım Lokantası', desc: 'Geleneksel menemen ve kahvaltı', time: '50 dk' },
-      { id: 3, name: 'Ondo Dondurması', desc: 'Yöresel dondurma ve tatlılar', time: '30 dk' },
+      { id: 3, name: 'Keçecizade Badem Ezmesi', desc: 'Yöresel badem ezmesi ve tatlılar', time: '30 dk' },
      
     ],
   },
@@ -96,19 +97,19 @@ const MOCK_ROUTES_DATA = [
   },
   {
     id: 6,
-    title: 'Keşan ve İlçeleri Gezisi',
-    time: '3.5 saat',
+    title: 'II. Bayezid Külliyesi Sağlık Müzesi Rotası',
+    time: '2.5 saat',
     stops: '3',
-    distance: '5.5 km',
+    distance: '2.0 km',
     rating: '4.4',
-    badge: 'Tarih & Doğa',
-    description: 'Enez Kalesi, Mecidiye Sahili, Keşan Müzesi',
+    badge: 'Kültür & Tarih',
+    description: 'II. Bayezid Külliyesi, Sağlık Müzesi, çevre tarihi alanlar',
     image: require('../../assets/rota/meric.jpg'),
-    about: 'Edirne\'nin çevre ilçelerine yapılan kapsamlı bir gezide tarihi ve doğal güzellikleri keşfedin.',
+    about: 'Edirne merkezde yer alan bu rota, II. Bayezid Külliyesi ve Sağlık Müzesi çevresindeki en önemli tarih duraklarını keşfetmek için idealdir. Şehir dışına çıkmadan yoğun bir kültür gezisi sunar.',
     routeStops: [
-      { id: 1, name: 'Enez Kalesi', desc: 'Boğaza hâkim tarihi kale', time: '60 dk' },
-      { id: 2, name: 'Mecidiye Sahili', desc: 'Deniz kenarında dinlenme ve yüzme', time: '90 dk' },
-      { id: 3, name: 'Keşan Müzesi', desc: 'Bölge tarihi ve arkeolojik eserler', time: '45 dk' },
+      { id: 1, name: 'II. Bayezid Külliyesi', desc: 'Osmanlı sağlık ve eğitim tarihi', time: '45 dk' },
+      { id: 2, name: 'Sağlık Müzesi', desc: 'Şifahane ve tıp tarihi koleksiyonu', time: '40 dk' },
+      { id: 3, name: 'Darüşşifa Çevresi', desc: 'Külliye çevresinde kısa kültür yürüyüşü', time: '30 dk' },
     ],
   },
 ];
@@ -158,11 +159,6 @@ export default function RouteDetail() {
           <View className="flex-1 items-center">
             <Text className="mb-1 text-[11px] text-[#888]">📍 Mesafe</Text>
             <Text className="text-[15px] font-bold text-[#222]">{route.distance}</Text>
-          </View>
-          <View className="my-auto h-[70%] w-px bg-[#eee]" />
-          <View className="flex-1 items-center">
-            <Text className="mb-1 text-[11px] text-[#888]">⭐ Puan</Text>
-            <Text className="text-[15px] font-bold text-[#222]">{route.rating}</Text>
           </View>
         </View>
 
