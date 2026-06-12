@@ -33,6 +33,7 @@ export interface CommunityRouteApiItem {
   popularityScore?: number;
   popularity_score?: number;
   views?: number;
+  saved_at?: string; // ✅ Kaydedilen rotalar için eklendi
 }
 
 export interface CommunityRoutesResponse {
@@ -45,9 +46,12 @@ export interface CommunityRoutesResponse {
 }
 
 export interface CommunityRoutePlaceItem {
+  id?: number | string;       // ✅ Eklendi
   name?: string;
   title?: string;
   description?: string;
+  category?: string;
+  district?: string;          // ✅ Eklendi
   latitude?: number | string;
   longitude?: number | string;
 }
@@ -122,15 +126,22 @@ export async function getCommunityRouteById(routeId: number | string): Promise<C
   }
 }
 
-export async function saveCommunityRoute(routeId: number | string, token?: string): Promise<CommunityReviewResponse> {
+// ✅ userId parametresi eklendi, body eklendi
+export async function saveCommunityRoute(
+  routeId: number | string,
+  userId: number | string,
+  token?: string
+): Promise<CommunityReviewResponse> {
   try {
     console.log(`[COMMUNITY_ROUTE_SAVE] Request başladı: POST /api/community/routes/${routeId}/save`);
 
     const response = await apiRequest(`/api/community/routes/${routeId}/save`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
+      body: JSON.stringify({ user_id: userId }), // ✅ Body eklendi
     }) as CommunityReviewResponse;
 
     console.log('[COMMUNITY_ROUTE_SAVE] Response geldi:', response);
@@ -160,11 +171,15 @@ export async function unsaveCommunityRoute(routeId: number | string, token?: str
   }
 }
 
-export async function getSavedCommunityRoutes(token?: string): Promise<SavedCommunityRoutesResponse> {
+// ✅ Endpoint düzeltildi: /api/user-routes/saved/:userId, userId parametresi eklendi
+export async function getSavedCommunityRoutes(
+  userId: number | string,
+  token?: string
+): Promise<SavedCommunityRoutesResponse> {
   try {
-    console.log('[COMMUNITY_SAVED_ROUTES] Request başladı: GET /api/community/saved-routes');
+    console.log(`[COMMUNITY_SAVED_ROUTES] Request başladı: GET /api/user-routes/saved/${userId}`);
 
-    const response = await apiRequest('/api/community/saved-routes', {
+    const response = await apiRequest(`/api/user-routes/saved/${userId}`, {
       method: 'GET',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -230,11 +245,12 @@ export async function getUserCreatedRoutes(userId: number | string, token?: stri
   }
 }
 
+// ✅ Endpoint düzeltildi: /api/user-routes/saved/:userId
 export async function getUserSavedRoutes(userId: number | string, token?: string): Promise<CommunityRoutesResponse> {
   try {
-    console.log(`[COMMUNITY_SAVED_ROUTES] Request başladı: GET /api/profile/${userId}/saved-routes`);
+    console.log(`[COMMUNITY_SAVED_ROUTES] Request başladı: GET /api/user-routes/saved/${userId}`);
 
-    const response = await apiRequest(`/api/profile/${userId}/saved-routes`, {
+    const response = await apiRequest(`/api/user-routes/saved/${userId}`, {
       method: 'GET',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -245,6 +261,25 @@ export async function getUserSavedRoutes(userId: number | string, token?: string
     return response;
   } catch (error) {
     console.error('[COMMUNITY_SAVED_ROUTES] HATA oluştu', error);
+    throw error;
+  }
+}
+
+export async function deleteUserCreatedRoute(routeId: number | string, token?: string): Promise<CommunityReviewResponse> {
+  try {
+    console.log(`[COMMUNITY_ROUTE_DELETE] Request başladı: DELETE /api/user-routes/sil/${routeId}`);
+
+    const response = await apiRequest(`/api/user-routes/sil/${routeId}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }) as CommunityReviewResponse;
+
+    console.log('[COMMUNITY_ROUTE_DELETE] Response geldi:', response);
+    return response;
+  } catch (error) {
+    console.error('[COMMUNITY_ROUTE_DELETE] HATA oluştu', error);
     throw error;
   }
 }

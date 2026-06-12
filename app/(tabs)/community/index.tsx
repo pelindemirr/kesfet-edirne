@@ -28,20 +28,23 @@ type CommunityRoute = {
 };
 
 const sortOptions: SortOption[] = ['Popüler', 'En İyi', 'Yeni'];
-
 function parseDate(dateText: string) {
   if (!dateText) return 0;
 
-  const normalized = dateText.includes('.') ? dateText : dateText.replace(/-/g, '.');
-  const parts = normalized.split('.').map(Number);
+  // ISO format: 2026-06-08T18:00:00.000Z → direkt parse et
+  if (dateText.includes('T') || dateText.includes('-')) {
+    const ts = Date.parse(dateText);
+    return Number.isNaN(ts) ? 0 : ts;
+  }
 
-  if (parts.length >= 3 && parts.every((part) => !Number.isNaN(part))) {
+  // Noktalı format: 08.06.2026
+  const parts = dateText.split('.').map(Number);
+  if (parts.length >= 3 && parts.every((p) => !Number.isNaN(p))) {
     const [day, month, year] = parts;
     return new Date(year, month - 1, day).getTime();
   }
 
-  const fallback = Date.parse(dateText);
-  return Number.isNaN(fallback) ? 0 : fallback;
+  return 0;
 }
 
 function getAuthorInitial(authorName: string) {
@@ -106,7 +109,7 @@ export default function CommunityRoutesScreen() {
   const { isCommunityRouteSaved, saveCommunityRoute, unsaveCommunityRoute } = useRoutes();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSort, setSelectedSort] = useState<SortOption>('Popüler');
+const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
   const [selectedDistrict, setSelectedDistrict] = useState('Tüm İlçeler');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [districtMenuOpen, setDistrictMenuOpen] = useState(false);
@@ -357,7 +360,7 @@ export default function CommunityRoutesScreen() {
           {loadingRoutes ? (
             <View className="items-center rounded-[14px] border border-[#e5e7eb] bg-white px-4 py-8">
               <ActivityIndicator size="large" color="#dc2626" />
-              <Text className="mt-3 text-[14px] text-[#6b7280]">Topluluk rotalari yukleniyor...</Text>
+              <Text className="mt-3 text-[14px] text-[#6b7280]">Topluluk rotaları yükleniyor...</Text>
             </View>
           ) : null}
 
@@ -384,7 +387,7 @@ export default function CommunityRoutesScreen() {
 
               {route.placePreview ? (
                 <Text className="mb-3 text-[13px] leading-[20px] text-[#6b7280]">
-                  <Text className="font-semibold text-[#111827]">Onizleme: </Text>
+                  <Text className="font-semibold text-[#111827]">Önizleme: </Text>
                   {route.placePreview}
                 </Text>
               ) : null}

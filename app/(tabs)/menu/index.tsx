@@ -74,15 +74,7 @@ const menuActions: MenuAction[] = [
     cardClass: 'border-[#e6dbff] bg-[#f8f4ff]',
     iconClass: 'bg-[#efe7ff]',
   },
-  {
-    id: 'routes',
-    label: 'Rotalar',
-    icon: rotaIcon,
-    href: '/rota',
-    iconTint: '#d08a1f',
-    cardClass: 'border-[#ffe3bf] bg-[#fff8ee]',
-    iconClass: 'bg-[#ffefd8]',
-  },
+
   {
     id: 'events',
     label: 'Etkinlikler',
@@ -91,6 +83,15 @@ const menuActions: MenuAction[] = [
     iconTint: '#0f8f8b',
     cardClass: 'border-[#d2ecea] bg-[#f0f8f8]',
     iconClass: 'bg-[#e6f4f3]',
+  },
+  {
+    id: 'news',
+    label: 'Edirne Haberleri',
+    icon: null, // IconSymbol kullanacağımız için null bıraktık
+    href: '/(account)/news', // Burası yönleneceği sayfa linki
+    iconTint: '#dc2626',
+    cardClass: 'border-[#fca5a5] bg-[#fef2f2]', // Kırmızı canlı tonlar
+    iconClass: 'bg-[#fee2e2]',
   },
 ];
 
@@ -204,54 +205,54 @@ export default function MenuScreen() {
               ) : null}
             </View>
           </View>
-
-          <View className="mt-5 flex-row justify-between gap-2">
-            <View className="flex-1 rounded-[12px] bg-gradient-to-br from-[#fff7ed] to-[#ffefd8] border border-[#fed7aa] px-3 py-3.5">
-              {loginStreakFromApi === 1 ? (
-                <View className="items-center">
-                  <Text className="text-[36px]">🔥</Text>
-                  <Text className="mt-1 text-[12px] font-semibold text-[#b45309]">İlk Gün!</Text>
-                </View>
-              ) : (
-                <>
-                  <View className="flex-row items-center">
-                    <Text className="text-[24px]">🔥</Text>
-                    <Text className="ml-2 text-[24px] font-extrabold text-[#b45309]">{loginStreakFromApi ?? 0}</Text>
-                  </View>
-                  <Text className="mt-1 text-[11px] text-[#b45309] font-semibold">Gün Serisi</Text>
-                </>
-              )}
-            </View>
-          </View>
+<View className="mt-5 flex-row justify-between gap-2">
+  <View className="flex-1 rounded-[12px] border border-[#fed7aa] px-3 py-3.5">
+    <View className="flex-row items-center">
+      <Text className="text-[24px] text-center">🔥</Text>
+      <Text className="ml-2 text-[24px] font-extrabold text-center text-[#b45309]">{loginStreakFromApi ?? 0}</Text>
+    </View>
+    <Text className="mt-1 text-[11px] text-[#b45309] text-center font-semibold">Gün Serisi</Text>
+  </View>
+</View>
         </View>
+<TouchableOpacity
+  onPress={() =>router.push('/(account)/favorite-places' as any)}
+  className="mt-3 flex-row items-center rounded-[14px] border border-[#fde8cc] bg-[#fff8f0] px-4 py-3.5"
+>
+  <View className="mr-3 h-9 w-9 items-center justify-center rounded-[10px] bg-[#ffefd8]">
+    <Text className="text-[18px]">❤️</Text>
+  </View>
+  <Text className="flex-1 text-[16px] font-semibold text-[#0f172a]">Favori Mekanlarım</Text>
+  <IconSymbol name="chevron.right" size={18} color="#d08a1f" />
+</TouchableOpacity>
 
         <View className="mx-4 mt-5">
   
 
           <View className="gap-2.5 pb-4">
-            {menuActions.map((action) => (
-              <TouchableOpacity
-                key={action.id}
-                onPress={() => router.push(action.href as any)}
-                className={`flex-row items-center rounded-[14px] border px-4 py-4 ${action.cardClass} shadow-sm shadow-black/5`}
-              >
-                {action.id === 'home' ? (
-                  <View
-                    className={`mr-3 h-9 w-9 items-center justify-center rounded-[10px] ${action.iconClass}`}
-                  >
-                    <IconSymbol name="house.fill" size={18} color={action.iconTint} />
-                  </View>
-                ) : (
-                  <View
-                    className={`mr-3 h-9 w-9 items-center justify-center rounded-[10px] ${action.iconClass}`}
-                  >
-                    <Image source={action.icon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: action.iconTint }} />
-                  </View>
-                )}
-                <Text className="flex-1 text-[18px] font-semibold text-[#0f172a]">{action.label}</Text>
-                <IconSymbol name="chevron.right" size={18} color={action.iconTint} />
-              </TouchableOpacity>
-            ))}
+           {menuActions.map((action) => (
+  <TouchableOpacity
+    key={action.id}
+    onPress={() => router.push(action.href as any)}
+    className={`flex-row items-center rounded-[14px] border px-4 py-4 ${action.cardClass} shadow-sm shadow-black/5`}
+  >
+    {action.id === 'home' ? (
+      <View className={`mr-3 h-9 w-9 items-center justify-center rounded-[10px] ${action.iconClass}`}>
+        <IconSymbol name="house.fill" size={18} color={action.iconTint} />
+      </View>
+    ) : action.id === 'news' ? ( // 🛠️ Haberler için özel ikon render'ı
+      <View className={`mr-3 h-9 w-9 items-center justify-center rounded-[10px] ${action.iconClass}`}>
+        <IconSymbol name="newspaper.fill" size={18} color={action.iconTint} />
+      </View>
+    ) : (
+      <View className={`mr-3 h-9 w-9 items-center justify-center rounded-[10px] ${action.iconClass}`}>
+        <Image source={action.icon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: action.iconTint }} />
+      </View>
+    )}
+    <Text className="flex-1 text-[18px] font-semibold text-[#0f172a]">{action.label}</Text>
+    <IconSymbol name="chevron.right" size={18} color={action.iconTint} />
+  </TouchableOpacity>
+))}
           </View>
 
           <Text className="mb-2 mt-5 text-[17px] font-semibold text-[#64748b]">Hesap</Text>

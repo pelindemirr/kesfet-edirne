@@ -41,9 +41,9 @@ function normalizeCategory(category: string | undefined | null) {
 type ParticipationStatus = 'attended' | 'will-attend' | 'will-not-attend';
 
 const participationLabels: Record<ParticipationStatus, string> = {
-  attended: 'Katildim',
-  'will-attend': 'Katilacagim',
-  'will-not-attend': 'Katilmayacagim',
+  attended: 'Katıldım',
+  'will-attend': 'Katılıyorum',
+  'will-not-attend': 'Katılmıyorum',
 };
 
 const statusOptions: Array<{
@@ -77,9 +77,9 @@ const statusOptions: Array<{
 ];
 
 const participationHintByStatus: Record<ParticipationStatus, string> = {
-  attended: 'Etkinlige katilim durumun kaydedildi.',
-  'will-attend': 'Etkinligi takiptesin, kararini sonra verebilirsin.',
-  'will-not-attend': 'Sorun degil, diger etkinliklerde gorusuruz.',
+  attended: 'Etkinliğe katılım durumun kaydedildi.',
+  'will-attend': 'Etkinliği takiptesin, kararını sonra verebilirsin.',
+  'will-not-attend': 'Sorun değil, diğer etkinliklerde görüşürüz.',
 };
 
 const monthToNumber: Record<string, string> = {

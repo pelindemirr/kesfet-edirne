@@ -9,7 +9,7 @@ export type LiveCurrencyResult = {
 
 const DEFAULT_WEATHER: LiveWeatherResult = {
   temperatureC: 22,
-  description: 'Acik',
+  description: 'Açık',
 };
 
 const DEFAULT_CURRENCY: LiveCurrencyResult = {
@@ -17,15 +17,15 @@ const DEFAULT_CURRENCY: LiveCurrencyResult = {
 };
 
 function weatherCodeToDescription(code: number) {
-  if (code === 0) return 'Acik';
+  if (code === 0) return 'Açık';
   if (code === 1 || code === 2) return 'Az bulutlu';
-  if (code === 3) return 'Parcali bulutlu';
+  if (code === 3) return 'Parçalı bulutlu';
   if (code >= 45 && code <= 48) return 'Sisli';
-  if (code >= 51 && code <= 67) return 'Yagmurlu';
-  if (code >= 71 && code <= 77) return 'Karli';
-  if (code >= 80 && code <= 82) return 'Saganak';
-  if (code >= 95) return 'Firtinali';
-  return 'Guncel';
+  if (code >= 51 && code <= 67) return 'Yağmurlu';
+  if (code >= 71 && code <= 77) return 'Karlı';
+  if (code >= 80 && code <= 82) return 'Sağanak';
+  if (code >= 95) return 'Fırtınalı';
+  return 'Güncel';
 }
 
 export async function fetchLiveWeather(): Promise<LiveWeatherResult> {

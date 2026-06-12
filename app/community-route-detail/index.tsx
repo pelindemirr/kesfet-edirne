@@ -63,6 +63,7 @@ export default function CommunityRouteDetail() {
   const router = useRouter();
   const { displayName } = useAuth();
   const token = useAuthStore((state) => state.token);
+  const userId = useAuthStore((state) => state.user?.id);
   const { saveCommunityRoute, unsaveCommunityRoute, isCommunityRouteSaved } = useRoutes();
   const params = useLocalSearchParams<{
     id?: string;
@@ -93,7 +94,7 @@ export default function CommunityRouteDetail() {
   const authorInitial = params.authorInitial ?? authorName.charAt(0).toLocaleUpperCase('tr-TR') ?? 'A';
   const [createdAt, setCreatedAt] = useState(formatDate(params.createdAt ?? '15.02.2024'));
   const [title, setTitle] = useState(params.routeName ?? params.route_name ?? 'Tarihi Merkez Turu');
-  const [description, setDescription] = useState(params.description ?? "Edirne'nin en onemli tarihi yapilarini kesfedin");
+  const [description, setDescription] = useState(params.description ?? "Edirne'nin en önemli tarihi yapılarını keşfedin");
   const [rating, setRating] = useState(params.averageRating ?? params.average_rating ?? params.rating ?? '4.8');
   const [reviewCount, setReviewCount] = useState(params.reviewCount ?? params.review_count ?? params.commentCount ?? '124');
   const views = params.views ?? '1250';
@@ -198,12 +199,12 @@ export default function CommunityRouteDetail() {
     const trimmedComment = commentText.trim();
 
     if (!trimmedComment) {
-      Alert.alert('Yorum gerekli', 'Lutfen once bir yorum yazin.');
+      Alert.alert('Yorum gerekli', 'Lütfen önce bir yorum yazın.');
       return;
     }
 
     if (selectedRating < 1 || selectedRating > 5) {
-      Alert.alert('Puan gerekli', 'Lutfen 1 ile 5 arasinda bir yildiz secin.');
+      Alert.alert('Puan gerekli', 'Lütfen 1 ile 5 arasında bir yıldız seçin.');
       return;
     }
 
@@ -226,10 +227,10 @@ export default function CommunityRouteDetail() {
 
       setCommentText('');
       setSelectedRating(0);
-      Alert.alert('Tesekkurler', 'Yorumunuz basariyla gonderildi.');
+      Alert.alert('Teşekkürler', 'Yorumunuz başarıyla gönderildi.');
     } catch (error) {
       console.error('[COMMUNITY_REVIEW] submit error', error);
-      Alert.alert('Hata', 'Yorum gonderilemedi.');
+      Alert.alert('Hata', 'Yorum gönderilemedi.');
     } finally {
       setSubmittingReview(false);
     }

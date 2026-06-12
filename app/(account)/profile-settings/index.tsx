@@ -3,9 +3,10 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { getAvatarsList, getProfile, updateUserAvatar, type AvatarItem } from '@/services/api/endpoints/profile';
 import { useAuthStore } from '@/stores/use-auth-store';
 import { getProfileAvatar, useProfileStore, type ProfileAvatarId } from '@/stores/use-profile-store';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+const editIcon = require('../../../assets/icon/edit.png');
 
 export default function ProfileSettingsScreen() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export default function ProfileSettingsScreen() {
   const [savingAvatar, setSavingAvatar] = useState(false);
   const [selectedAvatarKey, setSelectedAvatarKey] = useState<string | null>(null);
   const [showAvatarOptions, setShowAvatarOptions] = useState(false);
+
+  const params = useLocalSearchParams<{ open?: string }>();
 
   const savedAvatar = getProfileAvatar(profileAvatarId);
 
@@ -113,6 +116,12 @@ export default function ProfileSettingsScreen() {
 
     loadAvatars();
     loadProfile();
+    // If opened with param to directly open avatar section
+    try {
+      if ((params as any)?.open === 'avatar') {
+        setShowAvatarOptions(true);
+      }
+    } catch (e) {}
 
     return () => {
       mounted = false;
@@ -190,19 +199,18 @@ export default function ProfileSettingsScreen() {
 
             <TouchableOpacity
               onPress={() => setShowAvatarOptions((value) => !value)}
-              className="mt-4 flex-row items-center justify-between rounded-full border border-[#ffd0d4] bg-[#fff5f6] px-4 py-2.5"
+              className="mt-4 flex-row items-center justify-center rounded-full border border-[#ffd0d4] bg-[#fff5f6] px-4 py-2.5"
               activeOpacity={0.85}
             >
-              <IconSymbol name="slider.horizontal.3" size={18} color="#b10016" />
-              <Text className="flex-1 text-center text-[14px] font-semibold text-[#b10016]">
-                Avatarı değiştirmek ister misiniz? 
-              </Text>
-              <IconSymbol name="slider.horizontal.3" size={18} color="#b10016" />
+              <View className="flex-row items-center">
+                <Text className="text-[14px] font-semibold text-[#b10016]">Profil fotoğrafını değiştirmek ister misiniz?</Text>
+                <Image source={editIcon} className="ml-2 h-6 w-6" resizeMode="contain" style={{ tintColor: '#b10016' }} />
+              </View>
             </TouchableOpacity>
 
             {showAvatarOptions && (
               <View className="mt-4 w-full">
-                <Text className="mb-2 text-center text-[14px] font-semibold text-[#111827]">Hazır avatar seçin</Text>
+                <Text className="mb-2 text-center text-[14px] font-semibold text-[#111827]">Profil fotoğrafını seçiniz</Text>
                 
                 {selectedAvatarKey && (
                   <View className="mb-3 rounded-[10px] bg-[#dbeafe] p-2">

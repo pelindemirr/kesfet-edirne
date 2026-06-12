@@ -2,14 +2,18 @@ import { sendChatMessage } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
+  NativeSyntheticEvent,
   Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TextInputChangeEventData,
+  TextInputKeyPressEventData,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -117,6 +121,7 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
     { type: 'bot', nodeId: 'start', text: CONVERSATION_FLOW.start.text },
   ]);
   const [inputText, setInputText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const currentNode = CONVERSATION_FLOW[currentNodeId];
@@ -128,7 +133,7 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
   };
 
   const findNodeByKeyword = (text: string): string | null => {
-    const normalizedInput = text.toLowerCase().trim();
+    const normalizedInput = text.toLocaleLowerCase('tr-TR').trim();
 
     for (const [nodeId, node] of Object.entries(CONVERSATION_FLOW)) {
       if (node.keywords?.some(keyword => normalizedInput.includes(keyword.toLowerCase()))) {
@@ -154,16 +159,20 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
     setInputText('');
 
     try {
+      setIsLoading(true);
       // Backend API'ye istek gönder
       const botResponse = await sendChatMessage(trimmedText);
-      
+
       // Bot yanıtını ekle
-      newHistory.push({
-        type: 'bot',
-        text: botResponse,
-      });
-      
+      newHistory.push({ type: 'bot', text: botResponse });
       setHistory(newHistory);
+
+      // Eğer kullanıcının yazdığı metin önceden tanımlı düğme/konuşma akışına işaret ediyorsa,
+      // ilgili düğmeleri göster (ilk bot cevabını gösterdikten sonra).
+      const matchedNode = findNodeByKeyword(trimmedText);
+      if (matchedNode) {
+        setCurrentNodeId(matchedNode);
+      }
     } catch (error) {
       // Hata durumunda fallback mesaj
       newHistory.push({
@@ -171,12 +180,15 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
         text: 'Şu anda chatbot\'a ulaşılamıyor. Lütfen daha sonra tekrar deneyiniz.',
       });
       setHistory(newHistory);
+    } finally {
+      setIsLoading(false);
     }
 
     scrollToBottom();
   };
 
   const handleOptionPress = (nextId: string, buttonLabel: string) => {
+    if (isLoading) return;
     const newHistory: Message[] = [
       ...history,
       { type: 'user', text: buttonLabel },
@@ -265,16 +277,20 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.optionsContent}
         >
-          {currentNode?.options.map((option, index) => (
-            <TouchableOpacity
-              key={`${option.nextId}-${index}`}
-              style={styles.optionButton}
-              onPress={() => handleOptionPress(option.nextId, option.label)}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.optionButtonText}>{option.label}</Text>
-            </TouchableOpacity>
-          ))}
+            {isLoading && (
+              <ActivityIndicator size="small" color={COLORS.primary} style={{ marginRight: 8 }} />
+            )}
+            {currentNode?.options.map((option, index) => (
+              <TouchableOpacity
+                key={`${option.nextId}-${index}`}
+                style={[styles.optionButton, isLoading ? styles.optionButtonDisabled : null]}
+                onPress={() => handleOptionPress(option.nextId, option.label)}
+                activeOpacity={0.85}
+                disabled={isLoading}
+              >
+                <Text style={styles.optionButtonText}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
         </ScrollView>
 
         <KeyboardAvoidingView
@@ -286,8 +302,26 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
               style={styles.input}
               placeholder="Tarih, rota, yemek..."
               placeholderTextColor="#98A2B3"
-              value={inputText}
-              onChangeText={setInputText}
+                value={inputText}
+                onChangeText={(t) => {
+                  try {
+                    console.log('[Chatbot] input change:', t);
+                  } catch (e) {}
+                  setInputText(t);
+                }}
+                onKeyPress={(e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+                  try {
+                    console.log('[Chatbot] keypress:', e.nativeEvent.key);
+                  } catch (err) {}
+                }}
+                onChange={(e: NativeSyntheticEvent<TextInputChangeEventData>) => {
+                  try {
+                    console.log('[Chatbot] change event:', e.nativeEvent.text);
+                  } catch (err) {}
+                }}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoCorrect={false}
               onSubmitEditing={handleTextSubmit}
               returnKeyType="send"
             />
@@ -295,10 +329,14 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
             <TouchableOpacity
               style={[
                 styles.sendButton,
-                !inputText.trim() && styles.sendButtonDisabled,
+                (!inputText.trim() || isLoading) && styles.sendButtonDisabled,
               ]}
-              onPress={handleTextSubmit}
+              onPress={() => {
+                if (isLoading) return;
+                handleTextSubmit();
+              }}
               activeOpacity={0.85}
+              disabled={isLoading || !inputText.trim()}
             >
               <Ionicons name="send" size={19} color="white" />
             </TouchableOpacity>
@@ -482,6 +520,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     marginRight: 8,
+  },
+  optionButtonDisabled: {
+    opacity: 0.5,
   },
   optionButtonText: {
     color: COLORS.text,

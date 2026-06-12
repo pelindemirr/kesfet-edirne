@@ -98,6 +98,7 @@ function normalizeSavedCommunityRoute(route: any): CommunitySavedRoute {
 
 export function RoutesProvider({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((state) => state.token);
+  const userId = useAuthStore((state) => state.user?.id);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const [userRoutes, setUserRoutes] = useState<UserRoute[]>([
     // Demo veri
@@ -160,8 +161,8 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
 
       try {
         setSavedCommunityRoutesLoading(true);
-        const response = await getSavedCommunityRoutes(token);
-
+if (!userId) return; // güvenlik için
+const response = await getSavedCommunityRoutes(userId, token);
         if (!mounted) return;
 
         if (response.status === 200 || response.bodyStatus === 'success') {
@@ -219,27 +220,26 @@ export function RoutesProvider({ children }: { children: React.ReactNode }) {
       )
     );
   }, []);
-
-  const saveCommunityRoute = useCallback(async (route: CommunitySavedRoute) => {
-    if (!token) {
-      return false;
-    }
-
-    const response = await saveCommunityRouteRequest(route.id, token);
-    if (response.status === 200 || response.status === 201 || response.bodyStatus === 'success') {
-      setSavedCommunityRoutes((prev) => {
-        const exists = prev.some((item) => item.id === route.id);
-        if (exists) {
-          return prev.map((item) => (item.id === route.id ? route : item));
-        }
-
-        return [route, ...prev];
-      });
-      return true;
-    }
-
+const saveCommunityRoute = useCallback(async (route: CommunitySavedRoute) => {
+  if (!token || !userId) {        // ✅ userId kontrolü eklendi
     return false;
-  }, [token]);
+  }
+
+  const response = await saveCommunityRouteRequest(route.id, userId, token);  // ✅ userId eklendi
+  if (response.status === 200 || response.status === 201 || response.bodyStatus === 'success') {
+    setSavedCommunityRoutes((prev) => {
+      const exists = prev.some((item) => item.id === route.id);
+      if (exists) {
+        return prev.map((item) => (item.id === route.id ? route : item));
+      }
+
+      return [route, ...prev];
+    });
+    return true;
+  }
+
+  return false;
+}, [token, userId]);          
 
   const unsaveCommunityRoute = useCallback(async (routeId: string) => {
     if (!token) {
