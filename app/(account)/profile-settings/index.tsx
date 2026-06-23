@@ -6,6 +6,7 @@ import { getProfileAvatar, useProfileStore, type ProfileAvatarId } from '@/store
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+
 const editIcon = require('../../../assets/icon/edit.png');
 
 export default function ProfileSettingsScreen() {
@@ -29,8 +30,11 @@ export default function ProfileSettingsScreen() {
   const [selectedAvatarKey, setSelectedAvatarKey] = useState<string | null>(null);
   const [showAvatarOptions, setShowAvatarOptions] = useState(false);
 
-  const params = useLocalSearchParams<{ open?: string }>();
+  // 🔔 PROFESYONEL BİLDİRİM (TOAST) STATE'LERİ
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
+  const params = useLocalSearchParams<{ open?: string }>();
   const savedAvatar = getProfileAvatar(profileAvatarId);
 
   const authToken = useAuthStore((state) => state.token);
@@ -53,6 +57,15 @@ export default function ProfileSettingsScreen() {
     return getProfileAvatar(avatarId);
   };
 
+  // Şık bildirim gösterme tetikleyicisi
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -63,13 +76,12 @@ export default function ProfileSettingsScreen() {
         if (!mounted) return;
         
         if (res.status === 'success' && res.data) {
-          console.log('[ProfileSettings] Backend\'den gelen avatarlar:', res.data);
           setAvatarsList(res.data);
         }
       } catch (e) {
         console.error('[ProfileSettings] loadAvatars error', e);
       } finally {
-        setLoadingAvatars(false);
+        if (mounted) setLoadingAvatars(false);
       }
     }
 
@@ -78,8 +90,6 @@ export default function ProfileSettingsScreen() {
 
       try {
         const res = await getProfile(authUser.id, authToken);
-        console.log('[ProfileSettings] profile raw response:', JSON.stringify(res, null, 2));
-
         if (!mounted) return;
 
         if (res.bodyStatus === 'success' || res.status === 200 || res.status === 201) {
@@ -87,16 +97,13 @@ export default function ProfileSettingsScreen() {
           const badges = res.data?.badges || [];
 
           if (user) {
-            console.log('[ProfileSettings] Backend\'den gelen user avatar:', user.avatar);
             setProfile({ displayName: user.full_name, avatarId: resolveAvatarId(user.avatar) });
             setProfileName(user.full_name ?? null);
             setProfileEmail(user.email ?? null);
             setSelectedAvatarKey(user.avatar ?? null);
           } else {
-            // Olası alternatif response yapıları için güvenli fallback.
             const fallbackUser = (res as any)?.user ?? (res as any)?.data?.data?.user;
             if (fallbackUser) {
-              console.log('[ProfileSettings] Fallback user avatar:', fallbackUser.avatar);
               setProfile({
                 displayName: fallbackUser.full_name,
                 avatarId: resolveAvatarId(fallbackUser.avatar),
@@ -106,7 +113,6 @@ export default function ProfileSettingsScreen() {
               setSelectedAvatarKey(fallbackUser.avatar ?? null);
             }
           }
-
           setFetchedBadges(badges);
         }
       } catch (e) {
@@ -116,7 +122,7 @@ export default function ProfileSettingsScreen() {
 
     loadAvatars();
     loadProfile();
-    // If opened with param to directly open avatar section
+
     try {
       if ((params as any)?.open === 'avatar') {
         setShowAvatarOptions(true);
@@ -133,40 +139,26 @@ export default function ProfileSettingsScreen() {
 
     try {
       setSavingAvatar(true);
-      console.log('[ProfileSettings] Seçili Avatar:', selectedAvatarKey);
-      console.log('[ProfileSettings] Backend\'e Gönderiliyor:', { userId: authUser.id, avatar: selectedAvatarKey });
-      
       const response = await updateUserAvatar(authUser.id, authToken, selectedAvatarKey);
       
-      if (!mounted) return;
-      
-      console.log('[ProfileSettings] Avatar update başarılı response:', response);
-      
-      // Update local store
       setProfile({
         avatarId: resolveAvatarId(selectedAvatarKey),
       });
       
       setShowAvatarOptions(false);
-      alert(`✅ Avatar "${selectedAvatarKey}" başarıyla güncellendi!`);
+      showToast(`Avatar başarıyla güncellendi! 🎉`, 'success');
     } catch (e) {
       console.error('[ProfileSettings] Avatar update error:', e);
-      alert('Avatar güncellenirken hata oluştu.');
+      showToast('Avatar güncellenirken bir hata oluştu.', 'error');
     } finally {
       setSavingAvatar(false);
     }
   };
 
-  let mounted = true;
-  useEffect(() => {
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   return (
     <View className="flex-1 bg-[#f3f4f6]">
-      <View className="bg-[#d80018] px-4 pb-4 pt-10">
+      {/* Üst Bar */}
+      <View className="bg-[#d80018] px-4 pb-4 pt-12">
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -182,19 +174,46 @@ export default function ProfileSettingsScreen() {
         </View>
       </View>
 
+      {/* 🔔 ULTRASONİK VE MODERN TOAST BİLDİRİM KUTUSU */}
+      {toastMessage && (
+        <View 
+          style={{ top: 100 }}
+          className={`absolute left-[5%] right-[5%] z-50 flex-row items-center rounded-xl p-3.5 shadow-lg ${
+            toastType === 'success' 
+              ? 'bg-[#e8f5e9] border border-[#a5d6a7]' 
+              : 'bg-[#ffebee] border border-[#ef9a9a]'
+          }`}
+        >
+          <View className="mr-2.5">
+            <IconSymbol 
+              name={toastType === 'success' ? 'checkmark.circle.fill' : 'exclamationmark.triangle.fill'} 
+              size={20} 
+              color={toastType === 'success' ? '#2e7d32' : '#c62828'} 
+            />
+          </View>
+          <Text 
+            className={`flex-1 text-[13px] font-bold ${
+              toastType === 'success' ? 'text-[#1b5e20]' : 'text-[#7f1d1d]'
+            }`}
+          >
+            {toastMessage}
+          </Text>
+        </View>
+      )}
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+        
+        {/* Profil Fotoğrafı Kartı */}
         <View className="rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="text-[30px] font-bold text-[#111827]">Profil Fotoğrafı</Text>
+          <Text className="text-[20px] font-bold text-[#111827]">Profil Fotoğrafı</Text>
 
           <View className="mt-5 items-center">
-            <View className="relative h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-[#e60000] bg-[#fff1f2]">
+            <View className="relative h-24 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-[#e60000] bg-[#fff1f2]">
               <Image 
                 source={showAvatarOptions && selectedAvatarKey ? getAvatarImageByKey(selectedAvatarKey).source : savedAvatar.source} 
                 className="h-full w-full" 
                 resizeMode="cover" 
               />
-              <View className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-[#e60000] px-2 py-1">
-              </View>
             </View>
 
             <TouchableOpacity
@@ -203,23 +222,15 @@ export default function ProfileSettingsScreen() {
               activeOpacity={0.85}
             >
               <View className="flex-row items-center">
-                <Text className="text-[14px] font-semibold text-[#b10016]">Profil fotoğrafını değiştirmek ister misiniz?</Text>
-                <Image source={editIcon} className="ml-2 h-6 w-6" resizeMode="contain" style={{ tintColor: '#b10016' }} />
+                <Text className="text-[13px] font-semibold text-[#b10016]">Profil fotoğrafını değiştir</Text>
+                <Image source={editIcon} className="ml-2 h-5 w-5" resizeMode="contain" style={{ tintColor: '#b10016' }} />
               </View>
             </TouchableOpacity>
 
             {showAvatarOptions && (
               <View className="mt-4 w-full">
-                <Text className="mb-2 text-center text-[14px] font-semibold text-[#111827]">Profil fotoğrafını seçiniz</Text>
+                <Text className="mb-3 text-center text-[13px] font-semibold text-[#6b7280]">Yeni bir avatar seçin</Text>
                 
-                {selectedAvatarKey && (
-                  <View className="mb-3 rounded-[10px] bg-[#dbeafe] p-2">
-                    <Text className="text-center text-[12px] font-semibold text-[#1e40af]">
-                      Seçili: <Text className="font-bold">{selectedAvatarKey}</Text>
-                    </Text>
-                  </View>
-                )}
-
                 {loadingAvatars ? (
                   <View className="py-8">
                     <ActivityIndicator size="large" color="#e60000" />
@@ -233,21 +244,22 @@ export default function ProfileSettingsScreen() {
                       return (
                         <TouchableOpacity
                           key={avatar.id}
-                          onPress={() => {
-                            console.log('[ProfileSettings] Avatar seçildi:', avatar.key, avatar);
-                            setSelectedAvatarKey(avatar.key);
-                          }}
-                          className="w-[48%] rounded-[14px] border bg-white p-3"
+                          onPress={() => setSelectedAvatarKey(avatar.key)}
+                          className="w-[48%] rounded-[14px] border p-3"
                           style={{
                             borderColor: isSelected ? '#e60000' : '#e5e7eb',
                             backgroundColor: isSelected ? '#fff1f2' : '#ffffff',
                           }}
                         >
                           <View className="items-center">
-                            <Image source={avatarImage.source} className="h-20 w-20 rounded-full" resizeMode="cover" />
-                            <Text className="mt-2 text-[13px] font-semibold text-[#111827]">{avatar.label}</Text>
-                            <Text className="mt-1 text-[11px] text-[#6b7280]">
-                              {isSelected ? 'Seçili' : 'Seçilebilir'}
+                            <Image source={avatarImage.source} className="h-16 w-16 rounded-full" resizeMode="cover" />
+                            <Text className="mt-2 text-[13px] font-bold text-[#111827]">{avatar.label}</Text>
+                            <Text 
+                              className={`mt-0.5 text-[11px] font-medium ${
+                                isSelected ? 'text-[#e60000]' : 'text-[#9ca3af]'
+                              }`}
+                            >
+                              {isSelected ? 'Seçildi' : 'Seç'}
                             </Text>
                           </View>
                         </TouchableOpacity>
@@ -257,56 +269,58 @@ export default function ProfileSettingsScreen() {
                 )}
               </View>
             )}
-
           </View>
         </View>
 
+        {/* Kişisel Bilgiler Kartı */}
         <View className="mt-4 rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="mb-4 text-[30px] font-bold text-[#111827]">Kişisel Bilgiler</Text>
+          <Text className="mb-4 text-[20px] font-bold text-[#111827]">Kişisel Bilgiler</Text>
 
-          <Text className="mb-1 text-[14px] font-medium text-[#111827]">İsim</Text>
-          <View className="mb-4 rounded-[10px] border border-[#d1d5db] bg-[#f9fafb] px-3 py-3">
-            <Text className="text-[15px] text-[#111827]">{defaultName}</Text>
+          <Text className="mb-1 text-[12px] font-semibold text-[#4b5563]">İsim</Text>
+          <View className="mb-4 rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-3">
+            <Text className="text-[14px] font-medium text-[#111827]">{defaultName}</Text>
           </View>
 
-          <Text className="mb-1 text-[14px] font-medium text-[#111827]">E-posta</Text>
-          <View className="rounded-[10px] border border-[#d1d5db] bg-[#eef0f3] px-3 py-3">
-            <Text className="text-[15px] text-[#6b7280]">{defaultEmail}</Text>
+          <Text className="mb-1 text-[12px] font-semibold text-[#4b5563]">E-posta</Text>
+          <View className="rounded-[10px] border border-[#e5e7eb] bg-[#f3f4f6] px-3 py-3">
+            <Text className="text-[14px] font-medium text-[#6b7280]">{defaultEmail}</Text>
           </View>
         </View>
 
+        {/* Kazanılan Rozetler Kartı */}
         <View className="mt-4 rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="mb-4 text-[30px] font-bold text-[#111827]">Kazanılan Rozetler</Text>
+          <Text className="mb-4 text-[20px] font-bold text-[#111827]">Kazanılan Rozetler</Text>
 
           {fetchedBadges.length === 0 ? (
-            <View className="items-center py-8">
-              <Text className="mb-2 text-[18px] font-semibold text-[#6b7280]">Henüz rozet kazanmadınız</Text>
-              <Text className="text-center text-[14px] text-[#9ca3af]">Rotalar oluşturarak, paylaşarak ve etkinliklere katılarak rozetler kazanın!</Text>
+            <View className="items-center py-6">
+              <Text className="mb-1 text-[15px] font-bold text-[#6b7280]">Henüz rozet kazanılmadı</Text>
+              <Text className="text-center text-[12px] text-[#9ca3af]">Rotalar planlayarak ve etkinlikleri takip ederek rozetleri toplayın!</Text>
             </View>
           ) : (
             <View className="flex-row flex-wrap justify-start gap-2">
               {fetchedBadges.map((badge, idx) => (
-                <View key={`badge-${idx}`} className="mb-3 rounded-[10px] border-2 border-[#dbeafe] bg-[#f0f9ff] px-3.5 py-2.5">
-                  <Text className="text-[13px] font-bold text-[#1e3a8a]">{badge.title}</Text>
-                  {badge.description ? (
-                    <Text className="mt-0.5 text-[11px] text-[#3730a3]">{badge.description}</Text>
-                  ) : null}
+                <View key={`badge-${idx}`} className="mb-2 rounded-[10px] border border-[#dbeafe] bg-[#f0f9ff] px-3 py-2">
+                  <Text className="text-[12px] font-bold text-[#1e3a8a]">{badge.title}</Text>
+                  {badge.description && (
+                    <Text className="mt-0.5 text-[10px] text-[#3730a3]">{badge.description}</Text>
+                  )}
                 </View>
               ))}
             </View>
           )}
         </View>
 
+        {/* Kaydet Butonu */}
         <TouchableOpacity 
           onPress={handleSaveChanges} 
           disabled={savingAvatar}
-          className="mt-4 items-center rounded-[10px] bg-[#e60000] py-3.5"
+          className="mt-5 items-center justify-center rounded-[12px] bg-[#e60000] py-3.5 shadow-sm active:opacity-90"
           style={{ opacity: savingAvatar ? 0.6 : 1 }}
         >
           {savingAvatar ? (
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
-            <Text className="text-[16px] font-bold text-white">Değişiklikleri Kaydet</Text>
+            <Text className="text-[15px] font-bold text-white">Değişiklikleri Kaydet</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

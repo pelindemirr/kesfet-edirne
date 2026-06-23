@@ -30,7 +30,7 @@ const routes = [
     distance: '4.8 km',
     badge: 'Doğa & Yürüyüş',
     description: 'Meriç Köprüsü, tunca nehri',
-    image: require('../../../assets/rota/meric.jpg'),
+    image: require('../../../assets/rota/karaagac.jpeg'),
   },
   {
     id: 3,
@@ -40,7 +40,7 @@ const routes = [
     distance: '2.1 km',
     badge: 'Kültür & Tarih',
     description: 'Bedesten, Alipaşa ve Arasta Çarşısı',
-    image: require('../../../assets/rota/meric.jpg'),
+    image: require('../../../assets/rota/carsi.jpeg'),
   },
   {
     id: 4,
@@ -50,7 +50,7 @@ const routes = [
     distance: '3.0 km',
     badge: 'Yeme & İçme',
     description: 'Aydın Ciğer,Tadım Menemen ,Ondo Dondurma',
-    image: require('../../../assets/rota/meric.jpg'),
+    image: require('../../../assets/rota/gastronomi.jpeg'),
   },
   
   {
@@ -61,7 +61,7 @@ const routes = [
     distance: '2.5 km',
     badge: 'Spor & Tarih',
     description: 'Sarayiçi, güreş müzesi, Kırkpınar sahası',
-    image: require('../../../assets/rota/meric.jpg'),
+    image: require('../../../assets/rota/sarayici.webp'),
   },
   {
     id: 6,
@@ -71,7 +71,7 @@ const routes = [
     distance: '2.0 km',
     badge: 'Kültür & Tarih',
     description: 'II. Bayezid Külliyesi, Sağlık Müzesi, çevre tarihi alanlar',
-    image: require('../../../assets/rota/meric.jpg'),
+    image: require('../../../assets/rota/beyazit.png'),
   },
 ];
 

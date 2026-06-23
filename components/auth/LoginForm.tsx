@@ -1,23 +1,37 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginForm({
   onLogin,
   errorMessage,
   isSubmitting = false,
+  clearErrors, // 💡 Eklendi: Sayfa değiştiğinde üst state'i temizlemek için opsiyonel fonksiyon
 }: {
   onLogin?: (email: string, password: string) => void;
   errorMessage?: string | null;
   isSubmitting?: boolean;
+  clearErrors?: () => void; // 💡 Tip tanımı eklendi
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const router = useRouter();
+
+  // 💡 SAYFAYA GİRİLDİĞİNDE VEYA ÇIKILDIĞINDA ESKİ HATALARI TEMİZLE
+  useEffect(() => {
+    setLocalError(null);
+    if (clearErrors) {
+      clearErrors(); // Üst katmandaki (authContext vb.) eski mesajları siler
+    }
+    
+    return () => {
+      if (clearErrors) clearErrors();
+    };
+  }, []);
 
   const displayedError = localError ?? errorMessage ?? null;
 
@@ -96,7 +110,10 @@ export default function LoginForm({
 
       <View className="flex-row items-center justify-center gap-1">
         <ThemedText className="text-[12px] text-[#6b7280]">Hesabınız yok mu?</ThemedText>
-        <TouchableOpacity onPress={() => router.push('/register' as any)}>
+        <TouchableOpacity onPress={() => {
+          if (clearErrors) clearErrors(); // 💡 Kayıt sayfasına geçerken de temizle
+          router.push('/register' as any);
+        }}>
           <ThemedText className="text-[12px] font-bold text-[#e30613]">Kayıt olun</ThemedText>
         </TouchableOpacity>
       </View>

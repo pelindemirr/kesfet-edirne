@@ -4,11 +4,10 @@ import { getAllEvents, getCategoryLabel, getEventTiming, getEventTimingLabel, ty
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ImageSourcePropType, Linking, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-
 const categoryImages: Record<string, ImageSourcePropType> = {
-  kultur: require('../../../assets/events/kirkpinar.jpg'),
+  kultur: require('../../../assets/events/kultur.png'),       // .jpg yerine .png yapıldı
   sanat: require('../../../assets/events/sanat.png'),
-  gastronomi: require('../../../assets/events/fest.jpg'),
+  gastronomi: require('../../../assets/events/gastronomi.jpeg'), // .jpg yerine .jpeg yapıldı
   spor: require('../../../assets/events/spor.png'),
 };
 
@@ -23,7 +22,7 @@ const categoryOptions = [
 const timingOptions = [
   { key: 'all', label: 'Tümü', subtitle: 'Bütün etkinlikler', icon: 'calendar' as const },
   { key: 'upcoming', label: 'Yaklaşan', subtitle: 'Gelecek tarihli', icon: 'clock' as const },
-  { key: 'past', label: 'Geçmiş', subtitle: 'Kaçırılan etkinlikler', icon: 'chevron.right' as const },
+  { key: 'past', label: 'Geçmiş', subtitle: 'Son 1 aydaki geçmiş etkinlikler', icon: 'chevron.right' as const },
 ] as const;
 
 function normalizeCategory(category: string | undefined | null) {
@@ -62,7 +61,7 @@ const statusOptions: Array<{
   },
   {
     key: 'will-attend',
-    title: 'Ilgileniyorum',
+    title: 'İlgileniyorum',
     icon: '◔',
     activeClass: 'border-[#f59e0b] bg-[#fef3c7]',
     activeTextClass: 'text-[#b45309]',
@@ -84,34 +83,54 @@ const participationHintByStatus: Record<ParticipationStatus, string> = {
 
 const monthToNumber: Record<string, string> = {
   Ocak: '01',
-  Subat: '02',
+  Şubat: '02',
   Mart: '03',
   Nisan: '04',
-  Mayis: '05',
+  Mayıs: '05',
   Haziran: '06',
   Temmuz: '07',
-  Agustos: '08',
-  Eylul: '09',
+  Ağustos: '08',
+  Eylül: '09',
   Ekim: '10',
-  Kasim: '11',
-  Aralik: '12',
+  Kasım: '11',
+  Aralık: '12',
 };
 
 const pad2 = (value: number | string) => String(value).padStart(2, '0');
 
 function resolveCategoryImage(category: string | undefined | null) {
   const normalizedCategory = normalizeCategory(category);
+  return categoryImages[normalizedCategory] ?? categoryImages.kultur;
+}
 
-  return categoryImages[normalizedCategory] ?? categoryImages.Kültür;
+// Bir etkinliğin Date nesnesini güvenli şekilde çözen yardımcı fonksiyon
+function parseEventDate(dateStr: string | undefined | null): Date | null {
+  if (!dateStr) return null;
+  try {
+    const parts = dateStr.trim().split(' ');
+    if (parts.length < 3) return null;
+
+    const dayPart = parts[0];
+    const monthText = parts[1];
+    const yearRaw = parts[2];
+
+    // "12-15" gibi aralıklı gün varsa ilk günü baz alıyoruz
+    const startDayRaw = dayPart.split('-')[0];
+    const day = parseInt(startDayRaw, 10);
+    const month = parseInt(monthToNumber[monthText] || '01', 10) - 1;
+    const year = parseInt(yearRaw, 10);
+
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+    return new Date(year, month, day);
+  } catch (e) {
+    return null;
+  }
 }
 
 function getTimingTone(timing: EventTiming) {
   if (timing === 'past') {
-    // Daha belirgin "Geçmiş" tonu — açık kırmızı arka plan, koyu kırmızı metin
     return 'border-[#fca5a5] bg-[#fff1f2] text-[#991b1b]';
   }
-
-  // "Yaklaşan" için daha kontrastlı yeşil/teal ton
   return 'border-[#34d399] bg-[#ecfdf5] text-[#065f46]';
 }
 
@@ -120,6 +139,25 @@ function normalizeEventDateAndTime(event: Event) {
     date: event.date || 'Tarih bilgisi yok',
     time: event.time || 'Saat bilgisi yok',
   };
+}
+
+// 🗓️ ETKİNLİĞİN SON 1 AY İÇİNDE OLUP OLMADIĞINI KONTROL EDEN METOD
+function isWithinLastMonthOrUpcoming(event: Event): boolean {
+  const eventDate = parseEventDate(event.date);
+  if (!eventDate) return true; // Tarih çözülemezse filtre dışı bırakma güvenle göster
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Etkinlik gelecek tarihliyse (yaklaşan) her zaman göster
+  if (eventDate >= today) return true;
+
+  // Geçmiş tarihliyse, bugünden tam 1 ay öncesinin tarih sınırını hesapla
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  oneMonthAgo.setHours(0, 0, 0, 0);
+
+  return eventDate >= oneMonthAgo;
 }
 
 function buildGoogleCalendarUrl(event: Event) {
@@ -160,46 +198,26 @@ export default function EventsPage() {
       try {
         setLoading(true);
         setError(null);
-
         const data = await getAllEvents();
+        if (!isMounted) return;
 
-        if (!isMounted) {
-          return;
-        }
-
-        setEvents(data);
+        // 🔄 Burada gelen veriyi ilk aşamada son 1 ayı kapsayacak şekilde ön filtrelemeden geçiriyoruz
+        const validEvents = data.filter(isWithinLastMonthOrUpcoming);
+        setEvents(validEvents);
       } catch (requestError) {
-        if (!isMounted) {
-          return;
-        }
-
+        if (!isMounted) return;
         setError(requestError instanceof Error ? requestError.message : 'Etkinlikler yüklenemedi.');
         setEvents([]);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     loadEvents();
-
     return () => {
       isMounted = false;
     };
   }, []);
-
-  const eventCountText = useMemo(() => {
-    if (loading) {
-      return 'Etkinlikler yükleniyor...';
-    }
-
-    if (error) {
-      return 'Etkinlikler alınamadı.';
-    }
-
-    return `${events.length} etkinlik bulundu`;
-  }, [events.length, error, loading]);
 
   const timingCounts = useMemo(() => {
     return events.reduce(
@@ -224,20 +242,13 @@ export default function EventsPage() {
   }, [events, selectedCategory, selectedTiming]);
 
   const filteredCountText = useMemo(() => {
-    if (selectedCategory === 'all') {
-      return eventCountText;
-    }
-
-    return `${filteredEvents.length} etkinlik bulundu`;
-  }, [eventCountText, filteredEvents.length, selectedCategory]);
+    return `${filteredEvents.length} güncel etkinlik listeleniyor`;
+  }, [filteredEvents.length]);
 
   const closeModal = () => setSelectedEvent(null);
 
   const setParticipationStatus = (status: ParticipationStatus) => {
-    if (!selectedEvent) {
-      return;
-    }
-
+    if (!selectedEvent) return;
     setParticipationByEvent((prev) => ({
       ...prev,
       [selectedEvent.id]: status,
@@ -245,15 +256,11 @@ export default function EventsPage() {
   };
 
   const handleSaveToGoogleCalendar = async () => {
-    if (!selectedEvent) {
-      return;
-    }
+    if (!selectedEvent) return;
 
     const url = buildGoogleCalendarUrl(selectedEvent);
     const canOpen = await Linking.canOpenURL(url);
-    if (!canOpen) {
-      return;
-    }
+    if (!canOpen) return;
 
     await Linking.openURL(url);
     setSavedToGoogleByEvent((prev) => ({
@@ -266,11 +273,12 @@ export default function EventsPage() {
     <View className="flex-1 bg-white">
       <AppHeader />
 
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-4 pb-24 pt-4">
           <Text className="mb-1 mt-2 text-xl font-bold text-[#880000]">Tüm Etkinlikler</Text>
-          <Text className="mb-4 text-sm text-[#555]">Edirne'deki güncel etkinlikler</Text>
+          <Text className="mb-4 text-sm text-[#555]">Edirne'de gerçekleşen ve gelecek tüm etkinlikler</Text>
 
+          {/* Filtre Butonları */}
           <View className="mb-3">
             <View className="flex-row items-center space-x-2">
               {timingOptions.map((option) => {
@@ -311,21 +319,21 @@ export default function EventsPage() {
             })}
           </View>
 
-          <Text className="mb-4 text-[12px] text-[#7a7a7a]">{filteredCountText}</Text>
+          <Text className="mb-4 text-[12px] text-[#7a7a7a] font-medium">{filteredCountText}</Text>
 
-          {error ? (
+          {error && (
             <View className="mb-4 rounded-xl border border-[#f3c7c7] bg-[#fff5f5] px-4 py-3">
               <Text className="text-[13px] font-semibold text-[#b42318]">Veri alınamadı</Text>
               <Text className="mt-1 text-[12px] text-[#7a2e2e]">{error}</Text>
             </View>
-          ) : null}
+          )}
 
-          {!loading && events.length === 0 && !error ? (
+          {!loading && filteredEvents.length === 0 && !error && (
             <View className="rounded-xl border border-dashed border-[#e5e7eb] bg-[#fafafa] px-4 py-8">
-              <Text className="text-center text-[14px] font-semibold text-[#374151]">Henüz etkinlik yok</Text>
-              <Text className="mt-1 text-center text-[12px] text-[#6b7280]">Backend boş veri döndüğünde burada liste görünecek.</Text>
+              <Text className="text-center text-[14px] font-semibold text-[#374151]">Etkinlik bulunamadı</Text>
+              <Text className="mt-1 text-center text-[12px] text-[#6b7280]">Uygun güncel etkinlik bulunmuyor.</Text>
             </View>
-          ) : null}
+          )}
 
           {filteredEvents.map((event) => {
             const currentStatus = participationByEvent[event.id];
@@ -349,22 +357,22 @@ export default function EventsPage() {
                       <View className={`rounded-full border px-2 py-1 ${timingTone}`}>
                         <Text className="text-[10px] font-semibold">{timingLabel}</Text>
                       </View>
-                      {savedToGoogle ? (
+                      {savedToGoogle && (
                         <View className="rounded-full bg-[#ecfeff] px-2 py-1">
                           <Text className="text-[10px] font-semibold text-[#0e7490]">Google'a kayıtlı</Text>
                         </View>
-                      ) : null}
-                      {currentStatus ? (
+                      )}
+                      {currentStatus && (
                         <View className="rounded-full bg-[#fef2f2] px-2 py-1">
                           <Text className="text-[11px] font-semibold text-[#b91c1c]">{participationLabels[currentStatus]}</Text>
                         </View>
-                      ) : null}
+                      )}
                     </View>
                   </View>
-                  <Text className="mb-1 text-base font-bold">{event.title}</Text>
-                  <Text className="mb-0.5 text-[13px] text-[#444]">Tarih: {normalizedDateTime.date}</Text>
-                  <Text className="mb-0.5 text-[13px] text-[#444]">Saat: {normalizedDateTime.time}</Text>
-                  <Text className="text-[13px] text-[#444]">Konum: {event.location}</Text>
+                  <Text className="mb-1 text-base font-bold text-[#111827]">{event.title}</Text>
+                  <Text className="mb-0.5 text-[13px] text-[#4b5563]">Tarih: {normalizedDateTime.date}</Text>
+                  <Text className="mb-0.5 text-[13px] text-[#4b5563]">Saat: {normalizedDateTime.time}</Text>
+                  <Text className="text-[13px] text-[#4b5563]">Konum: {event.location}</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -372,6 +380,7 @@ export default function EventsPage() {
         </View>
       </ScrollView>
 
+      {/* Detay Modalı */}
       <Modal visible={selectedEvent !== null} transparent animationType="fade" onRequestClose={closeModal}>
         <View className="flex-1 items-center justify-center bg-black/45 px-5">
           <View className="w-full max-w-[380px] rounded-[24px] bg-white p-4 shadow-xl shadow-black/20">

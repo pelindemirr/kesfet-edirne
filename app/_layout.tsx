@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '../global.css';
+import '../i18n';
 
 import { AuthProvider } from '@/components/auth/auth-context';
 import { RoutesProvider } from '@/components/routes/routes-context';

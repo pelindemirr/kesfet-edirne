@@ -4,8 +4,8 @@ import { useRoutes } from '@/components/routes/routes-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { getCommunityRoutes, type CommunityRouteApiItem } from '@/services/api/endpoints/community';
 import { getProfileAvatar, type ProfileAvatarId } from '@/stores/use-profile-store';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type SortOption = 'Popüler' | 'En İyi' | 'Yeni';
@@ -28,22 +28,21 @@ type CommunityRoute = {
 };
 
 const sortOptions: SortOption[] = ['Popüler', 'En İyi', 'Yeni'];
+
+// İlettiğin sabit ilçe listesi
+const FIXED_DISTRICTS = ['Merkez', 'Enez', 'İpsala', 'Süloğlu', 'Uzunköprü', 'Lalapaşa', 'Keşan', 'Meriç', 'Havsa'];
+
 function parseDate(dateText: string) {
   if (!dateText) return 0;
-
-  // ISO format: 2026-06-08T18:00:00.000Z → direkt parse et
   if (dateText.includes('T') || dateText.includes('-')) {
     const ts = Date.parse(dateText);
     return Number.isNaN(ts) ? 0 : ts;
   }
-
-  // Noktalı format: 08.06.2026
   const parts = dateText.split('.').map(Number);
   if (parts.length >= 3 && parts.every((p) => !Number.isNaN(p))) {
     const [day, month, year] = parts;
     return new Date(year, month - 1, day).getTime();
   }
-
   return 0;
 }
 
@@ -53,7 +52,6 @@ function getAuthorInitial(authorName: string) {
 
 function resolveAvatarId(avatar?: string): ProfileAvatarId | undefined {
   if (!avatar) return undefined;
-
   const normalizedAvatar = avatar.toLocaleLowerCase('tr-TR');
   if (normalizedAvatar === 'man' || normalizedAvatar === 'klasik') return 'man';
   if (normalizedAvatar === 'woman' || normalizedAvatar === 'modern') return 'woman';
@@ -63,14 +61,9 @@ function resolveAvatarId(avatar?: string): ProfileAvatarId | undefined {
 }
 
 function normalizeRoute(item: CommunityRouteApiItem, index: number): CommunityRoute {
-  const authorName =
-    item.creatorName ??
-    item.creator_name ??
-    item.authorName ??
-    item.author_name ??
-    'Anonim Kullanici';
+  const authorName = item.creatorName ?? item.creator_name ?? item.authorName ?? item.author_name ?? 'Anonim Kullanıcı';
   const createdAt = item.createdAt ?? item.created_at ?? '';
-  const routeName = item.routeName ?? item.route_name ?? item.title ?? 'Adsiz Rota';
+  const routeName = item.routeName ?? item.route_name ?? item.title ?? 'Adsız Rota';
   const placeCount = item.placeCount ?? item.place_count ?? item.stopCount ?? item.stop_count ?? 0;
   const averageRating = item.averageRating ?? item.average_rating ?? item.rating ?? 0;
   const reviewCount = item.reviewCount ?? item.review_count ?? item.commentCount ?? item.comment_count ?? 0;
@@ -109,7 +102,7 @@ export default function CommunityRoutesScreen() {
   const { isCommunityRouteSaved, saveCommunityRoute, unsaveCommunityRoute } = useRoutes();
 
   const [searchQuery, setSearchQuery] = useState('');
-const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
+  const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
   const [selectedDistrict, setSelectedDistrict] = useState('Tüm İlçeler');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [districtMenuOpen, setDistrictMenuOpen] = useState(false);
@@ -117,48 +110,62 @@ const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
   const [savingRouteId, setSavingRouteId] = useState<string | null>(null);
   const [routes, setRoutes] = useState<CommunityRoute[]>([]);
 
-  useEffect(() => {
-    let mounted = true;
+  // Sayfa her odaklandığında otomatik API isteği atar
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
 
-    async function loadCommunityRoutes() {
-      try {
-        setLoadingRoutes(true);
-        const response = await getCommunityRoutes();
+      async function loadCommunityRoutes() {
+        try {
+          setLoadingRoutes(true);
+          const response = await getCommunityRoutes();
 
-        if (!mounted) return;
+          if (!mounted) return;
 
-        if (response.status === 200 || response.bodyStatus === 'success') {
-          const items = extractRouteItems(response.data);
-          const normalizedRoutes = items.map(normalizeRoute);
+          if (response.status === 200 || response.bodyStatus === 'success') {
+            const items = extractRouteItems(response.data);
+            const normalizedRoutes = items.map(normalizeRoute);
 
-          console.log('[COMMUNITY_ROUTES] Normalized routes:', normalizedRoutes);
-          setRoutes(normalizedRoutes);
-        } else {
-          console.log('[COMMUNITY_ROUTES] Non-success response:', response);
-          setRoutes([]);
-        }
-      } catch (error) {
-        console.error('[COMMUNITY_ROUTES] loadCommunityRoutes error', error);
-        if (mounted) {
-          setRoutes([]);
-        }
-      } finally {
-        if (mounted) {
-          setLoadingRoutes(false);
+            console.log('[COMMUNITY_ROUTES] Normalized routes:', normalizedRoutes);
+            setRoutes(normalizedRoutes);
+          } else {
+            console.log('[COMMUNITY_ROUTES] Non-success response:', response);
+            setRoutes([]);
+          }
+        } catch (error) {
+          console.error('[COMMUNITY_ROUTES] loadCommunityRoutes error', error);
+          if (mounted) {
+            setRoutes([]);
+          }
+        } finally {
+          if (mounted) {
+            setLoadingRoutes(false);
+          }
         }
       }
-    }
 
-    loadCommunityRoutes();
+      loadCommunityRoutes();
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
 
+  // Filtre dropdown listesi için ilçeleri hazırlar
   const districtOptions = useMemo(() => {
-    const uniqueDistricts = Array.from(new Set(routes.map((route) => route.district).filter(Boolean)));
-    return ['Tüm İlçeler', ...uniqueDistricts];
+    // API'den gelen rotalardaki farklı ilçeleri al (Bilinmiyor ve boş olanları ele)
+    const uniqueApiDistricts = Array.from(
+      new Set(routes.map((route) => route.district).filter((d) => d && d !== 'Bilinmiyor'))
+    );
+
+    // İlettiğin sabit liste ile API'den gelenleri birleştir (böylece veri olmasa da ilçeler listelenir)
+    const allDistricts = Array.from(new Set([...FIXED_DISTRICTS, ...uniqueApiDistricts]));
+
+    // Türkçe karakterlere duyarlı olarak alfabetik sırala
+    allDistricts.sort((a, b) => a.localeCompare(b, 'tr-TR'));
+
+    return ['Tüm İlçeler', ...allDistricts];
   }, [routes]);
 
   const filteredRoutes = useMemo(() => {
@@ -194,9 +201,7 @@ const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
   }, [routes, searchQuery, selectedDistrict, selectedSort]);
 
   const handleToggleSave = async (route: CommunityRoute) => {
-    if (savingRouteId === route.id) {
-      return;
-    }
+    if (savingRouteId === route.id) return;
 
     setSavingRouteId(route.id);
 
@@ -237,7 +242,6 @@ const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
     return (
       <View className="flex-1 bg-[#f3f4f6]">
         <Header />
-
         <View className="flex-1 items-center justify-center px-5">
           <View className="w-full max-w-[360px] rounded-[18px] border border-[#ffd6d6] bg-white p-5">
             <View className="mb-3 h-12 w-12 items-center justify-center rounded-[14px] bg-[#fef2f2]">
@@ -281,13 +285,12 @@ const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
         </View>
 
         <View className="mb-3 flex-row gap-2">
+          {/* Sıralama Menüsü */}
           <View className="relative flex-1">
             <TouchableOpacity
               onPress={() => {
                 setSortMenuOpen(!sortMenuOpen);
-                if (districtMenuOpen) {
-                  setDistrictMenuOpen(false);
-                }
+                if (districtMenuOpen) setDistrictMenuOpen(false);
               }}
               className="flex-row items-center justify-between rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm"
             >
@@ -318,39 +321,42 @@ const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
             )}
           </View>
 
+          {/* İlçe Seçim Menüsü */}
           <View className="relative flex-1">
             <TouchableOpacity
               onPress={() => {
                 setDistrictMenuOpen(!districtMenuOpen);
-                if (sortMenuOpen) {
-                  setSortMenuOpen(false);
-                }
+                if (sortMenuOpen) setSortMenuOpen(false);
               }}
               className="flex-row items-center justify-between rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm"
             >
-              <Text className="text-[14px] font-medium text-[#0f172a]">{selectedDistrict}</Text>
+              <Text className="text-[14px] font-medium text-[#0f172a]" numberOfLines={1}>
+                {selectedDistrict}
+              </Text>
               <IconSymbol name="chevron.down" size={16} color="#6b7280" />
             </TouchableOpacity>
 
             {districtMenuOpen && (
-              <View className="absolute top-12 z-20 w-full rounded-[12px] border border-[#e6e9ee] bg-white p-1.5 shadow-lg">
-                {districtOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option}
-                    onPress={() => {
-                      setSelectedDistrict(option);
-                      setDistrictMenuOpen(false);
-                    }}
-                    className={`flex-row items-center justify-between rounded-[8px] px-2.5 py-2.5 ${
-                      selectedDistrict === option ? 'bg-[#f3f4f6]' : ''
-                    }`}
-                  >
-                    <Text className={`text-[14px] ${selectedDistrict === option ? 'font-semibold text-[#111827]' : 'text-[#6b7280]'}`}>
-                      {option}
-                    </Text>
-                    {selectedDistrict === option && <IconSymbol name="checkmark" size={15} color="#6b7280" />}
-                  </TouchableOpacity>
-                ))}
+              <View className="absolute top-12 z-20 w-full max-h-60 rounded-[12px] border border-[#e6e9ee] bg-white p-1.5 shadow-lg overflow-hidden">
+                <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
+                  {districtOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      onPress={() => {
+                        setSelectedDistrict(option);
+                        setDistrictMenuOpen(false);
+                      }}
+                      className={`flex-row items-center justify-between rounded-[8px] px-2.5 py-2.5 ${
+                        selectedDistrict === option ? 'bg-[#f3f4f6]' : ''
+                      }`}
+                    >
+                      <Text className={`text-[14px] ${selectedDistrict === option ? 'font-semibold text-[#111827]' : 'text-[#6b7280]'}`}>
+                        {option}
+                      </Text>
+                      {selectedDistrict === option && <IconSymbol name="checkmark" size={15} color="#6b7280" />}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
           </View>

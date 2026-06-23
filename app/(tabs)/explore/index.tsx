@@ -3,12 +3,12 @@ import Header from '@/components/layout/Header';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { getPlaces, type PlaceApiItem } from '@/services/api/endpoints/places';
 import { useAuthStore } from '@/stores/use-auth-store';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-// 🛠️ IMPORT HATASI DÜZELTİLDİ: getFavoritePlaces doğru dosyadan eklendi.
+// Backend Servisleri
 import { getFavoritePlaces } from '@/services/api/endpoints/actions';
 import { createUserRoute, shareUserRoute, togglePlaceFavorite } from '@/services/api/endpoints/user-routes';
 
@@ -131,8 +131,8 @@ function buildMapHtml(pins: MapPin[]) {
 </html>`;
 }
 
-const districts = ['Merkez', 'Balık Pazarı', 'Vedane', 'Süloğlu', 'Uzunkopru', 'Lalapaşa', 'Keşan', 'Meriç'];
-const allCategories = ['Tüm Kategoriler', 'Tarihi Yerler', 'Müzeler', 'Doğa & Parklar', 'Restoranlar', 'Kafeler', 'Alışveriş'];
+const districts = ['Merkez', 'Enez', 'İpsala', 'Süloğlu', 'Uzunköprü', 'Lalapaşa', 'Keşan', 'Meriç','Havsa'];
+const allCategories = ['Tüm Kategoriler', 'Tarih & Kültür', 'Müze', 'Doğa & Gezi', 'Yemek & Gastronomi', 'Alışveriş'];
 
 type PlaceItem = {
   id: number | string;
@@ -146,22 +146,20 @@ type PlaceItem = {
 };
 
 const badgeClassByCategory: Record<string, string> = {
-  Tarihi: 'bg-[#fff3c6] text-[#d39b00]',
-  Restoran: 'bg-[#ffe9dd] text-[#d96a11]',
-  Müze: 'bg-[#e8f0ff] text-[#3c6fd9]',
-  Kafe: 'bg-[#f4e7ff] text-[#8b4cc6]',
-  Doğa: 'bg-[#def7e9] text-[#11885b]',
-  Alışveriş: 'bg-[#eef2ff] text-[#4f46e5]',
+  'Tarih & Kültür': 'bg-[#fff3c6] text-[#d39b00]',
+  'Yemek & Gastronomi': 'bg-[#ffe9dd] text-[#d96a11]',
+  'Müze': 'bg-[#e8f0ff] text-[#3c6fd9]',
+  'Doğa & Gezi': 'bg-[#def7e9] text-[#11885b]',
+  'Alışveriş': 'bg-[#eef2ff] text-[#4f46e5]',
 };
 
 const categoryParamByLabel: Record<string, string | undefined> = {
   'Tüm Kategoriler': undefined,
-  'Tarihi Yerler': 'Tarihi',
-  Müzeler: 'Müze',
-  'Doğa & Parklar': 'Doğa',
-  Restoranlar: 'Restoran',
-  Kafeler: 'Kafe',
-  Alışveriş: 'Alışveriş',
+  'Tarih & Kültür': 'Tarih & Kültür',
+  'Müze': 'Müze',
+  'Doğa & Gezi': 'Doğa & Gezi',
+  'Yemek & Gastronomi': 'Yemek & Gastronomi',
+  'Alışveriş': 'Alışveriş',
 };
 
 export default function AccountExploreScreen() {
@@ -171,6 +169,7 @@ export default function AccountExploreScreen() {
   const authToken = useAuthStore((state) => state.token);
   const mapWebViewRef = useRef<WebView>(null);
   const [favorites, setFavorites] = useState<PlaceItem[]>([]);
+  const [isFavoritesExpanded, setIsFavoritesExpanded] = useState(false); 
   const [plannedRoute, setPlannedRoute] = useState<PlaceItem[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState('Merkez');
   const [selectedCategory, setSelectedCategory] = useState('Tüm Kategoriler');
@@ -204,142 +203,151 @@ export default function AccountExploreScreen() {
 
   const selectedCategoryParam = categoryParamByLabel[selectedCategory];
 
-  // 🔄 Güvenli ID Karşılaştırmalı isFavorite Metodu
   const isFavorite = (placeId: number | string) => 
     favorites.some((fav) => String(fav.id) === String(placeId));
 
   const isInRoute = (placeId: number | string) => plannedRoute.some((p) => String(p.id) === String(placeId));
 
-  // 📥 Favorileri backend'den otomatik liste formatında çeken useEffect
-  useEffect(() => {
-    let mounted = true;
+  // Rota paylaşıldıktan sonra tüm alanları sıfırlayan yardımcı fonksiyon
+  const clearPlannedRouteData = () => {
+    setPlannedRoute([]);
+    setRouteName('Örn: Tarihi Merkez Turu');
+    setRouteDescription('');
+    setCreatedRouteId(null);
+  };
 
-    const loadUserFavorites = async () => {
-      if (!authUser?.id) return;
+  // 📥 Favorileri her girişte güncelleyen kanca
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
 
-      try {
-        const response = await getFavoritePlaces(authUser.id, authToken ?? undefined);
-        
-        if (!mounted) return;
+      const loadUserFavorites = async () => {
+        if (!authUser?.id) return;
 
-        if (response.status === 200 || response.status === 'success' || response.bodyStatus === 'success') {
-          let rawData = response.data;
+        try {
+          const response = await getFavoritePlaces(authUser.id, authToken ?? undefined);
+          
+          if (!mounted) return;
 
-          if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
-            rawData = Object.keys(rawData)
-              .filter((key) => !isNaN(Number(key)))
-              .map((key) => (rawData as any)[key]);
-          }
+          if (response.status === 200 || response.status === 'success' || response.bodyStatus === 'success') {
+            let rawData = response.data;
 
-          if (Array.isArray(rawData)) {
-            const mappedFavorites = rawData.map((item: any, index: number) => ({
-              id: item.id ?? index,
-              name: item.name ?? 'Mekan',
-              category: item.category ?? 'Tarihi',
-              district: item.district ?? 'Merkez',
-              description: item.description ?? '',
-              latitude: item.latitude != null ? Number(item.latitude) : item.lat != null ? Number(item.lat) : null,
-              longitude: item.longitude != null ? Number(item.longitude) : item.lng != null ? Number(item.lng) : null,
-            }));
+            if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
+              rawData = Object.keys(rawData)
+                .filter((key) => !isNaN(Number(key)))
+                .map((key) => (rawData as any)[key]);
+            }
 
-            setFavorites(mappedFavorites);
-          }
-        }
-      } catch (error) {
-        console.error('[EXPLORE_FAVORITES] favoriler yüklenirken hata oluştu:', error);
-      }
-    };
+            if (Array.isArray(rawData)) {
+              const mappedFavorites = rawData.map((item: any, index: number) => ({
+                id: item.id ?? index,
+                name: item.name ?? 'Mekan',
+                category: item.category ?? 'Tarih & Kültür',
+                district: item.district ?? 'Merkez',
+                description: item.description ?? '',
+                latitude: item.latitude != null ? Number(item.latitude) : item.lat != null ? Number(item.lat) : null,
+                longitude: item.longitude != null ? Number(item.longitude) : item.lng != null ? Number(item.lng) : null,
+              }));
 
-    loadUserFavorites();
-
-    return () => {
-      mounted = false;
-    };
-  }, [authUser?.id, authToken]);
-
-  // 🗺️ Gezilecek yerleri çeken useEffect
-  useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-
-    const loadPlaces = async () => {
-      try {
-        setPlacesLoading(true);
-        setPlacesError(null);
-
-        const response = await getPlaces({
-          district: selectedDistrict,
-          category: selectedCategoryParam,
-          search: searchQuery,
-        });
-
-        if (!mounted) return;
-
-        if (response.status === 200 || response.bodyStatus === 'success') {
-          let responseData: any = undefined;
-          if (response && Object.prototype.hasOwnProperty.call(response, 'data')) {
-            responseData = (response as any).data;
-          } else {
-            const clone = { ...(response as any) };
-            delete clone.status;
-            delete clone.bodyStatus;
-            responseData = clone;
-          }
-
-          let itemsRaw: PlaceApiItem[] = [];
-
-          if (Array.isArray(responseData)) {
-            itemsRaw = responseData as PlaceApiItem[];
-          } else if (responseData && typeof responseData === 'object') {
-            if (Array.isArray((responseData as any).places)) {
-              itemsRaw = (responseData as any).places as PlaceApiItem[];
-            } else {
-              const vals = Object.values(responseData as any).filter((v) => v && typeof v === 'object');
-              itemsRaw = vals as PlaceApiItem[];
+              setFavorites(mappedFavorites);
             }
           }
+        } catch (error) {
+          console.error('[EXPLORE_FAVORITES] favoriler yüklenirken hata oluştu:', error);
+        }
+      };
 
-          const mapped = itemsRaw.map((item, index) => ({
-            id: item.id ?? index,
-            name: item.name ?? item.title ?? 'Mekan',
-            category: item.category ?? (item as any).type ?? 'Tarihi',
-            district: item.district ?? selectedDistrict,
-            description: item.description ?? item.address ?? '',
-            latitude: item.latitude != null ? Number(item.latitude) : (item as any).lat != null ? Number((item as any).lat) : null,
-            longitude: item.longitude != null ? Number(item.longitude) : (item as any).lng != null ? Number((item as any).lng) : null,
-            image: item.image ?? item.image_url,
-            ...(item as any),
-          }));
-          
-          setPlaces(mapped as PlaceItem[]);
-        } else {
+      loadUserFavorites();
+
+      return () => {
+        mounted = false;
+      };
+    }, [authUser?.id, authToken])
+  );
+
+  // 🗺️ Gezilecek yerleri her girişte ve filtre değişiminde güncelleyen kanca
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+
+      const loadPlaces = async () => {
+        try {
+          setPlacesLoading(true);
+          setPlacesError(null);
+
+          const response = await getPlaces({
+            district: selectedDistrict,
+            category: selectedCategoryParam,
+            search: searchQuery,
+          });
+
+          if (!mounted) return;
+
+          if (response.status === 200 || response.bodyStatus === 'success') {
+            let responseData: any = undefined;
+            if (response && Object.prototype.hasOwnProperty.call(response, 'data')) {
+              responseData = (response as any).data;
+            } else {
+              const clone = { ...(response as any) };
+              delete clone.status;
+              delete clone.bodyStatus;
+              responseData = clone;
+            }
+
+            let itemsRaw: PlaceApiItem[] = [];
+
+            if (Array.isArray(responseData)) {
+              itemsRaw = responseData as PlaceApiItem[];
+            } else if (responseData && typeof responseData === 'object') {
+              if (Array.isArray((responseData as any).places)) {
+                itemsRaw = (responseData as any).places as PlaceApiItem[];
+              } else {
+                const vals = Object.values(responseData as any).filter((v) => v && typeof v === 'object');
+                itemsRaw = vals as PlaceApiItem[];
+              }
+            }
+
+            const mapped = itemsRaw.map((item, index) => ({
+              id: item.id ?? index,
+              name: item.name ?? item.title ?? 'Mekan',
+              category: item.category ?? (item as any).type ?? 'Tarih & Kültür',
+              district: item.district ?? selectedDistrict,
+              description: item.description ?? item.address ?? '',
+              latitude: item.latitude != null ? Number(item.latitude) : (item as any).lat != null ? Number((item as any).lat) : null,
+              longitude: item.longitude != null ? Number(item.longitude) : (item as any).lng != null ? Number((item as any).lng) : null,
+              image: item.image ?? item.image_url,
+              ...(item as any),
+            }));
+            
+            setPlaces(mapped as PlaceItem[]);
+          } else {
+            setPlaces([]);
+            setPlacesError(response.message || response.error || 'Mekanlar yüklenemedi.');
+          }
+        } catch (error) {
+          if (!mounted) return;
           setPlaces([]);
-          setPlacesError(response.message || response.error || 'Mekanlar yüklenemedi.');
+          setPlacesError('Mekanlar yüklenemedi.');
+          console.error('[EXPLORE_PLACES] loadPlaces error', error);
+        } finally {
+          if (mounted) {
+            setPlacesLoading(false);
+          }
         }
-      } catch (error) {
-        if (!mounted) return;
-        setPlaces([]);
-        setPlacesError('Mekanlar yüklenemedi.');
-        console.error('[EXPLORE_PLACES] loadPlaces error', error);
-      } finally {
-        if (mounted) {
-          setPlacesLoading(false);
-        }
-      }
-    };
+      };
 
-    const timer = setTimeout(() => {
-      void loadPlaces();
-    }, 250);
+      const timer = setTimeout(() => {
+        void loadPlaces();
+      }, 250);
 
-    return () => {
-      mounted = false;
-      controller.abort();
-      clearTimeout(timer);
-    };
-  }, [searchQuery, selectedCategoryParam, selectedDistrict]);
+      return () => {
+        mounted = false;
+        clearTimeout(timer);
+      };
+    }, [searchQuery, selectedCategoryParam, selectedDistrict])
+  );
 
-  // ❤️ Favori ekleme / çıkarma aksiyonu
+  // ❤️ Favori aksiyonu
   const toggleFavorite = (place: PlaceItem) => {
     if (!authUser?.id) {
       Alert.alert('Giriş gerekli', 'Favorilemek için giriş yapmalısınız.');
@@ -464,9 +472,9 @@ export default function AccountExploreScreen() {
         setCreatedRouteId(createdId);
       }
 
-      Alert.alert('Başarılı', 'Rota oluşturuldu. İstersen şimdi topluluğa açabilirsin.');
+      Alert.alert('Başarılı', 'Rota oluşturuldu. Şimdi bunu arkadaşlarınla paylaşabilir veya topluluğa açabilirsin.');
       setSaveModalVisible(false);
-      setShareModalVisible(true);
+      setShareModalVisible(true); 
     } catch (error) {
       Alert.alert('Hata', 'Rota kaydedilemedi.');
       console.error('[EXPLORE_PLACES] handleSaveRoute error', error);
@@ -475,9 +483,47 @@ export default function AccountExploreScreen() {
     }
   };
 
-  const handleShareRoute = async () => {
+  const handleWhatsAppShare = async () => {
+    if (plannedRoute.length === 0) return;
+
+    const safeRouteName = routeName.trim();
+    const routeTitle = safeRouteName && !safeRouteName.toLocaleLowerCase('tr-TR').startsWith('örn:') ? safeRouteName : 'Tarihi Edirne Turu';
+    
+    let message = `*📍 Keşfet Edirne - Rota Planı: ${routeTitle}*\n`;
+    if (routeDescription.trim()) {
+      message += `_${routeDescription.trim()}_\n\n`;
+    } else {
+      message += `\n`;
+    }
+    
+    plannedRoute.forEach((place, idx) => {
+      message += `${idx + 1}. ${place.name} (${place.district} • ${place.category})\n`;
+    });
+
+    message += `\n📲 _Keşfet Edirne uygulaması ile hazırlandı._`;
+
+    const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+    
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+        setShareModalVisible(false);
+        clearPlannedRouteData(); // 🌟 Paylaşıldıktan sonra rotayı temizler
+      } else {
+        const webUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+        await Linking.openURL(webUrl);
+        setShareModalVisible(false);
+        clearPlannedRouteData(); // 🌟 Paylaşıldıktan sonra rotayı temizler
+      }
+    } catch (error) {
+      Alert.alert('Hata', 'WhatsApp paylaşımı başlatılamadı.');
+    }
+  };
+
+  const handleShareToCommunity = async () => {
     if (!createdRouteId) {
-      Alert.alert('Önce kaydedin', 'Topluluğa açmak için önce rotayı oluşturmalısınız.');
+      Alert.alert('Önce kaydedin', 'Topluluğa açmak için önce rotayı kaydetmelisiniz.');
       return;
     }
 
@@ -487,15 +533,16 @@ export default function AccountExploreScreen() {
       const success = response.status === 200 || response.status === 201 || response.bodyStatus === 'success' || response.success === true;
 
       if (!success) {
-        Alert.alert('Hata', response.message || response.error || 'Rota paylaşılamadı.');
+        Alert.alert('Hata', response.message || response.error || 'Rota topluluğa açılamadı.');
         return;
       }
 
-      Alert.alert('Başarılı', 'Rota topluluğa açıldı.');
+      Alert.alert('Başarılı', 'Rota başarıyla Keşfet Edirne topluluğuna açıldı.');
       setShareModalVisible(false);
+      clearPlannedRouteData(); // 🌟 Topluluğa açıldıktan sonra rotayı temizler
     } catch (error) {
-      Alert.alert('Hata', 'Rota paylaşılamadı.');
-      console.error('[EXPLORE_PLACES] handleShareRoute error', error);
+      Alert.alert('Hata', 'Rota topluluğa açılamadı.');
+      console.error('[EXPLORE_PLACES] handleShareToCommunity error', error);
     } finally {
       setSharingRoute(false);
     }
@@ -598,16 +645,27 @@ export default function AccountExploreScreen() {
             </View>
           </Modal>
 
-          <View className="mb-3">
-            <TouchableOpacity onPress={() => setDistrictModalVisible(true)} className="flex-row items-center justify-between rounded-full border border-[#e6e6e6] bg-white px-4 py-2">
-              <Text className="text-[13px] font-semibold text-[#111827]">{selectedDistrict}</Text>
-              <Text className="text-[13px] text-[#6b7280]">▾</Text>
+          <View className="mb-3 flex-row gap-2">
+            <TouchableOpacity 
+              onPress={() => setDistrictModalVisible(true)} 
+              className="flex-1 flex-row items-center justify-between rounded-[12px] border border-[#e5e7eb] bg-white px-4 py-3 shadow-sm"
+            >
+              <View>
+                <Text className="text-[11px] text-[#9ca3af] uppercase font-bold tracking-wider mb-0.5">İlçe</Text>
+                <Text className="text-[14px] font-semibold text-[#111827]">{selectedDistrict}</Text>
+              </View>
+              <Text className="text-[14px] text-[#9ca3af] font-bold pr-1">▼</Text>
             </TouchableOpacity>
-          </View>
-          <View className="mb-3">
-            <TouchableOpacity onPress={() => setFiltersModalVisible(true)} className="flex-row items-center justify-between rounded-full border border-[#e6e6e6] bg-white px-4 py-2">
-              <Text className="text-[13px] font-semibold text-[#111827]">{selectedCategory}</Text>
-              <Text className="text-[13px] text-[#6b7280]">▾</Text>
+
+            <TouchableOpacity 
+              onPress={() => setFiltersModalVisible(true)} 
+              className="flex-1 flex-row items-center justify-between rounded-[12px] border border-[#e5e7eb] bg-white px-4 py-3 shadow-sm"
+            >
+              <View>
+                <Text className="text-[11px] text-[#9ca3af] uppercase font-bold tracking-wider mb-0.5">Kategori</Text>
+                <Text className="text-[14px] font-semibold text-[#111827]" numberOfLines={1}>{selectedCategory}</Text>
+              </View>
+              <Text className="text-[14px] text-[#9ca3af] font-bold pr-1">▼</Text>
             </TouchableOpacity>
           </View>
 
@@ -652,30 +710,41 @@ export default function AccountExploreScreen() {
             )}
           </View>
 
-          {/* ⭐ Favoriler Bölümü (Otomatik Senkronize) */}
+          {/* ⭐ Favoriler Bölümü */}
           {favorites.length > 0 && (
             <View className="mb-4 rounded-[14px] border border-[#fecaca] bg-[#fef2f2] px-4 py-3">
-              <View className="mb-3 flex-row items-center gap-2">
-                <IconSymbol name="heart.fill" size={20} color="#dc2626" />
-                <Text className="text-[16px] font-bold text-[#dc2626]">Favorileriniz ({favorites.length})</Text>
-              </View>
+              <TouchableOpacity 
+                onPress={() => setIsFavoritesExpanded(!isFavoritesExpanded)}
+                className="flex-row items-center justify-between"
+                activeOpacity={0.7}
+              >
+                <View className="flex-row items-center gap-2">
+                  <IconSymbol name="heart.fill" size={20} color="#dc2626" />
+                  <Text className="text-[16px] font-bold text-[#dc2626]">Favorileriniz ({favorites.length})</Text>
+                </View>
+                <Text className="text-[16px] font-bold text-[#dc2626]">
+                  {isFavoritesExpanded ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
 
-              <View className="gap-2">
-                {favorites.map((favorite) => (
-                  <View key={favorite.id} className="flex-row items-center justify-between rounded-[10px] border border-[#fca5a5] bg-white px-3 py-2.5">
-                    <View className="flex-row items-center gap-2 flex-1">
-                      <Text className="w-6 text-center text-[18px] font-bold text-[#dc2626]">❤️</Text>
-                      <View className="flex-1">
-                        <Text className="text-[14px] font-semibold text-[#111827]">{favorite.name}</Text>
-                        <Text className="text-[12px] text-[#6b7280]">{favorite.category}</Text>
+              {isFavoritesExpanded && (
+                <View className="gap-2 mt-3">
+                  {favorites.map((favorite) => (
+                    <View key={favorite.id} className="flex-row items-center justify-between rounded-[10px] border border-[#fca5a5] bg-white px-3 py-2.5">
+                      <View className="flex-row items-center gap-2 flex-1">
+                        <Text className="w-6 text-center text-[18px] font-bold text-[#dc2626]">❤️</Text>
+                        <View className="flex-1">
+                          <Text className="text-[14px] font-semibold text-[#111827]">{favorite.name}</Text>
+                          <Text className="text-[12px] text-[#6b7280]">{favorite.category}</Text>
+                        </View>
                       </View>
+                      <TouchableOpacity onPress={() => toggleFavorite(favorite)} className="h-8 w-8 items-center justify-center rounded-full bg-[#fee2e2]">
+                        <Text className="text-[16px]">✕</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity onPress={() => toggleFavorite(favorite)} className="h-8 w-8 items-center justify-center rounded-full bg-[#fee2e2]">
-                      <Text className="text-[16px]">✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
+                  ))}
+                </View>
+              )}
             </View>
           )}
 
@@ -706,11 +775,8 @@ export default function AccountExploreScreen() {
               </View>
 
               <View className="flex-row gap-2">
-                <TouchableOpacity onPress={() => setSaveModalVisible(true)} className="flex-1 rounded-[10px] bg-[#dc2626] py-2.5">
-                  <Text className="text-center text-[14px] font-bold text-white">Kaydet</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setShareModalVisible(true)} className="flex-1 rounded-[10px] bg-[#991b1b] py-2.5">
-                  <Text className="text-center text-[14px] font-bold text-white">Paylaş</Text>
+                <TouchableOpacity onPress={() => setSaveModalVisible(true)} className="flex-grow rounded-[10px] bg-[#dc2626] py-2.5">
+                  <Text className="text-center text-[14px] font-bold text-white">Kaydet ve Paylaş</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -734,12 +800,16 @@ export default function AccountExploreScreen() {
             ) : null}
 
             {places.map((place) => {
-              const badgeClass = badgeClassByCategory[place.category] ?? badgeClassByCategory.Tarihi;
+              const badgeClass = badgeClassByCategory[place.category] ?? badgeClassByCategory['Tarih & Kültür'];
 
               return (
-                <TouchableOpacity key={place.id} onPress={() => openMarker(place.id)} className="rounded-[14px] border border-[#e5e7eb] bg-white px-3 py-3">
-                  <View className="flex-row items-start justify-between gap-3">
-                    <View className="mr-3 w-12 items-center justify-center">
+                <TouchableOpacity 
+                  key={place.id} 
+                  onPress={() => openMarker(place.id)} 
+                  className="rounded-[14px] border border-[#e5e7eb] bg-white p-3 mb-1 shadow-sm"
+                >
+                  <View className="flex-row items-center justify-between gap-2">
+                    <View className="w-10 h-10 items-center justify-center shrink-0">
                       {place.image ? (
                         <View className="h-10 w-10 overflow-hidden rounded-full bg-[#f3f4f6] items-center justify-center">
                           <Text className="text-[18px]">📷</Text>
@@ -751,32 +821,37 @@ export default function AccountExploreScreen() {
                       )}
                     </View>
 
-                    <View className="flex-1 pr-2">
-                      <View className="mb-1 flex-row items-center gap-2">
-                        <Text className="text-[15px] font-semibold text-[#111827]">{place.name}</Text>
+                    <View className="flex-1 px-2 justify-center">
+                      <View className="flex-row mb-1">
                         <View className={`rounded-full px-2 py-0.5 ${badgeClass}`}>
-                          <Text className="text-[11px] font-semibold">{place.category}</Text>
+                          <Text className="text-[10px] font-semibold">{place.category}</Text>
                         </View>
                       </View>
-                      <Text className="text-[13px] text-[#6b7280]">{place.description}</Text>
-                      <Text className="mt-1 text-[12px] text-[#9ca3af]">{place.district} • {place.latitude ?? ''}, {place.longitude ?? ''}</Text>
+                      <Text className="text-[15px] font-semibold text-[#111827] leading-5 mb-0.5" numberOfLines={2}>
+                        {place.name}
+                      </Text>
+                      <Text className="text-[12px] text-[#6b7280]" numberOfLines={1}>
+                        {place.description}
+                      </Text>
+                      <Text className="mt-0.5 text-[11px] text-[#9ca3af]" numberOfLines={1}>
+                        {place.district} {place.latitude ? `• ${place.latitude}, ${place.longitude}` : ''}
+                      </Text>
                     </View>
 
-                    <View className="flex-row items-center gap-3 pt-0.5">
+                    <View className="flex-row items-center gap-2 shrink-0 ml-1">
                       <TouchableOpacity
                         onPress={() => toggleFavorite(place)}
                         className={`h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white ${favoriteLoadingId === place.id ? 'opacity-60' : ''}`}
                         disabled={favoriteLoadingId === place.id}
                       >
-                        <IconSymbol name={isFavorite(place.id) ? 'heart.fill' : 'heart'} size={17} color={isFavorite(place.id) ? '#dc2626' : '#94a3b8'} />
+                        <IconSymbol name={isFavorite(place.id) ? 'heart.fill' : 'heart'} size={15} color={isFavorite(place.id) ? '#dc2626' : '#94a3b8'} />
                       </TouchableOpacity>
+
                       <TouchableOpacity
                         onPress={() => addToRoute(place)}
-                        className={`rounded-[8px] border px-3 py-1.5 ${
-                          isInRoute(place.id) ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#d1d5db] bg-white'
-                        }`}
+                        className={`rounded-[8px] border h-8 justify-center px-2.5 ${isInRoute(place.id) ? 'border-[#22c55e] bg-[#f0fdf4]' : 'border-[#d1d5db] bg-white'}`}
                       >
-                        <Text className={`text-[13px] font-semibold ${isInRoute(place.id) ? 'text-[#22c55e]' : 'text-[#111827]'}`}>
+                        <Text className={`text-[12px] font-semibold ${isInRoute(place.id) ? 'text-[#22c55e]' : 'text-[#111827]'}`}>
                           {isInRoute(place.id) ? 'Eklendi' : 'Ekle'}
                         </Text>
                       </TouchableOpacity>
@@ -789,7 +864,7 @@ export default function AccountExploreScreen() {
         </View>
       </ScrollView>
 
-      {/* Kaydet ve Paylaş Modalları */}
+      {/* Rota Kaydetme Modalı */}
       <Modal visible={saveModalVisible} transparent animationType="fade" onRequestClose={() => setSaveModalVisible(false)}>
         <View className="flex-1 items-center justify-center bg-black/50">
           <View className="w-[85%] rounded-[16px] bg-white px-6 py-5">
@@ -800,7 +875,7 @@ export default function AccountExploreScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text className="mb-2 text-[13px] text-[#6b7280]">Oluşturduğunuz rotayı kaydedin ve daha sonra kullanın.</Text>
+            <Text className="mb-2 text-[13px] text-[#6b7280]">Paylaşım seçeneklerini açmadan önce rotayı profilinizeline kaydedin.</Text>
 
             <View className="mb-4">
               <Text className="mb-2 text-[14px] font-semibold text-[#111827]">Rota Adı *</Text>
@@ -838,36 +913,54 @@ export default function AccountExploreScreen() {
         </View>
       </Modal>
 
+      {/* Seçenekli Paylaşma Modalı */}
       <Modal visible={shareModalVisible} transparent animationType="fade" onRequestClose={() => setShareModalVisible(false)}>
         <View className="flex-1 items-center justify-center bg-black/50">
           <View className="w-[85%] rounded-[16px] bg-white px-6 py-5">
-            <View className="mb-4 flex-row items-center justify-between">
+            <View className="mb-3 flex-row items-center justify-between border-b border-[#f3f4f6] pb-2">
               <Text className="text-[18px] font-bold text-[#111827]">Rotayı Paylaş</Text>
               <TouchableOpacity onPress={() => setShareModalVisible(false)}>
-                <Text className="text-[24px]">✕</Text>
+                <Text className="text-[20px] font-bold text-[#9ca3af]">✕</Text>
               </TouchableOpacity>
             </View>
 
-            <Text className="mb-3 text-[13px] text-[#6b7280]">Oluşturduğunuz rotayı arkadaşlarınızla paylaşın.</Text>
+            <Text className="mb-4 text-[13px] text-[#6b7280]">
+              Oluşturduğunuz rotayı arkadaşlarınızla doğrudan paylaşabilir veya Keşfet Edirne topluluğuna açabilirsiniz.
+            </Text>
 
-            <View className="mb-4 rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] p-4">
-              <Text className="mb-3 text-[14px] font-bold text-[#111827]">{routeName}</Text>
-              <View className="gap-2">
-                {plannedRoute.map((place, idx) => (
-                  <Text key={place.id} className="text-[13px] text-[#6b7280]">
-                    {idx + 1}. {place.name}
-                  </Text>
-                ))}
+            <TouchableOpacity 
+              onPress={handleWhatsAppShare}
+              className="mb-3 flex-row items-center rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] p-3.5 active:bg-[#dcfce7]"
+            >
+              <View className="mr-3 h-9 w-9 items-center justify-center rounded-lg bg-[#22c55e]">
+                <Text className="text-white font-bold text-[18px]">💬</Text>
               </View>
-            </View>
+              <View className="flex-1">
+                <Text className="text-[15px] font-bold text-[#14532d]">WhatsApp ile Gönder</Text>
+                <Text className="text-[11px] text-[#166534]">Arkadaşlarına liste mesajı olarak ilet.</Text>
+              </View>
+            </TouchableOpacity>
 
-            <View className="flex-row gap-3">
-              <TouchableOpacity onPress={() => setShareModalVisible(false)} className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-white py-2.5">
-                <Text className="text-center text-[14px] font-semibold text-[#111827]">İptal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { void handleShareRoute(); }} disabled={sharingRoute} className={`flex-1 flex-row items-center justify-center gap-2 rounded-[10px] bg-[#dc2626] py-2.5 ${sharingRoute ? 'opacity-70' : ''}`}>
-                <IconSymbol name="square.and.arrow.up" size={16} color="#fff" />
-                <Text className="text-center text-[14px] font-bold text-white">{sharingRoute ? 'Paylaşılıyor...' : 'Paylaş'}</Text>
+            <TouchableOpacity 
+              onPress={handleShareToCommunity}
+              disabled={sharingRoute}
+              className={`mb-4 flex-row items-center rounded-xl border border-[#fca5a5] bg-[#fff5f5] p-3.5 active:bg-[#ffe4e4] ${sharingRoute ? 'opacity-50' : ''}`}
+            >
+              <View className="mr-3 h-9 w-9 items-center justify-center rounded-lg bg-[#dc2626]">
+                <IconSymbol name="person.3.fill" size={16} color="#fff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-[15px] font-bold text-[#7f1d1d]">{sharingRoute ? 'Açılıyor...' : 'Topluluğa Aç'}</Text>
+                <Text className="text-[11px] text-[#991b1b]">Uygulamadaki diğer gezginler görebilsin.</Text>
+              </View>
+            </TouchableOpacity>
+
+            <View className="flex-row">
+              <TouchableOpacity 
+                onPress={() => setShareModalVisible(false)} 
+                className="flex-1 rounded-[10px] border border-[#e5e7eb] bg-gray-50 py-2.5"
+              >
+                <Text className="text-center text-[14px] font-semibold text-[#4b5563]">Vazgeç</Text>
               </TouchableOpacity>
             </View>
           </View>

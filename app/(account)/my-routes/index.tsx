@@ -436,7 +436,7 @@ export default function MyRoutesScreen() {
           {selectedTab === 'created' ? (
             <View>
               <TouchableOpacity
-                onPress={() => router.push('/rota')}
+                onPress={() => router.push('/explore')}
                 className="mb-3 items-center rounded-[12px] bg-[#dc2626] py-3"
               >
                 <Text className="text-[14px] font-bold text-white">Yeni Rota Oluştur</Text>

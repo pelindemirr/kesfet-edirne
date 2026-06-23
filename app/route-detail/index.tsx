@@ -33,7 +33,7 @@ const MOCK_ROUTES_DATA = [
     rating: '4.5',
     badge: 'Doğa & Yürüyüş',
     description: 'Meriç Köprüsü, Tunca Nehri,Söğütlük Millet Bahçesi',
-    image: require('../../assets/rota/meric.jpg'),
+    image: require('../../assets/rota/karaagac.jpeg'),
     about: "Meriç Köprüsü'nde fotoğraf çekebilir, Tunca Nehri boyunca yürüyüş yapabilir ve Karaağaç'ın tarihi sokaklarındaki kafelerde dinlenebilirsiniz",
     routeStops: [
       { id: 1, name: 'Meriç Köprüsü', desc: 'Tarihi köprü', time: '30 dk' },
@@ -51,7 +51,7 @@ const MOCK_ROUTES_DATA = [
     rating: '4.6',
     badge: 'Kültür & Tarih',
     description: 'Bedesten, Alipaşa ve Arasta Çarşısı',
-    image: require('../../assets/rota/meric.jpg'),
+    image: require('../../assets/rota/carsi.jpeg'),
     about: 'Osmanlı döneminin ticari merkezi olan çarşıları keşfederek tarihi alışveriş deneyimini yaşayın.',
     routeStops: [
       { id: 1, name: 'Bedesten', desc: 'Osmanlı döneminin ticari merkezi', time: '35 dk' },
@@ -69,7 +69,7 @@ const MOCK_ROUTES_DATA = [
     rating: '4.9',
     badge: 'Yeme & İçme',
     description: ' Tadım Menemen, Aydın Ciğer, Keçecizade Badem Ezmesi',
-    image: require('../../assets/rota/meric.jpg'),
+    image: require('../../assets/rota/gastronomi.jpeg'),
     about: 'Edirne\'nin meşhur lezzetlerini tatarak yerel mutfağın tadını çıkarın. Ciğer, menemen ve dondurma gibi özel yemekleri keşfedin.',
     routeStops: [
       { id: 1, name: 'Aydın Ciğer Evi', desc: 'Meşhur ciğer ve böbrek', time: '45 dk' },
@@ -87,7 +87,7 @@ const MOCK_ROUTES_DATA = [
     rating: '4.7',
     badge: 'Spor & Tarih',
     description: 'Sarayiçi, güreş müzesi, Kırkpınar sahası',
-    image: require('../../assets/rota/meric.jpg'),
+    image: require('../../assets/rota/sarayici.webp'),
     about: 'Dünya\'nın en eski spor festivali Kırkpınar Yağlı Güreşleri\'nin tarihini keşfedin. Sarayiçi alanında spor tarihine tanıklık edin.',
     routeStops: [
       { id: 1, name: 'Sarayiçi Alanı', desc: 'Kırkpınar festivali\'nin ana sahası', time: '30 dk' },
@@ -104,7 +104,7 @@ const MOCK_ROUTES_DATA = [
     rating: '4.4',
     badge: 'Kültür & Tarih',
     description: 'II. Bayezid Külliyesi, Sağlık Müzesi, çevre tarihi alanlar',
-    image: require('../../assets/rota/meric.jpg'),
+    image: require('../../assets/rota/beyazit.png'),
     about: 'Edirne merkezde yer alan bu rota, II. Bayezid Külliyesi ve Sağlık Müzesi çevresindeki en önemli tarih duraklarını keşfetmek için idealdir. Şehir dışına çıkmadan yoğun bir kültür gezisi sunar.',
     routeStops: [
       { id: 1, name: 'II. Bayezid Külliyesi', desc: 'Osmanlı sağlık ve eğitim tarihi', time: '45 dk' },
