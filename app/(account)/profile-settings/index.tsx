@@ -5,12 +5,14 @@ import { useAuthStore } from '@/stores/use-auth-store';
 import { getProfileAvatar, useProfileStore, type ProfileAvatarId } from '@/stores/use-profile-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n import edildi
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const editIcon = require('../../../assets/icon/edit.png');
 
 export default function ProfileSettingsScreen() {
   const router = useRouter();
+  const { t } = useTranslation(); // Çeviri fonksiyonu
   const { displayName } = useAuth();
   const profileDisplayName = useProfileStore((state) => state.displayName);
   const profileAvatarId = useProfileStore((state) => state.avatarId);
@@ -18,7 +20,7 @@ export default function ProfileSettingsScreen() {
 
   const [profileName, setProfileName] = useState<string | null>(null);
   const [profileEmail, setProfileEmail] = useState<string | null>(null);
-  const defaultName = profileName?.trim() || profileDisplayName?.trim() || displayName?.trim() || 'Kullanici';
+  const defaultName = profileName?.trim() || profileDisplayName?.trim() || displayName?.trim() || t('profileSettings.defaultUser');
   const defaultEmail = useMemo(() => {
     if (profileEmail?.trim()) return profileEmail.trim();
     return `${defaultName.toLocaleLowerCase('tr-TR').replace(/\s+/g, '')}@gmail.com`;
@@ -146,10 +148,10 @@ export default function ProfileSettingsScreen() {
       });
       
       setShowAvatarOptions(false);
-      showToast(`Avatar başarıyla güncellendi! 🎉`, 'success');
+      showToast(t('profileSettings.avatarSuccess'), 'success');
     } catch (e) {
       console.error('[ProfileSettings] Avatar update error:', e);
-      showToast('Avatar güncellenirken bir hata oluştu.', 'error');
+      showToast(t('profileSettings.avatarError'), 'error');
     } finally {
       setSavingAvatar(false);
     }
@@ -168,8 +170,8 @@ export default function ProfileSettingsScreen() {
           </TouchableOpacity>
 
           <View className="flex-1">
-            <Text className="text-[24px] font-extrabold text-white">Profili Düzenle</Text>
-            <Text className="mt-0.5 text-[13px] text-white/90">Avatar ve bilgilerinizi güncelleyin</Text>
+            <Text className="text-[24px] font-extrabold text-white">{t('profileSettings.headerTitle')}</Text>
+            <Text className="mt-0.5 text-[13px] text-white/90">{t('profileSettings.headerSubtitle')}</Text>
           </View>
         </View>
       </View>
@@ -205,7 +207,7 @@ export default function ProfileSettingsScreen() {
         
         {/* Profil Fotoğrafı Kartı */}
         <View className="rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="text-[20px] font-bold text-[#111827]">Profil Fotoğrafı</Text>
+          <Text className="text-[20px] font-bold text-[#111827]">{t('profileSettings.profilePhotoTitle')}</Text>
 
           <View className="mt-5 items-center">
             <View className="relative h-24 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-[#e60000] bg-[#fff1f2]">
@@ -222,14 +224,14 @@ export default function ProfileSettingsScreen() {
               activeOpacity={0.85}
             >
               <View className="flex-row items-center">
-                <Text className="text-[13px] font-semibold text-[#b10016]">Profil fotoğrafını değiştir</Text>
+                <Text className="text-[13px] font-semibold text-[#b10016]">{t('profileSettings.changePhotoBtn')}</Text>
                 <Image source={editIcon} className="ml-2 h-5 w-5" resizeMode="contain" style={{ tintColor: '#b10016' }} />
               </View>
             </TouchableOpacity>
 
             {showAvatarOptions && (
               <View className="mt-4 w-full">
-                <Text className="mb-3 text-center text-[13px] font-semibold text-[#6b7280]">Yeni bir avatar seçin</Text>
+                <Text className="mb-3 text-center text-[13px] font-semibold text-[#6b7280]">{t('profileSettings.selectNewAvatar')}</Text>
                 
                 {loadingAvatars ? (
                   <View className="py-8">
@@ -259,7 +261,7 @@ export default function ProfileSettingsScreen() {
                                 isSelected ? 'text-[#e60000]' : 'text-[#9ca3af]'
                               }`}
                             >
-                              {isSelected ? 'Seçildi' : 'Seç'}
+                              {isSelected ? t('profileSettings.selected') : t('profileSettings.select')}
                             </Text>
                           </View>
                         </TouchableOpacity>
@@ -274,14 +276,14 @@ export default function ProfileSettingsScreen() {
 
         {/* Kişisel Bilgiler Kartı */}
         <View className="mt-4 rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="mb-4 text-[20px] font-bold text-[#111827]">Kişisel Bilgiler</Text>
+          <Text className="mb-4 text-[20px] font-bold text-[#111827]">{t('profileSettings.personalInfoTitle')}</Text>
 
-          <Text className="mb-1 text-[12px] font-semibold text-[#4b5563]">İsim</Text>
+          <Text className="mb-1 text-[12px] font-semibold text-[#4b5563]">{t('profileSettings.nameLabel')}</Text>
           <View className="mb-4 rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-3">
             <Text className="text-[14px] font-medium text-[#111827]">{defaultName}</Text>
           </View>
 
-          <Text className="mb-1 text-[12px] font-semibold text-[#4b5563]">E-posta</Text>
+          <Text className="mb-1 text-[12px] font-semibold text-[#4b5563]">{t('profileSettings.emailLabel')}</Text>
           <View className="rounded-[10px] border border-[#e5e7eb] bg-[#f3f4f6] px-3 py-3">
             <Text className="text-[14px] font-medium text-[#6b7280]">{defaultEmail}</Text>
           </View>
@@ -289,12 +291,12 @@ export default function ProfileSettingsScreen() {
 
         {/* Kazanılan Rozetler Kartı */}
         <View className="mt-4 rounded-[14px] border border-[#e3e5ea] bg-white p-5">
-          <Text className="mb-4 text-[20px] font-bold text-[#111827]">Kazanılan Rozetler</Text>
+          <Text className="mb-4 text-[20px] font-bold text-[#111827]">{t('profileSettings.badgesTitle')}</Text>
 
           {fetchedBadges.length === 0 ? (
             <View className="items-center py-6">
-              <Text className="mb-1 text-[15px] font-bold text-[#6b7280]">Henüz rozet kazanılmadı</Text>
-              <Text className="text-center text-[12px] text-[#9ca3af]">Rotalar planlayarak ve etkinlikleri takip ederek rozetleri toplayın!</Text>
+              <Text className="mb-1 text-[15px] font-bold text-[#6b7280]">{t('profileSettings.noBadgesTitle')}</Text>
+              <Text className="text-center text-[12px] text-[#9ca3af]">{t('profileSettings.noBadgesDesc')}</Text>
             </View>
           ) : (
             <View className="flex-row flex-wrap justify-start gap-2">
@@ -320,7 +322,7 @@ export default function ProfileSettingsScreen() {
           {savingAvatar ? (
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
-            <Text className="text-[15px] font-bold text-white">Değişiklikleri Kaydet</Text>
+            <Text className="text-[15px] font-bold text-white">{t('profileSettings.saveChangesBtn')}</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

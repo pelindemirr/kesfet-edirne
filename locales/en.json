@@ -3,16 +3,498 @@
     "headerTitle": "About Edirne",
     "unesco_tag": "World Heritage",
     "unesco_title": "UNESCO World Heritage List",
-    "unesco_desc_start": "Shining with its historical and cultural riches, Edirne is under worldwide protection with the genius architect Mimar Sinan's masterpiece ",
+    "unesco_desc_start": "Shining with its historical and cultural richness, Edirne is under worldwide protection with the masterwork of the genius architect Mimar Sinan, ",
     "unesco_desc_bold": "Selimiye Mosque",
-    "unesco_desc_end": " and the centuries-old Kırkpınar Oil Wrestling.",
+    "unesco_desc_end": ", and the centuries-old Kırkpınar Oil Wrestling.",
     "ottoman_tag": "History & Culture",
-    "ottoman_title": "92 Years of Ottoman Capital",
+    "ottoman_title": "92 Years as the Ottoman Capital",
     "ottoman_desc": "Serving as the capital of the empire before the conquest of Istanbul, Edirne is practically a living open-air museum with its palaces, stone bridges, inns, and mosques built during this period.",
     "location_tag": "Strategic Location",
     "location_title": "Intersection of Borders and Rivers",
-    "location_desc_start": "Edirne, Turkey's border gate to Europe, neighbors Greece and Bulgaria. This city, given life by the ",
+    "location_desc_start": "Edirne, Turkey's border gate to Europe, is a neighbor to Greece and Bulgaria. Given life by the ",
     "location_desc_bold": "Meriç, Tunca, and Arda",
-    "location_desc_end": " rivers, has been a crossing point of cultures for centuries."
+    "location_desc_end": " rivers, this city has been a transit point of cultures for centuries."
+  },
+  "header": {
+    "profile": "Profile",
+    "login": "Login",
+    "signOut": "Sign Out",
+    "signOutConfirm": "Are you sure you want to sign out of your account?",
+    "cancel": "Cancel",
+    "appName": "Discover Edirne",
+    "subtitle": "Discover History",
+    "profileSettings": "Profile Settings",
+    "loginSignUp": "Login / Sign Up"
+  },
+  "home": {
+    "subtitles": [
+      "🗺️ Discover ready-made routes in Edirne",
+      "🎉 What events are happening in Edirne this week?",
+      "👥 Discover your friends' routes.",
+      "🏛️ Tour Edirne with historical routes",
+      "⭐ Check out popular routes",
+      "🎉 New routes have been prepared"
+    ],
+    "loadingWeather": "☁️ Loading weather",
+    "loadingCurrency": "$ Loading rate",
+    "hero": {
+      "appName": "Discover Edirne",
+      "subtitle": "Discover history, plan your route",
+      "question": "Where should we explore today?"
+    },
+    "navCards": {
+      "mapTitle": "Map",
+      "mapDesc": "Plan your own route.",
+      "routesTitle": "Ready Routes",
+      "routesDesc": "Routes prepared just for you.",
+      "eventsTitle": "Events",
+      "eventsDesc": "Events happening in your area.",
+      "communityTitle": "Community",
+      "communityDesc": "Access routes shared by the community."
+    },
+    "guest": {
+      "title": "Join the Exploration ✨",
+      "desc": "Sign up to experience Edirne like a local.",
+      "bullet1": "Create and save your own custom routes",
+      "bullet2": "Share your discoveries with friends and community",
+      "bullet3": "Earn unique badges by completing quests",
+      "button": "Create Account"
+    },
+    "news": {
+      "title": "Edirne News",
+      "seeAll": "See All →",
+      "cardTitle": "City Portal and Current Updates",
+      "cardDesc": "The latest cultural headlines, local announcements, and breaking events across Edirne."
+    },
+    "events": {
+      "title": "Upcoming Events",
+      "filter": "Filter →",
+      "syncing": "Syncing events...",
+      "fallbackTitle": "Cultural Event",
+      "fallbackDate": "Date not specified",
+      "empty": "No upcoming events found."
+    },
+    "stories": {
+      "tag": "Edirne Legends",
+      "title": "Mystery of the Inverted Tulip & Hospital",
+      "desc": "Discover ancient city tales, folk legends, and mysteries passed down through generations."
+    },
+    "about": {
+      "tag": "Cultural Heritage",
+      "title": "92 Years as the Ottoman Capital",
+      "desc": "Get to know the UNESCO-protected history that hosts Sinan's masterpiece, Selimiye."
+    },
+    "community": {
+      "tag": "Community Routes",
+      "title": "Footsteps of Explorers",
+      "desc": "Review routes experienced by other travelers or share your travel plan with the community immediately."
+    }
+  },
+  "forgotPassword": {
+    "appName": "Discover Edirne",
+    "subtitle": "Enter your email address to reset your password",
+    "backToHome": "Back to Home",
+    "successMsg": "Email sent. Please check your inbox.",
+    "errorMsg": "Request failed.",
+    "backToLogin": "Back to login"
+  },
+  "login": {
+    "appName": "Discover Edirne",
+    "subtitle": "Discover history, plan your route",
+    "backToHome": "Back to Home"
+  },
+  "communityRoutes": {
+    "authRequired": "Login required for community routes",
+    "authDesc": "Please log in to view and explore routes shared by other users.",
+    "loginButton": "Login",
+    "title": "Community Routes",
+    "subtitle": "Discover shared routes",
+    "searchPlaceholder": "Search for a route or place...",
+    "loading": "Loading community routes...",
+    "emptyTitle": "No routes found matching the filter",
+    "emptyDesc": "You can change the search text or filters.",
+    "preview": "Preview: ",
+    "stops": "stops",
+    "processing": "Processing...",
+    "saved": "Saved",
+    "save": "Save",
+    "review": "Details",
+    "errorTitle": "Error",
+    "errorRemove": "Could not remove route. Please try again.",
+    "errorSave": "Could not save route. Please try again.",
+    "allDistricts": "All Districts",
+    "unknown": "Unknown",
+    "anonymous": "Anonymous User",
+    "untitled": "Untitled Route",
+    "sortPopular": "Popular",
+    "sortBest": "Best",
+    "sortNew": "New"
+  },
+  "events": {
+    "title": "All Events",
+    "subtitle": "All upcoming and past events happening in Edirne",
+    "categories": {
+      "all": "All",
+      "kultur": "Culture",
+      "sanat": "Art",
+      "gastronomi": "Gastronomy",
+      "spor": "Sports"
+    },
+    "timings": {
+      "all": "All",
+      "allSubtitle": "All events",
+      "upcoming": "Upcoming",
+      "upcomingSubtitle": "Future dates",
+      "past": "Past",
+      "pastSubtitle": "Past events in the last month"
+    },
+    "status": {
+      "attended": "Going",
+      "willAttend": "Interested",
+      "willNotAttend": "Not Going",
+      "labelAttended": "Attended",
+      "labelWillAttend": "Will Attend",
+      "labelWillNotAttend": "Will Not Attend",
+      "hintAttended": "Your participation status has been saved.",
+      "hintWillAttend": "You are tracking the event, you can decide later.",
+      "hintWillNotAttend": "No problem, see you at other events.",
+      "hintDefault": "Select a participation status to easily track the event."
+    },
+    "noDate": "No date info",
+    "noTime": "No time info",
+    "googleCalCategory": "Category",
+    "googleCalEvent": "Event",
+    "loadError": "Could not load events.",
+    "listingCount": "{{count}} current events listed",
+    "fetchErrorTitle": "Data fetch failed",
+    "emptyTitle": "No events found",
+    "emptyDesc": "There are no suitable current events.",
+    "savedToGoogle": "Saved to Google",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "locationLabel": "Location",
+    "participationTitle": "Your participation status",
+    "addToCalendar": "Add to Calendar",
+    "close": "Close"
+  },"readyRoutes": {
+    "title": "Ready Routes",
+    "subtitle": "Curated routes to explore Edirne",
+    "backToRoutes": "← Back to Routes",
+    "duration": "Duration",
+    "distance": "Distance",
+    "aboutRoute": "About Route",
+    "stops": "Stops",
+    "routes": {
+      "route1": {
+        "title": "Historical Mosques Tour",
+        "time": "3 hours",
+        "places": "8 places",
+        "distance": "5.2 km",
+        "badge": "Culture & History",
+        "description": "Selimiye, Üç Şerefeli, Old Mosque",
+        "about": "A central route covering Edirne's most important historical buildings where you will feel the spirit of the city. Follow in the footsteps of Mimar Sinan to discover unique mosques and bazaars.",
+        "routeStops": [
+          { "id": 1, "name": "Selimiye Mosque", "desc": "Mimar Sinan's masterpiece", "time": "45 min" },
+          { "id": 2, "name": "Old Mosque", "desc": "Early Ottoman architecture", "time": "30 min" },
+          { "id": 3, "name": "Üç Şerefeli Mosque", "desc": "Magnificent minarets", "time": "40 min" }
+        ]
+      },
+      "route2": {
+        "title": "Karaağaç Trip",
+        "time": "2.5 hours",
+        "places": "3 places",
+        "distance": "4.8 km",
+        "badge": "Nature & Walking",
+        "description": "Meriç Bridge, Tunca River",
+        "about": "You can take photos at the Meriç Bridge, walk along the Tunca River, and relax in the cafes on the historical streets of Karaağaç.",
+        "routeStops": [
+          { "id": 1, "name": "Meriç Bridge", "desc": "Historical bridge", "time": "30 min" },
+          { "id": 2, "name": "Söğütlük National Garden", "desc": "Picnic and recreation area", "time": "60 min" },
+          { "id": 3, "name": "Karaağaç Streets", "desc": "Relaxation", "time": "60 min" }
+        ]
+      },
+      "route3": {
+        "title": "Ottoman Bazaar Tour",
+        "time": "2 hours",
+        "places": "5 places",
+        "distance": "2.1 km",
+        "badge": "Culture & History",
+        "description": "Bedesten, Alipaşa and Arasta Bazaar",
+        "about": "Experience historical shopping by exploring the bazaars that were the commercial center of the Ottoman period.",
+        "routeStops": [
+          { "id": 1, "name": "Bedesten", "desc": "Commercial center of the Ottoman era", "time": "35 min" },
+          { "id": 2, "name": "Alipaşa Bazaar", "desc": "Traditional souvenirs", "time": "30 min" },
+          { "id": 3, "name": "Arasta Bazaar", "desc": "Kavala, almond paste, and historical streets", "time": "40 min" }
+        ]
+      },
+      "route4": {
+        "title": "Edirne Flavors Route",
+        "time": "3.5 hours",
+        "places": "7 places",
+        "distance": "3.0 km",
+        "badge": "Food & Drink",
+        "description": "Aydın Ciğer, Tadım Menemen, Ondo Ice Cream",
+        "about": "Enjoy the local cuisine by tasting Edirne's famous flavors. Discover special dishes like liver, menemen, and ice cream.",
+        "routeStops": [
+          { "id": 1, "name": "Aydın Liver House", "desc": "Famous liver and kidney", "time": "45 min" },
+          { "id": 2, "name": "Tadım Restaurant", "desc": "Traditional menemen and breakfast", "time": "50 min" },
+          { "id": 3, "name": "Keçecizade Almond Paste", "desc": "Local almond paste and sweets", "time": "30 min" }
+        ]
+      },
+      "route5": {
+        "title": "Kırkpınar & Sports History",
+        "time": "1.5 hours",
+        "places": "3 places",
+        "distance": "2.5 km",
+        "badge": "Sports & History",
+        "description": "Sarayiçi, Wrestling Museum, Kırkpınar Field",
+        "about": "Discover the history of the Kırkpınar Oil Wrestling, the world's oldest sports festival. Witness sports history at the Sarayiçi area.",
+        "routeStops": [
+          { "id": 1, "name": "Sarayiçi Area", "desc": "Main field of the Kırkpınar festival", "time": "30 min" },
+          { "id": 2, "name": "Kırkpınar Museum", "desc": "Wrestling history and monuments", "time": "35 min" }
+        ]
+      },
+      "route6": {
+        "title": "II. Bayezid Complex Health Museum Route",
+        "time": "2.5 hours",
+        "places": "3 places",
+        "distance": "2.0 km",
+        "badge": "Culture & History",
+        "description": "II. Bayezid Complex, Health Museum, surrounding historical areas",
+        "about": "Located in the center of Edirne, this route is ideal for exploring the most important historical stops around the II. Bayezid Complex and Health Museum. It offers an intensive cultural trip without leaving the city.",
+        "routeStops": [
+          { "id": 1, "name": "II. Bayezid Complex", "desc": "Ottoman health and education history", "time": "45 min" },
+          { "id": 2, "name": "Health Museum", "desc": "Hospital and medical history collection", "time": "40 min" },
+          { "id": 3, "name": "Darüşşifa Surroundings", "desc": "Short cultural walk around the complex", "time": "30 min" }
+        ]
+      }
+    }
+  },"communityRouteDetail": {
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "defaultStop": "Stop {{count}}",
+    "tagPlace": "Place",
+    "anonymous": "Anonymous User",
+    "defaultTitle": "Historical Center Tour",
+    "defaultDesc": "Discover the most important historical buildings of Edirne",
+    "unknownDistrict": "Unknown",
+    "back": "Back",
+    "processing": "Processing...",
+    "saved": "Saved",
+    "save": "Save",
+    "badgeCommunity": "Community route",
+    "badgeSuggestion": "Other users' suggestion",
+    "statusSaved": "Saved to your device",
+    "statusNotSaved": "Not saved yet",
+    "stops": "Stops",
+    "emptyStopsTitle": "No stop information found",
+    "emptyStopsDesc": "The place list for this route was not provided in the backend response.",
+    "rateTitle": "Rate this route",
+    "commentsTitle": "Comments",
+    "commentPlaceholder": "Share your thoughts...",
+    "sending": "Sending...",
+    "submitComment": "Submit Review",
+    "noCommentsTitle": "No comments yet",
+    "noCommentsDesc": "You can be the first to leave a comment.",
+    "you": "You",
+    "alerts": {
+      "error": "Error",
+      "removeError": "Could not remove route. Please try again.",
+      "saveError": "Could not save route. Please try again.",
+      "commentRequiredTitle": "Comment required",
+      "commentRequiredDesc": "Please write a comment first.",
+      "ratingRequiredTitle": "Rating required",
+      "ratingRequiredDesc": "Please select a star rating between 1 and 5.",
+      "thanksTitle": "Thank you",
+      "thanksDesc": "Your review has been submitted successfully.",
+      "commentError": "Could not submit review."
+    }
+  },"forgotPasswordForm": {
+    "title": "Reset Your Password",
+    "description": "Enter your registered email address, and we will send a reset link.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Your registered email address",
+    "emptyEmailError": "Please enter your email address.",
+    "invalidEmailError": "Please enter a valid email address.",
+    "sending": "Sending...",
+    "submitButton": "Send Reset Link"
+  },"loginForm": {
+    "title": "Welcome",
+    "subtitle": "Login to your account",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "emptyEmailError": "Please enter your email address.",
+    "emptyPasswordError": "Please enter your password.",
+    "loggingIn": "Logging in...",
+    "loginButton": "Login",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up"
+  },"registerForm": {
+    "title": "Create Account",
+    "subtitle": "Create a new account",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "Full Name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Your email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "kvkkText1": "I have read and agree to the User Agreement and ",
+    "kvkkLink": "Privacy Policy",
+    "kvkkText2": ".",
+    "submitButton": "Create Account",
+    "submitting": "Creating account...",
+    "haveAccount": "Already have an account?",
+    "loginText": "Log in",
+    "errors": {
+      "emptyName": "Please enter your name.",
+      "emptyEmail": "Please enter your email address.",
+      "emptyPassword": "Please enter your password.",
+      "passwordLength": "Password must be at least 6 characters.",
+      "passwordPattern": "Password must contain at least one letter and one number.",
+      "emptyConfirmPassword": "Please confirm your password.",
+      "passwordMismatch": "Passwords do not match.",
+      "kvkkRequired": "You must approve the Privacy Policy to continue."
+    },
+    "kvkkModal": {
+      "title": "Privacy Policy (KVKK)",
+      "section1Title": "1. Data Controller",
+      "section1Desc": "As the Discover Edirne mobile application, we show maximum sensitivity to the security and lawful processing of your personal data.",
+      "section2Title": "2. Processed Data and Purpose",
+      "section2Desc": "Your Name-Surname and Email data provided during registration are processed in accordance with Article 5 of Law No. 6698 for the purpose of verifying your user profile, providing a secure login infrastructure, and saving the tourist routes you create within the application.",
+      "section3Title": "3. Data Transfer and Protection",
+      "section3Desc": "Your personal data is never sold or transferred to third parties for commercial purposes. Your data is stored encrypted in our database and under current cyber security protocols.",
+      "section4Title": "4. Your Rights",
+      "section4Desc": "In accordance with Article 11 of the Law, you have the right to request the deletion, update, or information about whether your data is being processed at any time via the application's support line.",
+      "closeButton": "OK"
+    }
+  },"myRoutes": {
+    "title": "My Routes",
+    "subtitle": "See your created routes and saved community routes separately.",
+    "tabCreated": "Created",
+    "tabSaved": "Saved",
+    "authRequired": "Login Required",
+    "authDesc": "You need to log in to see your own routes and saved routes.",
+    "loginButton": "Log In",
+    "createRouteButton": "Create New Route",
+    "emptyCreated": "You haven't created any routes yet.",
+    "emptySaved": "You haven't saved any routes yet.",
+    "defaultRouteName": "Route",
+    "defaultDistrict": "Center",
+    "me": "Me",
+    "stops": "stops",
+    "comments": "comments",
+    "stopsPrefix": "Stops: ",
+    "alerts": {
+      "unsaveTitle": "Remove Route",
+      "unsaveMessage": "Are you sure you want to remove \"{{title}}\" from your saved routes?",
+      "deleteTitle": "Delete Route",
+      "deleteMessage": "Are you sure you want to permanently delete \"{{title}}\"? This action cannot be undone.",
+      "cancel": "Cancel",
+      "remove": "Remove",
+      "delete": "Delete",
+      "error": "Error",
+      "unsaveError": "Route could not be removed from the list.",
+      "unsaveFailed": "The operation could not be completed.",
+      "deleteError": "Route could not be deleted.",
+      "deleteFailed": "The deletion process could not be completed."
+    }
+  },"profileSettings": {
+    "defaultUser": "User",
+    "avatarSuccess": "Avatar updated successfully! 🎉",
+    "avatarError": "An error occurred while updating the avatar.",
+    "headerTitle": "Edit Profile",
+    "headerSubtitle": "Update your avatar and information",
+    "profilePhotoTitle": "Profile Photo",
+    "changePhotoBtn": "Change profile photo",
+    "selectNewAvatar": "Select a new avatar",
+    "selected": "Selected",
+    "select": "Select",
+    "personalInfoTitle": "Personal Information",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "badgesTitle": "Earned Badges",
+    "noBadgesTitle": "No badges earned yet",
+    "noBadgesDesc": "Collect badges by planning routes and tracking events!",
+    "saveChangesBtn": "Save Changes"
+  },"favoritePlaces": {
+    "headerTitle": "My Favorite Places",
+    "back": "Back",
+    "loading": "Loading favorites...",
+    "emptyTitle": "No favorite places yet",
+    "emptyDesc": "You can add places to your favorites by clicking the heart icon while exploring.",
+    "placesCount": "{{count}} favorite places",
+    "addedAt": "Added at: ",
+    "alerts": {
+      "removeTitle": "Remove from Favorites",
+      "removeMessage": "Remove \"{{name}}\" from your favorites?",
+      "cancel": "Cancel",
+      "remove": "Remove",
+      "errorTitle": "Error",
+      "errorFailed": "The operation could not be completed."
+    }
+  },"newsScreen": {
+    "back": "Back",
+    "title": "Edirne News",
+    "loading": "Loading latest updates..."
+  },"storiesScreen": {
+    "headerTitle": "Cultural Heritage",
+    "headerSubtitle": "Edirne legends passed down through generations",
+    "stories": [
+      {
+        "title": "The Legend of the Inverted Tulip",
+        "spot": "A symbol of stubbornness and sorrow in the Selimiye Mosque...",
+        "content": "There is an inverted tulip motif in the stone carvings of the muezzin's gathering place in the Selimiye Mosque.\n\nAccording to the rumor, there was a tulip garden belonging to a woman in the area where the mosque was to be built. The woman did not want to give up her garden and delayed the start of the construction. Eventually, a part of the garden was taken, but this event was not forgotten. Mimar Sinan carved the tulip upside down to symbolize this stubbornness and the trouble experienced.\n\nAccording to another interpretation, the inverted tulip represents sorrow, mortality, and humility before God.",
+        "badge": "Selimiye Mosque"
+      },
+      {
+        "title": "The Healing House of the Health Museum",
+        "spot": "Healing that comes to souls with the sound of water, music, and beautiful scents...",
+        "content": "Built by Sultan Bayezid II in 1488, the hospital was one of the most advanced health centers of its time.\n\nHere, instead of being chained, mental patients were treated with:\n• The sound of water,\n• Bird sounds,\n• Music therapy,\n• Beautiful scents.\n\nAccording to a story told among the people, some patients experiencing severe mental problems would calm down by listening to the sound of flowing water and reed flute performances for days, and would even be discharged completely healed. For this reason, the building was known as the 'palace that distributes healing'.",
+        "badge": "II. Bayezid Complex"
+      },
+      {
+        "title": "The Wait on the Meriç Bridge",
+        "spot": "A sad love legend extending from the war years to the present day...",
+        "content": "There is a romantic story told among the people about the Meriç Bridge.\n\nDuring the war years, a young soldier promises to return to the girl he loves. The girl comes to the bridge every day and waits for him. However, the soldier cannot return. It is said that the tears of the young girl waiting on the bridge for years mixed with the Meriç River.\n\nFor this reason, some elderly residents of Edirne say that the river flows sadly when they look at the bridge at sunset.",
+        "badge": "Meriç Bridge"
+      },
+      {
+        "title": "The Legend of the Three-Balcony Minaret",
+        "spot": "Three mysterious paths climbing up without ever seeing each other...",
+        "content": "The Üç Şerefeli Mosque gets its name from its minarets with different numbers of balconies.\n\nAccording to the rumor, the architect of the mosque challenged the masters of the period by designing each of the minarets differently. In particular, the fact that the three separate stairs going up to the minaret with three balconies reach the top without seeing each other is described as a 'master's secret' among the people.",
+        "badge": "Üç Şerefeli Mosque"
+      },
+      {
+        "title": "The Birth of Kırkpınar",
+        "spot": "The legendary heroes of forty springs gushing out in the lands of Rumelia...",
+        "content": "The origin of the Kırkpınar Oil Wrestling dates back to the years of transition to the Rumelia sanjak of the Ottoman Empire. It harbors the legendary story of forty brave wrestlers who could not defeat each other in matches that lasted for hours among the raiders. The forty springs that gushed out where they wrestled symbolize the sacred lands where this tradition was born today.",
+        "badge": "Historical Kırkpınar"
+      }
+    ]
+  },"menuScreen": {
+    "loginRequiredTitle": "Login Required",
+    "loginRequiredDesc": "The profile menu, saved routes, and settings are only available for logged-in users.",
+    "loginButton": "Log In",
+    "defaultUser": "User",
+    "streakDays": "Day Streak",
+    "accountLabel": "Account",
+    "settingsLabel": "Profile Settings",
+    "signOutLabel": "Sign Out",
+    "menuActions": {
+      "home": "Home",
+      "map": "Map",
+      "favorites": "My Favorites",
+      "saved": "Ready Routes",
+      "createdRoutes": "My Routes",
+      "community": "Community",
+      "events": "Events",
+      "news": "Edirne News",
+      "stories": "Edirne Legends",
+      "about": "About Edirne"
+    }
   }
 }

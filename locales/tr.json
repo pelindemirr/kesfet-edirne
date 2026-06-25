@@ -14,5 +14,487 @@
     "location_desc_start": "Türkiye'nin Avrupa'ya açılan sınır kapısı Edirne; Yunanistan ve Bulgaristan'a komşudur. ",
     "location_desc_bold": "Meriç, Tunca ve Arda",
     "location_desc_end": " nehirlerinin hayat verdiği bu şehir, yüzyıllardır kültürlerin geçiş noktasıdır."
+  },
+  "header": {
+    "profile": "Profil",
+    "login": "Giriş Yap",
+    "signOut": "Çıkış Yap",
+    "signOutConfirm": "Hesabınızdan çıkış yapmak istediğinize emin misiniz?",
+    "cancel": "İptal",
+    "appName": "Keşfet Edirne",
+    "subtitle": "Tarihi Keşfedin",
+    "profileSettings": "Profil Ayarları",
+    "loginSignUp": "Giriş Yap / Kayıt Ol"
+  },
+  "home": {
+    "subtitles": [
+      "🗺️ Edirne'de hazır rotaları keşfedin",
+      "🎉 Bu hafta Edirne'de hangi etkinlikler var?",
+      "👥 Arkadaşlarınızın rotasını keşfedin.",
+      "🏛️ Tarihi rotalarla Edirne'yi gezin",
+      "⭐ Popüler rotalara göz atın",
+      "🎉 Yeni rotalar hazırlanmış"
+    ],
+    "loadingWeather": "☁️ Hava yükleniyor",
+    "loadingCurrency": "$ Kur yükleniyor",
+    "hero": {
+      "appName": "Keşfi Edirne",
+      "subtitle": "Tarihi keşfedin, rotanızı planlayın",
+      "question": "Bugün nereyi keşfedelim?"
+    },
+    "navCards": {
+      "mapTitle": "Harita",
+      "mapDesc": "Kendi rotanızı planlayın.",
+      "routesTitle": "Hazır Rotalar",
+      "routesDesc": "Sizin için hazırlanmış rotalar.",
+      "eventsTitle": "Etkinlikler",
+      "eventsDesc": "Bölgenizde olan etkinlikler.",
+      "communityTitle": "Topluluk",
+      "communityDesc": "Toplulukla paylaşılan rotalara ulaşın."
+    },
+    "guest": {
+      "title": "Keşfe Katılın ✨",
+      "desc": "Edirne'yi bir yerel gibi deneyimlemek için üye olun.",
+      "bullet1": "Kendi özel rotalarınızı oluşturun ve kaydedin",
+      "bullet2": "Keşiflerinizi toplulukla ve arkadaşlarınızla paylaşın",
+      "bullet3": "Görevleri tamamlayarak benzersiz rozetler kazanın",
+      "button": "Hesap Oluştur"
+    },
+    "news": {
+      "title": "Edirne Haberleri",
+      "seeAll": "Tümü →",
+      "cardTitle": "Şehir Portalı ve Güncel Gelişmeler",
+      "cardDesc": "Edirne genelindeki en yeni kültürel başlıklar, yerel duyurular ve son dakika olayları."
+    },
+    "events": {
+      "title": "Yaklaşan Etkinlikler",
+      "filter": "Filtrele →",
+      "syncing": "Etkinlikler senkronize ediliyor...",
+      "fallbackTitle": "Kültür Etkinliği",
+      "fallbackDate": "Tarih belirtilmedi",
+      "empty": "Yakın tarihte etkinlik bulunmuyor."
+    },
+    "stories": {
+      "tag": "Edirne Efsaneleri",
+      "title": "Ters Lale'nin Gizemi & Şifahane",
+      "desc": "Nesiller boyu dilden dile anlatılan kadim şehir hikayelerini, halk efsanelerini ve gizemleri keşfedin."
+    },
+    "about": {
+      "tag": "Kültür Mirası",
+      "title": "92 Yıllık Osmanlı Başkenti",
+      "desc": "Mimar Sinan'ın şaheseri Selimiye'ye ev sahipliği yapan UNESCO korumasındaki tarihi yakından tanıyın."
+    },
+    "community": {
+      "tag": "Topluluk Rotaları",
+      "title": "Kaşiflerin Ayak İzleri",
+      "desc": "Diğer gezginlerin deneyimlediği rotaları inceleyin ya da kendi gezi planınızı hemen toplulukla paylaşın."
+    }
+  },
+  "forgotPassword": {
+    "appName": "Keşfi Edirne",
+    "subtitle": "Şifrenizi sıfırlamak için e-posta adresinizi girin",
+    "backToHome": "Ana Sayfaya Dön",
+    "successMsg": "E-posta gönderildi. Gelen kutunuzu kontrol edin.",
+    "errorMsg": "İstek gönderilemedi.",
+    "backToLogin": "Giriş sayfasına dön"
+  },
+  "login": {
+    "appName": "Keşfi Edirne",
+    "subtitle": "Tarihi keşfedin, rotanızı planlayın",
+    "backToHome": "Ana Sayfaya Dön"
+  },
+  "communityRoutes": {
+    "authRequired": "Topluluk rotaları için giriş gerekli",
+    "authDesc": "Diğer kullanıcıların paylaştığı rotaları görmek ve incelemek için lütfen giriş yapın.",
+    "loginButton": "Giriş Yap",
+    "title": "Topluluk Rotaları",
+    "subtitle": "Paylaşılan rotaları keşfedin",
+    "searchPlaceholder": "Rota veya yer ara...",
+    "loading": "Topluluk rotaları yükleniyor...",
+    "emptyTitle": "Filtreye uygun rota bulunamadı",
+    "emptyDesc": "Arama metnini veya filtreleri değiştirebilirsin.",
+    "preview": "Önizleme: ",
+    "stops": "durak",
+    "processing": "İşleniyor...",
+    "saved": "Kaydedildi",
+    "save": "Kaydet",
+    "review": "İncele",
+    "errorTitle": "Hata",
+    "errorRemove": "Rota kaldırılamadı. Lütfen tekrar deneyin.",
+    "errorSave": "Rota kaydedilemedi. Lütfen tekrar deneyin.",
+    "allDistricts": "Tüm İlçeler",
+    "unknown": "Bilinmiyor",
+    "anonymous": "Anonim Kullanıcı",
+    "untitled": "Adsız Rota",
+    "sortPopular": "Popüler",
+    "sortBest": "En İyi",
+    "sortNew": "Yeni"
+  },
+  "events": {
+    "title": "Tüm Etkinlikler",
+    "subtitle": "Edirne'de gerçekleşen ve gelecek tüm etkinlikler",
+    "categories": {
+      "all": "Tümü",
+      "kultur": "Kültür",
+      "sanat": "Sanat",
+      "gastronomi": "Gastronomi",
+      "spor": "Spor"
+    },
+    "timings": {
+      "all": "Tümü",
+      "allSubtitle": "Bütün etkinlikler",
+      "upcoming": "Yaklaşan",
+      "upcomingSubtitle": "Gelecek tarihli",
+      "past": "Geçmiş",
+      "pastSubtitle": "Son 1 aydaki geçmiş etkinlikler"
+    },
+    "status": {
+      "attended": "Gidiyorum",
+      "willAttend": "İlgileniyorum",
+      "willNotAttend": "Gitmiyorum",
+      "labelAttended": "Katıldım",
+      "labelWillAttend": "Katılıyorum",
+      "labelWillNotAttend": "Katılmıyorum",
+      "hintAttended": "Etkinliğe katılım durumun kaydedildi.",
+      "hintWillAttend": "Etkinliği takiptesin, kararını sonra verebilirsin.",
+      "hintWillNotAttend": "Sorun değil, diğer etkinliklerde görüşürüz.",
+      "hintDefault": "Katılım durumunu seçerek etkinliği kolayca takip et."
+    },
+    "noDate": "Tarih bilgisi yok",
+    "noTime": "Saat bilgisi yok",
+    "googleCalCategory": "Kategori",
+    "googleCalEvent": "Etkinlik",
+    "loadError": "Etkinlikler yüklenemedi.",
+    "listingCount": "{{count}} güncel etkinlik listeleniyor",
+    "fetchErrorTitle": "Veri alınamadı",
+    "emptyTitle": "Etkinlik bulunamadı",
+    "emptyDesc": "Uygun güncel etkinlik bulunmuyor.",
+    "savedToGoogle": "Google'a kayıtlı",
+    "dateLabel": "Tarih",
+    "timeLabel": "Saat",
+    "locationLabel": "Konum",
+    "participationTitle": "Katılım durumunuz",
+    "addToCalendar": "Takvime Ekle",
+    "close": "Kapat"
+  },"readyRoutes": {
+    "title": "Hazır Rotalar",
+    "subtitle": "Edirne'yi keşfetmek için hazırlanmış rotalar",
+    "backToRoutes": "← Rotalara Dön",
+    "duration": "Süre",
+    "distance": "Mesafe",
+    "aboutRoute": "Rota Hakkında",
+    "stops": "Duraklar",
+    "routes": {
+      "route1": {
+        "title": "Tarihi Camiler Turu",
+        "time": "3 saat",
+        "places": "8 yer",
+        "distance": "5.2 km",
+        "badge": "Kültür & Tarih",
+        "description": "Selimiye, Üç Şerefeli, Eski Cami",
+        "about": "Edirne'nin en önemli tarihi yapılarını kapsayan, şehrin ruhunu hissedeceğiniz merkez rota. Mimar Sinan'ın izinden giderek eşsiz camileri ve çarşıları keşfedin.",
+        "routeStops": [
+          { "id": 1, "name": "Selimiye Camii", "desc": "Mimar Sinan'ın ustalık eseri", "time": "45 dk" },
+          { "id": 2, "name": "Eski Camii", "desc": "Erken Osmanlı mimarisi", "time": "30 dk" },
+          { "id": 3, "name": "Üç Şerefeli Camii", "desc": "Görkemli minareler", "time": "40 dk" }
+        ]
+      },
+      "route2": {
+        "title": "Karaağaç Gezisi",
+        "time": "2.5 saat",
+        "places": "3 yer",
+        "distance": "4.8 km",
+        "badge": "Doğa & Yürüyüş",
+        "description": "Meriç Köprüsü, Tunca Nehri",
+        "about": "Meriç Köprüsü'nde fotoğraf çekebilir, Tunca Nehri boyunca yürüyüş yapabilir ve Karaağaç'ın tarihi sokaklarındaki kafelerde dinlenebilirsiniz",
+        "routeStops": [
+          { "id": 1, "name": "Meriç Köprüsü", "desc": "Tarihi köprü", "time": "30 dk" },
+          { "id": 2, "name": "Söğütlük Millet Bahçesi", "desc": "Piknik ve dinlenme alanı", "time": "60 dk" },
+          { "id": 3, "name": "Karaağaç Sokakları", "desc": "Dinlenme", "time": "60 dk" }
+        ]
+      },
+      "route3": {
+        "title": "Osmanlı Çarşı Turu",
+        "time": "2 saat",
+        "places": "5 yer",
+        "distance": "2.1 km",
+        "badge": "Kültür & Tarih",
+        "description": "Bedesten, Alipaşa ve Arasta Çarşısı",
+        "about": "Osmanlı döneminin ticari merkezi olan çarşıları keşfederek tarihi alışveriş deneyimini yaşayın.",
+        "routeStops": [
+          { "id": 1, "name": "Bedesten", "desc": "Osmanlı döneminin ticari merkezi", "time": "35 dk" },
+          { "id": 2, "name": "Alipaşa Çarşısı", "desc": "Geleneksel hediyelik eşyalar", "time": "30 dk" },
+          { "id": 3, "name": "Arasta Çarşısı", "desc": "Kavala, badem ezmesi ve tarih kokan sokaklar", "time": "40 dk" }
+        ]
+      },
+      "route4": {
+        "title": "Edirne Lezzetleri Rotası",
+        "time": "3.5 saat",
+        "places": "7 yer",
+        "distance": "3.0 km",
+        "badge": "Yeme & İçme",
+        "description": "Aydın Ciğer, Tadım Menemen, Ondo Dondurma",
+        "about": "Edirne'nin meşhur lezzetlerini tatarak yerel mutfağın tadını çıkarın. Ciğer, menemen ve dondurma gibi özel yemekleri keşfedin.",
+        "routeStops": [
+          { "id": 1, "name": "Aydın Ciğer Evi", "desc": "Meşhur ciğer ve böbrek", "time": "45 dk" },
+          { "id": 2, "name": "Tadım Lokantası", "desc": "Geleneksel menemen ve kahvaltı", "time": "50 dk" },
+          { "id": 3, "name": "Keçecizade Badem Ezmesi", "desc": "Yöresel badem ezmesi ve tatlılar", "time": "30 dk" }
+        ]
+      },
+      "route5": {
+        "title": "Kırkpınar & Spor Tarihi",
+        "time": "1.5 saat",
+        "places": "3 yer",
+        "distance": "2.5 km",
+        "badge": "Spor & Tarih",
+        "description": "Sarayiçi, güreş müzesi, Kırkpınar sahası",
+        "about": "Dünya'nın en eski spor festivali Kırkpınar Yağlı Güreşleri'nin tarihini keşfedin. Sarayiçi alanında spor tarihine tanıklık edin.",
+        "routeStops": [
+          { "id": 1, "name": "Sarayiçi Alanı", "desc": "Kırkpınar festivali'nin ana sahası", "time": "30 dk" },
+          { "id": 2, "name": "Kırkpınar Müzesi", "desc": "Güreş tarihi ve anıtları", "time": "35 dk" }
+        ]
+      },
+      "route6": {
+        "title": "II. Bayezid Külliyesi Sağlık Müzesi Rotası",
+        "time": "2.5 saat",
+        "places": "3 yer",
+        "distance": "2.0 km",
+        "badge": "Kültür & Tarih",
+        "description": "II. Bayezid Külliyesi, Sağlık Müzesi, çevre tarihi alanlar",
+        "about": "Edirne merkezde yer alan bu rota, II. Bayezid Külliyesi ve Sağlık Müzesi çevresindeki en önemli tarih duraklarını keşfetmek için idealdir. Şehir dışına çıkmadan yoğun bir kültür gezisi sunar.",
+        "routeStops": [
+          { "id": 1, "name": "II. Bayezid Külliyesi", "desc": "Osmanlı sağlık ve eğitim tarihi", "time": "45 dk" },
+          { "id": 2, "name": "Sağlık Müzesi", "desc": "Şifahane ve tıp tarihi koleksiyonu", "time": "40 dk" },
+          { "id": 3, "name": "Darüşşifa Çevresi", "desc": "Külliye çevresinde kısa kültür yürüyüşü", "time": "30 dk" }
+        ]
+      }
+    }
+  },"communityRouteDetail": {
+    "months": ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"],
+    "defaultStop": "Durak {{count}}",
+    "tagPlace": "Mekan",
+    "anonymous": "Anonim Kullanıcı",
+    "defaultTitle": "Tarihi Merkez Turu",
+    "defaultDesc": "Edirne'nin en önemli tarihi yapılarını keşfedin",
+    "unknownDistrict": "Bilinmiyor",
+    "back": "Geri",
+    "processing": "İşleniyor...",
+    "saved": "Kaydedildi",
+    "save": "Kaydet",
+    "badgeCommunity": "Topluluk rotası",
+    "badgeSuggestion": "Diğer kullanıcıların önerisi",
+    "statusSaved": "Cihazınıza kaydedildi",
+    "statusNotSaved": "Henüz kaydedilmedi",
+    "stops": "Durak",
+    "emptyStopsTitle": "Durak bilgisi bulunamadı",
+    "emptyStopsDesc": "Bu rotaya ait mekan listesi backend yanıtında gelmedi.",
+    "rateTitle": "Bu rotayı değerlendirin",
+    "commentsTitle": "Yorumlar",
+    "commentPlaceholder": "Görüşlerinizi paylaşın...",
+    "sending": "Gönderiliyor...",
+    "submitComment": "Yorum Yap",
+    "noCommentsTitle": "Henüz yorum yok",
+    "noCommentsDesc": "İlk yorumu siz bırakabilirsiniz.",
+    "you": "Sen",
+    "alerts": {
+      "error": "Hata",
+      "removeError": "Rota kaldırılamadı. Lütfen tekrar deneyin.",
+      "saveError": "Rota kaydedilemedi. Lütfen tekrar deneyin.",
+      "commentRequiredTitle": "Yorum gerekli",
+      "commentRequiredDesc": "Lütfen önce bir yorum yazın.",
+      "ratingRequiredTitle": "Puan gerekli",
+      "ratingRequiredDesc": "Lütfen 1 ile 5 arasında bir yıldız seçin.",
+      "thanksTitle": "Teşekkürler",
+      "thanksDesc": "Yorumunuz başarıyla gönderildi.",
+      "commentError": "Yorum gönderilemedi."
+    }
+  },"forgotPasswordForm": {
+    "title": "Şifrenizi Sıfırlayın",
+    "description": "Kayıtlı e-posta adresinizi girin, sıfırlama bağlantısı gönderelim.",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "Kayıtlı e-posta adresiniz",
+    "emptyEmailError": "Lütfen e-posta adresinizi giriniz.",
+    "invalidEmailError": "Lütfen geçerli bir e-posta adresi giriniz.",
+    "sending": "Gönderiliyor...",
+    "submitButton": "Sıfırlama Bağlantısı Gönder"
+  },"loginForm": {
+    "title": "Hoş Geldiniz",
+    "subtitle": "Hesabınıza giriş yapınız",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "Mail adresinizi giriniz",
+    "passwordLabel": "Şifre",
+    "passwordPlaceholder": "Şifrenizi giriniz",
+    "forgotPassword": "Şifremi unuttum",
+    "emptyEmailError": "Lütfen e-posta adresinizi giriniz.",
+    "emptyPasswordError": "Lütfen şifrenizi giriniz.",
+    "loggingIn": "Giriş yapılıyor...",
+    "loginButton": "Giriş Yap",
+    "noAccount": "Hesabınız yok mu?",
+    "signUp": "Kayıt olun"
+  },"registerForm": {
+    "title": "Hesap Oluşturun",
+    "subtitle": "Yeni bir hesap oluşturun",
+    "nameLabel": "Ad Soyad",
+    "namePlaceholder": "Ad Soyad",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "Mail adresinizi",
+    "passwordLabel": "Şifre",
+    "passwordPlaceholder": "Şifrenizi giriniz",
+    "confirmPasswordLabel": "Şifre Tekrar",
+    "confirmPasswordPlaceholder": "Şifrenizi tekrar giriniz",
+    "kvkkText1": "Kullanıcı sözleşmesini ve ",
+    "kvkkLink": "KVKK Aydınlatma Metni'ni",
+    "kvkkText2": " okudum, onaylıyorum.",
+    "submitButton": "Hesap Oluştur",
+    "submitting": "Hesap oluşturuluyor...",
+    "haveAccount": "Hesabınız var mı?",
+    "loginText": "Giriş yapın",
+    "errors": {
+      "emptyName": "Lütfen adınızı giriniz.",
+      "emptyEmail": "Lütfen e-posta adresinizi giriniz.",
+      "emptyPassword": "Lütfen şifrenizi giriniz.",
+      "passwordLength": "Şifre en az 6 karakter olmalıdır.",
+      "passwordPattern": "Şifre en az bir harf ve bir rakam içermelidir.",
+      "emptyConfirmPassword": "Lütfen şifrenizi tekrar giriniz.",
+      "passwordMismatch": "Şifreler eşleşmiyor.",
+      "kvkkRequired": "Devam etmek için KVKK metnini onaylamalısınız."
+    },
+    "kvkkModal": {
+      "title": "KVKK Aydınlatma Metni",
+      "section1Title": "1. Veri Sorumlusu",
+      "section1Desc": "Keşfet Edirne mobil uygulaması olarak, kişisel verilerinizin güvenliğine ogun işlenmesine azami hassasiyet gösteriyoruz.",
+      "section2Title": "2. İşlenen Verileriniz ve Amacı",
+      "section2Desc": "Kayıt esnasında sağladığınız Ad-Soyad ve E-posta verileriniz, kullanıcı profilinizin doğrulanması, güvenli giriş altyapısının sağlanması ve uygulama içerisinde oluşturduğunuz turistik rotaların kaydedilebilmesi amacıyla 6698 sayılı Kanun’un 5. maddesine uygun olarak işlenmektedir.",
+      "section3Title": "3. Verilerin Aktarılması ve Korunması",
+      "section3Desc": "Kişisel verileriniz ticari amaçlarla üçüncü kişilere asla satılmaz veya aktarılmaz. Verileriniz, veri tabanımızda şifrelenmiş (encrypted) olarak ve güncel siber güvenlik protokolleri altında saklanmaktadır.",
+      "section4Title": "4. Haklarınız",
+      "section4Desc": "Kanun’un 11. maddesi uyarınca dilediğiniz zaman uygulamanın destek hattı üzerinden verilerinizin silinmesini, güncellenmesini veya işlenip işlenmediği hakkında bilgi talep etme hakkına sahipsiniz.",
+      "closeButton": "Tamam"
+    }
+  },"myRoutes": {
+    "title": "Rotalarım",
+    "subtitle": "Kendi oluşturduklarınızı ve topluluktan kaydettiklerinizi ayrı görün.",
+    "tabCreated": "Oluşturduklarım",
+    "tabSaved": "Kaydettiklerim",
+    "authRequired": "Giriş gerekli",
+    "authDesc": "Kendi rotalarınızı ve kaydedilen rotaları görmek için giriş yapabilirsiniz.",
+    "loginButton": "Giriş Yap",
+    "createRouteButton": "Yeni Rota Oluştur",
+    "emptyCreated": "Henüz oluşturduğunuz rota yok.",
+    "emptySaved": "Henüz kaydettiğiniz rota yok.",
+    "defaultRouteName": "Rota",
+    "defaultDistrict": "Merkez",
+    "me": "Ben",
+    "stops": "durak",
+    "comments": "yorum",
+    "stopsPrefix": "Duraklar: ",
+    "alerts": {
+      "unsaveTitle": "Rotayı Kaldır",
+      "unsaveMessage": "\"{{title}}\" rotasını kaydedilenlerden çıkarmak istediğinize emin misiniz?",
+      "deleteTitle": "Rotayı Sil",
+      "deleteMessage": "\"{{title}}\" rotasını kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      "cancel": "Vazgeç",
+      "remove": "Kaldır",
+      "delete": "Sil",
+      "error": "Hata",
+      "unsaveError": "Rota listeden kaldırılamadı.",
+      "unsaveFailed": "İşlem gerçekleştirilemedi.",
+      "deleteError": "Rota silinemedi.",
+      "deleteFailed": "Silme işlemi gerçekleştirilemedi."
+    }
+  },"profileSettings": {
+    "defaultUser": "Kullanıcı",
+    "avatarSuccess": "Avatar başarıyla güncellendi! 🎉",
+    "avatarError": "Avatar güncellenirken bir hata oluştu.",
+    "headerTitle": "Profili Düzenle",
+    "headerSubtitle": "Avatar ve bilgilerinizi güncelleyin",
+    "profilePhotoTitle": "Profil Fotoğrafı",
+    "changePhotoBtn": "Profil fotoğrafını değiştir",
+    "selectNewAvatar": "Yeni bir avatar seçin",
+    "selected": "Seçildi",
+    "select": "Seç",
+    "personalInfoTitle": "Kişisel Bilgiler",
+    "nameLabel": "İsim",
+    "emailLabel": "E-posta",
+    "badgesTitle": "Kazanılan Rozetler",
+    "noBadgesTitle": "Henüz rozet kazanılmadı",
+    "noBadgesDesc": "Rotalar planlayarak ve etkinlikleri takip ederek rozetleri toplayın!",
+    "saveChangesBtn": "Değişiklikleri Kaydet"
+  },"favoritePlaces": {
+    "headerTitle": "Favori Mekanlarım",
+    "back": "Geri",
+    "loading": "Favoriler yükleniyor...",
+    "emptyTitle": "Henüz favori mekan yok",
+    "emptyDesc": "Mekanları gezerken kalp ikonuna tıklayarak favorilerinize ekleyebilirsiniz.",
+    "placesCount": "{{count}} favori mekan",
+    "addedAt": "Eklenme: ",
+    "alerts": {
+      "removeTitle": "Favoriden Çıkar",
+      "removeMessage": "\"{{name}}\" favorilerinizden çıkarılsın mı?",
+      "cancel": "Vazgeç",
+      "remove": "Çıkar",
+      "errorTitle": "Hata",
+      "errorFailed": "İşlem gerçekleştirilemedi."
+    }
+  },"newsScreen": {
+    "back": "Geri",
+    "title": "Edirne Haberleri",
+    "loading": "Son gelişmeler yükleniyor..."
+  },"storiesScreen": {
+    "headerTitle": "Kültür Mirası",
+    "headerSubtitle": "Dilden dile aktarılan Edirne efsaneleri",
+    "stories": [
+      {
+        "title": "Ters Lale Hikâyesi",
+        "spot": "Selimiye Camii'ndeki inatçılığın ve hüznün sembolü...",
+        "content": "Selimiye Camii'nin müezzin mahfilindeki taş işlemelerde ters bir lale motifi bulunur.\n\nRivayete göre caminin yapılacağı alanda bir kadına ait lale bahçesi vardır. Kadın bahçesini vermek istemez ve inşaatın başlamasını geciktirir. Sonunda bahçenin bir kısmı alınır ancak bu olay unutulmaz. Mimar Sinan da bu inatçılığı ve yaşanan sıkıntıyı sembolize etmek için laleyi ters şekilde işlemiştir.\n\nBir başka yoruma göre ise ters lale; hüznü, faniliği ve Allah karşısındaki tevazuyu temsil etmektedir.",
+        "badge": "Selimiye Camii"
+      },
+      {
+        "title": "Sağlık Müzesi'nin Şifahane Hikâyesi",
+        "spot": "Su sesi, musiki ve güzel kokularla ruhlara gelen şifa...",
+        "content": "1488 yılında Sultan II. Bayezid tarafından yaptırılan darüşşifa (hastane), döneminin en ileri sağlık merkezlerinden biriydi.\n\nBurada akıl hastaları zincire vurulmak yerine:\n• Su sesi,\n• Kuş sesleri,\n• Müzik terapisi,\n• Güzel kokular\nile tedavi edilmeye çalışılırdı.\n\nHalk arasında anlatılan bir hikâyeye göre, ağır ruhsal sorunlar yaşayan bazı hastalar günlerce akan suyun sesi ve ney dinletileriyle sakinleşir, hatta tamamen iyileşerek taburcu olurlardı. Bu nedenle yapı 'şifa dağıtan saray' olarak anılmıştır.",
+        "badge": "II. Bayezid Külliyesi"
+      },
+      {
+        "title": "Meriç Köprüsü'ndeki Bekleyiş",
+        "spot": "Savaş yıllarından günümüze uzanan hüzünlü bir aşk efsanesi...",
+        "content": "Meriç Köprüsü ile ilgili halk arasında anlatılan romantik bir hikâye vardır.\n\nSavaş yıllarında genç bir asker sevdiği kıza dönme sözü verir. Kız her gün köprüye gelip onu bekler. Ancak asker geri dönemez. Yıllar boyunca köprüde bekleyen genç kızın gözyaşlarının Meriç Nehri'ne karıştığı söylenir.\n\nBu nedenle bazı yaşlı Edirneliler gün batımında köprüye bakınca nehrin hüzünlü aktığını anlatırlar.",
+        "badge": "Meriç Köprüsü"
+      },
+      {
+        "title": "Üç Şerefeli Minare Efsanesi",
+        "spot": "Birbirini hiç görmeden yukarı tırmanan üç gizemli yol...",
+        "content": "Üç Şerefeli Camii adını farklı sayıda şerefeye sahip minarelerinden alır.\n\nRivayete göre caminin mimarı minarelerin her birini farklı şekilde tasarlayarak dönemin ustalarına meydan okumuştur. Özellikle üç şerefeli minareye çıkan üç ayrı merdivenin birbirini görmeden yukarı ulaşması halk arasında 'usta sırrı' olarak anlatılır.",
+        "badge": "Üç Şerefeli Camii"
+      },
+      {
+        "title": "Kırkpınar'ın Doğuşu",
+        "spot": "Rumeli topraklarında fışkıran kırk pınarın efsanevi yiğitleri...",
+        "content": "Kırkpınar Yağlı Güreşleri'nin kökeni, Osmanlı'nın Rumeli sancağına geçiş yıllarına dayanır. Akıncılar arasında yapılan ve saatlerce süren, yenişemeyen kırk yiğit pehlivanın efsanevi öyküsünü barındırır. Güreştikleri yerde fışkıran kırk pınar, bugün bu geleneğin doğduğu kutsal toprakları simgeler.",
+        "badge": "Tarihi Kırkpınar"
+      }
+    ]
+  },"menuScreen": {
+    "loginRequiredTitle": "Giriş gerekli",
+    "loginRequiredDesc": "Profil menüsü, kayıtlı rotalarınız ve ayarlarınız yalnızca giriş yapan kullanıcılar için açıktır.",
+    "loginButton": "Giriş Yap",
+    "defaultUser": "Kullanıcı",
+    "streakDays": "Gün Serisi",
+    "accountLabel": "Hesap",
+    "settingsLabel": "Profil Ayarları",
+    "signOutLabel": "Çıkış Yap",
+    "menuActions": {
+      "home": "Ana Sayfa",
+      "map": "Harita",
+      "favorites": "Favori Mekanlarım",
+      "saved": "Hazır Rotalar",
+      "createdRoutes": "Kişisel Rotalarım",
+      "community": "Topluluk",
+      "events": "Etkinlikler",
+      "news": "Edirne Haberleri",
+      "stories": "Edirne Efsaneleri",
+      "about": "Edirne Hakkında"
+    }
   }
 }

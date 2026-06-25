@@ -17,12 +17,11 @@ export default function AppHeader() {
 
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
-  // Buton metni
+  // Buton metni (Tertemiz oldu)
   const buttonText = isAuthenticated 
-    ? displayName ?? (i18n.language === 'tr' ? 'Profil' : 'Profile') 
-    : (i18n.language === 'tr' ? 'Giriş Yap' : 'Login');
+    ? displayName ?? t('header.profile') 
+    : t('header.login');
 
-  // ARTIK HER DURUMDA MENÜYÜ AÇIYORUZ
   const handleProfilePress = () => {
     setDropdownVisible(!dropdownVisible);
   };
@@ -35,12 +34,12 @@ export default function AppHeader() {
   const handleSignOutPress = () => {
     setDropdownVisible(false);
     Alert.alert(
-      i18n.language === 'tr' ? 'Çıkış Yap' : 'Sign Out',
-      i18n.language === 'tr' ? 'Hesabınızdan çıkış yapmak istediğinize emin misiniz?' : 'Are you sure you want to sign out from your account?',
+      t('header.signOut'),
+      t('header.signOutConfirm'),
       [
-        { text: i18n.language === 'tr' ? 'İptal' : 'Cancel', style: 'cancel' },
+        { text: t('header.cancel'), style: 'cancel' },
         {
-          text: i18n.language === 'tr' ? 'Çıkış Yap' : 'Sign Out',
+          text: t('header.signOut'),
           style: 'destructive',
           onPress: () => {
             signOut();
@@ -66,10 +65,10 @@ export default function AppHeader() {
         {/* Orta Başlık Alanı */}
         <View className="flex-1 items-center justify-center px-4">
           <Text className="text-[18px] font-black tracking-wide text-white">
-            Keşfet Edirne
+            {t('header.appName')}
           </Text>
           <Text className="text-[11px] font-medium text-white/80 tracking-wider uppercase mt-0.5">
-            {i18n.language === 'tr' ? 'Tarihi Keşfedin' : 'Discover History'}
+            {t('header.subtitle')}
           </Text>
         </View>
 
@@ -125,7 +124,7 @@ export default function AppHeader() {
               >
                 <IconSymbol name="person.crop.circle" size={16} color="#4b5563" />
                 <Text className="text-[13px] font-semibold text-[#111827]">
-                  {i18n.language === 'tr' ? 'Profil Ayarları' : 'Profile Settings'}
+                  {t('header.profileSettings')}
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -138,7 +137,7 @@ export default function AppHeader() {
               >
                 <IconSymbol name="person.crop.circle.badge.plus" size={16} color="#4b5563" />
                 <Text className="text-[13px] font-semibold text-[#111827]">
-                  {i18n.language === 'tr' ? 'Giriş Yap / Kayıt Ol' : 'Login / Sign Up'}
+                  {t('header.loginSignUp')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -146,6 +145,7 @@ export default function AppHeader() {
             <View className="my-1 h-[1px] bg-gray-100" />
 
             {/* 🌍 2. Seçenekler: Açık Dil Seçimi (TR / EN) */}
+            {/* Not: Özel isim oldukları için "Türkçe" ve "English" metinlerini i18n içine almadık, böyle kalması standarttır. */}
             <View className="bg-gray-50/50 py-1">
               {/* TR Butonu */}
               <TouchableOpacity 
@@ -182,7 +182,7 @@ export default function AppHeader() {
                 >
                   <IconSymbol name="power" size={14} color="#dc2626" />
                   <Text className="text-[13px] font-bold text-[#dc2626]">
-                    {i18n.language === 'tr' ? 'Çıkış Yap' : 'Sign Out'}
+                    {t('header.signOut')}
                   </Text>
                 </TouchableOpacity>
               </>

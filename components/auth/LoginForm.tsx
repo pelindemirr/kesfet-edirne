@@ -2,26 +2,28 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n eklendi
 import { TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginForm({
   onLogin,
   errorMessage,
   isSubmitting = false,
-  clearErrors, // 💡 Eklendi: Sayfa değiştiğinde üst state'i temizlemek için opsiyonel fonksiyon
+  clearErrors,
 }: {
   onLogin?: (email: string, password: string) => void;
   errorMessage?: string | null;
   isSubmitting?: boolean;
-  clearErrors?: () => void; // 💡 Tip tanımı eklendi
+  clearErrors?: () => void;
 }) {
+  const { t } = useTranslation(); // t fonksiyonu tanımlandı
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const router = useRouter();
 
-  // 💡 SAYFAYA GİRİLDİĞİNDE VEYA ÇIKILDIĞINDA ESKİ HATALARI TEMİZLE
+  // SAYFAYA GİRİLDİĞİNDE VEYA ÇIKILDIĞINDA ESKİ HATALARI TEMİZLE
   useEffect(() => {
     setLocalError(null);
     if (clearErrors) {
@@ -31,7 +33,7 @@ export default function LoginForm({
     return () => {
       if (clearErrors) clearErrors();
     };
-  }, []);
+  }, [clearErrors]);
 
   const displayedError = localError ?? errorMessage ?? null;
 
@@ -39,15 +41,21 @@ export default function LoginForm({
     <View
       className="mt-4 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-lg shadow-black/10"
     >
-      <ThemedText className="mb-1 text-[33px] font-bold leading-[38px] text-[#e30613]">Hoş Geldiniz</ThemedText>
-      <ThemedText className="mb-5 text-[22px] text-[#4b5563]">Hesabınıza giriş yapınız</ThemedText>
+      <ThemedText className="mb-1 text-[33px] font-bold leading-[38px] text-[#e30613]">
+        {t('loginForm.title')}
+      </ThemedText>
+      <ThemedText className="mb-5 text-[22px] text-[#4b5563]">
+        {t('loginForm.subtitle')}
+      </ThemedText>
 
-      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>
+      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+        {t('loginForm.emailLabel')}
+      </ThemedText>
       <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="envelope" size={16} color="#6b7280" />
         <TextInput
           className="ml-2 flex-1 text-[13px] text-[#111827]"
-          placeholder="Mail adresinizi giriniz"
+          placeholder={t('loginForm.emailPlaceholder')}
           placeholderTextColor="#9ca3af"
           value={email}
           onChangeText={setEmail}
@@ -56,12 +64,14 @@ export default function LoginForm({
         />
       </View>
 
-      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre</ThemedText>
+      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+        {t('loginForm.passwordLabel')}
+      </ThemedText>
       <View className="mb-5 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="lock" size={16} color="#6b7280" />
         <TextInput
           className="ml-2 flex-1 text-[13px] text-[#111827]"
-          placeholder="Şifrenizi giriniz"
+          placeholder={t('loginForm.passwordPlaceholder')}
           placeholderTextColor="#9ca3af"
           value={password}
           onChangeText={setPassword}
@@ -83,7 +93,9 @@ export default function LoginForm({
       ) : null}
 
       <TouchableOpacity className="mb-4 self-end">
-        <ThemedText className="text-[12px] font-semibold text-[#e30613]" onPress={() => router.push('/forgot-password' as any)}>Şifremi unuttum</ThemedText>
+        <ThemedText className="text-[12px] font-semibold text-[#e30613]" onPress={() => router.push('/forgot-password' as any)}>
+          {t('loginForm.forgotPassword')}
+        </ThemedText>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -92,11 +104,11 @@ export default function LoginForm({
         onPress={() => {
           setLocalError(null);
           if (!email.trim()) {
-            setLocalError('Lütfen e-posta adresinizi giriniz.');
+            setLocalError(t('loginForm.emptyEmailError'));
             return;
           }
           if (!password.trim()) {
-            setLocalError('Lütfen şifrenizi giriniz.');
+            setLocalError(t('loginForm.emptyPasswordError'));
             return;
           }
           console.log('[LoginForm] Attempting login with email:', email);
@@ -104,17 +116,21 @@ export default function LoginForm({
         }}
       >
         <ThemedText className="text-[14px] font-bold text-white">
-          {isSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+          {isSubmitting ? t('loginForm.loggingIn') : t('loginForm.loginButton')}
         </ThemedText>
       </TouchableOpacity>
 
       <View className="flex-row items-center justify-center gap-1">
-        <ThemedText className="text-[12px] text-[#6b7280]">Hesabınız yok mu?</ThemedText>
+        <ThemedText className="text-[12px] text-[#6b7280]">
+          {t('loginForm.noAccount')}
+        </ThemedText>
         <TouchableOpacity onPress={() => {
-          if (clearErrors) clearErrors(); // 💡 Kayıt sayfasına geçerken de temizle
+          if (clearErrors) clearErrors(); 
           router.push('/register' as any);
         }}>
-          <ThemedText className="text-[12px] font-bold text-[#e30613]">Kayıt olun</ThemedText>
+          <ThemedText className="text-[12px] font-bold text-[#e30613]">
+            {t('loginForm.signUp')}
+          </ThemedText>
         </TouchableOpacity>
       </View>
     </View>

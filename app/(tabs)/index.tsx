@@ -6,6 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { getCategoryLabel, getEventTimingLabel, getUpcomingEvents, type Event } from '@/services/api';
 import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { fetchLiveWeather, fetchUsdTryRate } from '../../services/home-live-data';
@@ -18,20 +19,16 @@ const editIcon = require('../../assets/icon/edit.png');
 const star = require('../../assets/icon/stars.png');
 const chatbotIcon = require('../../assets/chatbot/chatbot .png');
 
-const SUBTITLE_MESSAGES = [
-  '🗺️ Edirne\'de hazır rotaları keşfedin',
-  '🎉 Bu hafta Edirne\'de hangi etkinlikler var?',
-  '👥 Arkadaşlarınızın rotasını keşfedin.',
-  '🏛️ Tarihi rotalarla Edirne\'yi gezin',
-  '⭐ Popüler rotalara göz atın',
-  '🎉 Yeni rotalar hazırlanmış',
-];
-
 export default function HomeScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation(); // Çeviri kancası eklendi
+
+  // JSON'dan dizi olarak alıyoruz
+  const subtitleMessages = t('home.subtitles', { returnObjects: true }) as string[];
+
   const [temperatureC, setTemperatureC] = useState<number | null>(null);
-  const [weatherDescription, setWeatherDescription] = useState('Güncel');
+  const [weatherDescription, setWeatherDescription] = useState('');
   const [usdTryRate, setUsdTryRate] = useState<number | null>(null);
   const [chatbotModalOpen, setChatbotModalOpen] = useState(false);
   const [subtitleIndex, setSubtitleIndex] = useState(0);
@@ -70,9 +67,12 @@ export default function HomeScreen() {
   // Günlük Değişen Altyazı Mesajı
   useEffect(() => {
     const today = new Date().getDate();
-    const messageIndex = today % SUBTITLE_MESSAGES.length;
-    setSubtitleIndex(messageIndex);
-  }, []);
+    // Güvenlik: Eğer dizi yüklenemediyse veya boşsa hatayı önlemek için
+    if (subtitleMessages && subtitleMessages.length > 0) {
+      const messageIndex = today % subtitleMessages.length;
+      setSubtitleIndex(messageIndex);
+    }
+  }, [subtitleMessages]);
 
   // Yaklaşan Etkinlikleri API'den Yükleme
   useEffect(() => {
@@ -104,17 +104,17 @@ export default function HomeScreen() {
 
   const weatherChipText = useMemo(() => {
     if (temperatureC == null) {
-      return '☁️ Hava yükleniyor';
+      return t('home.loadingWeather');
     }
     return `☀️ ${Math.round(temperatureC)}° ${weatherDescription}`;
-  }, [temperatureC, weatherDescription]);
+  }, [temperatureC, weatherDescription, t]);
 
   const currencyChipText = useMemo(() => {
     if (usdTryRate == null) {
-      return '$ Kur yükleniyor';
+      return t('home.loadingCurrency');
     }
     return `$ USD ${usdTryRate.toFixed(2)}`;
-  }, [usdTryRate]);
+  }, [usdTryRate, t]);
 
   return (
     <View className="flex-1 bg-[#f6f2ee]">
@@ -135,10 +135,12 @@ export default function HomeScreen() {
                 <View className="flex-1 pr-3">
                   <View className="flex-row items-center">
                     <Image source={star} className="mr-2 h-6 w-6" resizeMode="contain" style={{ tintColor: '#ffffff' }} />
-                    <ThemedText lightColor="#ffffff" darkColor="#ffffff" className="text-[28px] font-black leading-[32px] text-white">Keşfi Edirne</ThemedText>
+                    <ThemedText lightColor="#ffffff" darkColor="#ffffff" className="text-[28px] font-black leading-[32px] text-white">
+                      {t('home.hero.appName')}
+                    </ThemedText>
                   </View>
                   <ThemedText lightColor="#ffffff" darkColor="#ffffff" className="mt-1 text-[13px] leading-[18px] text-white/90">
-                    Tarihi keşfedin, rotanızı planlayın
+                    {t('home.hero.subtitle')}
                   </ThemedText>
                 </View>
               </View>
@@ -146,8 +148,12 @@ export default function HomeScreen() {
               <View className="rounded-[26px] border border-white/70 bg-white shadow-sm shadow-black/10">
                 <View className="flex-row items-center justify-between px-5 pb-4 pt-4">
                   <View className="flex-1 pr-3">
-                    <ThemedText className="text-[27px] font-extrabold text-[#1f1f1f]">Bugün nereyi keşfedelim?</ThemedText>
-                    <ThemedText className="mt-1 text-[13px] text-[#6f6f6f]">{SUBTITLE_MESSAGES[subtitleIndex]}</ThemedText>
+                    <ThemedText className="text-[27px] font-extrabold text-[#1f1f1f]">
+                      {t('home.hero.question')}
+                    </ThemedText>
+                    <ThemedText className="mt-1 text-[13px] text-[#6f6f6f]">
+                      {subtitleMessages[subtitleIndex]}
+                    </ThemedText>
                   </View>
 
                   <View className="h-11 w-11 items-center justify-center rounded-full bg-[#fff3f2]">
@@ -176,8 +182,8 @@ export default function HomeScreen() {
                 <View className="mb-4 h-[44px] w-[44px] items-center justify-center rounded-[15px] bg-[#fff4f4]">
                   <Image source={mapIcon} className="h-6 w-6" resizeMode="contain" />
                 </View>
-                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">Harita</ThemedText>
-                <ThemedText className="text-xs leading-4 text-[#6d7a88]">Kendi rotanızı planlayın.</ThemedText>
+                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">{t('home.navCards.mapTitle')}</ThemedText>
+                <ThemedText className="text-xs leading-4 text-[#6d7a88]">{t('home.navCards.mapDesc')}</ThemedText>
               </TouchableOpacity>
             </Link>
 
@@ -186,8 +192,8 @@ export default function HomeScreen() {
                 <View className="mb-4 h-[44px] w-[44px] items-center justify-center rounded-[15px] bg-[#fff6ea]">
                   <Image source={rotaIcon} className="h-6 w-6" resizeMode="contain" style={{ tintColor: '#d08a1f' }} />
                 </View>
-                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">Hazır Rotalar</ThemedText>
-                <ThemedText className="text-xs leading-4 text-[#6d7a88]">Sizin için hazırlanmış rotalar.</ThemedText>
+                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">{t('home.navCards.routesTitle')}</ThemedText>
+                <ThemedText className="text-xs leading-4 text-[#6d7a88]">{t('home.navCards.routesDesc')}</ThemedText>
               </TouchableOpacity>
             </Link>
 
@@ -196,8 +202,8 @@ export default function HomeScreen() {
                 <View className="mb-4 h-[44px] w-[44px] items-center justify-center rounded-[15px] bg-[#edf5ff]">
                   <Image source={eventsIcon} className="h-6 w-6" resizeMode="contain" />
                 </View>
-                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">Etkinlikler</ThemedText>
-                <ThemedText className="text-xs leading-4 text-[#6d7a88]">Bölgenizde olan etkinlikler.</ThemedText>
+                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">{t('home.navCards.eventsTitle')}</ThemedText>
+                <ThemedText className="text-xs leading-4 text-[#6d7a88]">{t('home.navCards.eventsDesc')}</ThemedText>
               </TouchableOpacity>
             </Link>
 
@@ -206,8 +212,8 @@ export default function HomeScreen() {
                 <View className="mb-4 h-[44px] w-[44px] items-center justify-center rounded-[15px] bg-[#f5edff]">
                   <Image source={groupsIcon} className="h-6 w-6" resizeMode="contain" />
                 </View>
-                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">Topluluk</ThemedText>
-                <ThemedText className="text-xs leading-4 text-[#6d7a88]">Toplulukla paylaşılan rotalara ulaşın.</ThemedText>
+                <ThemedText className="mb-2 text-base font-extrabold text-[#15324b]">{t('home.navCards.communityTitle')}</ThemedText>
+                <ThemedText className="text-xs leading-4 text-[#6d7a88]">{t('home.navCards.communityDesc')}</ThemedText>
               </TouchableOpacity>
             </Link>
           </View>
@@ -219,9 +225,9 @@ export default function HomeScreen() {
                   <Image source={editIcon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: '#b10016' }} />
                 </View>
                 <View className="flex-1">
-                  <ThemedText className="text-base font-black text-[#111827]">Keşfe Katılın ✨</ThemedText>
+                  <ThemedText className="text-base font-black text-[#111827]">{t('home.guest.title')}</ThemedText>
                   <ThemedText className="mt-0.5 text-[13px] font-medium text-gray-500">
-                    Edirne'yi bir yerel gibi deneyimlemek için üye olun.
+                    {t('home.guest.desc')}
                   </ThemedText>
                 </View>
               </View>
@@ -229,21 +235,21 @@ export default function HomeScreen() {
               <View className="mb-5 px-1">
                 <View className="mb-2 flex-row items-center">
                   <Text className="mr-2 text-[10px] text-[#b10016]">●</Text>
-                  <ThemedText className="text-[13px] font-semibold text-gray-700">Kendi özel rotalarınızı oluşturun ve kaydedin</ThemedText>
+                  <ThemedText className="text-[13px] font-semibold text-gray-700">{t('home.guest.bullet1')}</ThemedText>
                 </View>
                 <View className="mb-2 flex-row items-center">
                   <Text className="mr-2 text-[10px] text-[#b10016]">●</Text>
-                  <ThemedText className="text-[13px] font-semibold text-gray-700">Keşiflerinizi toplulukla ve arkadaşlarınızla paylaşın</ThemedText>
+                  <ThemedText className="text-[13px] font-semibold text-gray-700">{t('home.guest.bullet2')}</ThemedText>
                 </View>
                 <View className="flex-row items-center">
                   <Text className="mr-2 text-[10px] text-[#b10016]">●</Text>
-                  <ThemedText className="text-[13px] font-semibold text-gray-700">Görevleri tamamlayarak benzersiz rozetler kazanın</ThemedText>
+                  <ThemedText className="text-[13px] font-semibold text-gray-700">{t('home.guest.bullet3')}</ThemedText>
                 </View>
               </View>
 
               <Link href="/register" asChild>
                 <TouchableOpacity className="items-center justify-center rounded-xl bg-[#b10016] py-3.5 shadow-sm shadow-[#b10016]/15" activeOpacity={0.9}>
-                  <ThemedText className="text-[14px] font-bold tracking-wide text-white">Hesap Oluştur</ThemedText>
+                  <ThemedText className="text-[14px] font-bold tracking-wide text-white">{t('home.guest.button')}</ThemedText>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -256,11 +262,11 @@ export default function HomeScreen() {
                 <View className="h-8 w-8 items-center justify-center rounded-full bg-[#ef4444]/10">
                   <IconSymbol name="newspaper" size={16} color="#ef4444" />
                 </View>
-                <ThemedText className="text-[16px] font-extrabold text-[#1e293b]">Edirne Haberleri</ThemedText>
+                <ThemedText className="text-[16px] font-extrabold text-[#1e293b]">{t('home.news.title')}</ThemedText>
               </View>
               <Link href="/(account)/news" asChild>
                 <TouchableOpacity className="rounded-full bg-[#f1f5f9] px-3 py-1">
-                  <ThemedText className="text-[12px] font-bold text-[#64748b]">Tümü →</ThemedText>
+                  <ThemedText className="text-[12px] font-bold text-[#64748b]">{t('home.news.seeAll')}</ThemedText>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -268,8 +274,8 @@ export default function HomeScreen() {
             <Link href="/(account)/news" asChild>
               <TouchableOpacity className="rounded-xl bg-[#f8fafc] border border-[#f1f5f9] p-3.5 flex-row items-center">
                 <View className="flex-1 pr-2">
-                  <Text className="text-[14px] font-bold text-[#0f172a]" numberOfLines={1}>Şehir Portalı ve Güncel Gelişmeler</Text>
-                  <Text className="text-[12px] text-[#64748b] mt-1 leading-[16px]">Edirne genelindeki en yeni kültürel başlıklar, yerel duyurular ve son dakika olayları.</Text>
+                  <Text className="text-[14px] font-bold text-[#0f172a]" numberOfLines={1}>{t('home.news.cardTitle')}</Text>
+                  <Text className="text-[12px] text-[#64748b] mt-1 leading-[16px]">{t('home.news.cardDesc')}</Text>
                 </View>
                 <IconSymbol name="chevron.right" size={16} color="#94a3b8" />
               </TouchableOpacity>
@@ -283,17 +289,17 @@ export default function HomeScreen() {
                 <View className="h-8 w-8 items-center justify-center rounded-full bg-[#dc2626]/10">
                   <IconSymbol name="calendar" size={16} color="#dc2626" />
                 </View>
-                <ThemedText className="text-[16px] font-extrabold text-[#1e293b]">Yaklaşan Etkinlikler</ThemedText>
+                <ThemedText className="text-[16px] font-extrabold text-[#1e293b]">{t('home.events.title')}</ThemedText>
               </View>
               <Link href="/events" asChild>
                 <TouchableOpacity className="rounded-full bg-[#f1f5f9] px-3 py-1">
-                  <ThemedText className="text-[12px] font-bold text-[#64748b]">Filtrele →</ThemedText>
+                  <ThemedText className="text-[12px] font-bold text-[#64748b]">{t('home.events.filter')}</ThemedText>
                 </TouchableOpacity>
               </Link>
             </View>
 
             {eventsLoading ? (
-              <ThemedText className="text-[12px] text-[#888] px-1">Etkinlikler senkronize ediliyor...</ThemedText>
+              <ThemedText className="text-[12px] text-[#888] px-1">{t('home.events.syncing')}</ThemedText>
             ) : upcomingEvents.length > 0 ? (
               upcomingEvents.map((event) => (
                 <TouchableOpacity key={event.id} className="mb-2.5 flex-row items-center rounded-[16px] border border-[#f1f5f9] bg-[#f8fafc] p-3">
@@ -312,104 +318,96 @@ export default function HomeScreen() {
                       </ThemedText>
                     </View>
                     <Text className="text-[13px] font-bold text-[#1e293b]" numberOfLines={1}>
-                      {event.title || 'Kültür Etkinliği'}
+                      {event.title || t('home.events.fallbackTitle')}
                     </Text>
-                    <ThemedText className="text-[11px] text-[#64748b] mt-0.5">{event.date || 'Tarih belirtilmedi'} · {event.time || ''}</ThemedText>
+                    <ThemedText className="text-[11px] text-[#64748b] mt-0.5">
+                      {event.date || t('home.events.fallbackDate')} · {event.time || ''}
+                    </ThemedText>
                   </View>
                 </TouchableOpacity>
               ))
             ) : (
-              <ThemedText className="text-[12px] text-[#888] px-1">Yakın tarihte etkinlik bulunmuyor.</ThemedText>
+              <ThemedText className="text-[12px] text-[#888] px-1">{t('home.events.empty')}</ThemedText>
             )}
           </View>
 
           {/* 🌷 3. Kültürel Vitrin: Edirne Efsaneleri / Hikayeler */}
-<TouchableOpacity 
-  className="mx-4 mb-4 overflow-hidden rounded-[20px] border border-[#f1f5f9] bg-white p-5 shadow-sm shadow-black/5"
-  activeOpacity={0.9}
-  onPress={() => router.push('/(account)/stories')}
->
-  {/* Sol tarafa şık bir renk vurgusu koyuyoruz */}
-  <View className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#d97706]" />
-  
-  <View className="flex-row items-start justify-between pl-1">
-    <View className="flex-1 pr-4">
-      <View className="mb-2 flex-row items-center gap-2">
-        <View className="h-7 w-7 items-center justify-center rounded-lg bg-[#d97706]/10">
-          <IconSymbol name="sparkles" size={14} color="#d97706" />
-        </View>
-        <ThemedText className="text-[14px] font-black uppercase tracking-wider text-[#d97706]">Edirne Efsaneleri</ThemedText>
-      </View>
-      
-      <Text className="text-[17px] font-extrabold text-[#1e293b] mb-1.5">Ters Lale'nin Gizemi & Şifahane</Text>
-      <Text className="text-[13px] leading-[18px] text-[#64748b]">
-        Nesiller boyu dilden dile anlatılan kadim şehir hikayelerini, halk efsanelerini ve gizemleri keşfedin.
-      </Text>
-    </View>
-    
-    <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] self-center">
-      <IconSymbol name="chevron.right" size={16} color="#64748b" />
-    </View>
-  </View>
-</TouchableOpacity>
+          <TouchableOpacity 
+            className="mx-4 mb-4 overflow-hidden rounded-[20px] border border-[#f1f5f9] bg-white p-5 shadow-sm shadow-black/5"
+            activeOpacity={0.9}
+            onPress={() => router.push('/(account)/stories')}
+          >
+            <View className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#d97706]" />
+            <View className="flex-row items-start justify-between pl-1">
+              <View className="flex-1 pr-4">
+                <View className="mb-2 flex-row items-center gap-2">
+                  <View className="h-7 w-7 items-center justify-center rounded-lg bg-[#d97706]/10">
+                    <IconSymbol name="sparkles" size={14} color="#d97706" />
+                  </View>
+                  <ThemedText className="text-[14px] font-black uppercase tracking-wider text-[#d97706]">{t('home.stories.tag')}</ThemedText>
+                </View>
+                <Text className="text-[17px] font-extrabold text-[#1e293b] mb-1.5">{t('home.stories.title')}</Text>
+                <Text className="text-[13px] leading-[18px] text-[#64748b]">
+                  {t('home.stories.desc')}
+                </Text>
+              </View>
+              <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] self-center">
+                <IconSymbol name="chevron.right" size={16} color="#64748b" />
+              </View>
+            </View>
+          </TouchableOpacity>
 
-{/* 🏛️ 4. Kültürel Vitrin: Edirne Hakkında Genel Bilgi */}
-<TouchableOpacity 
-  className="mx-4 mb-4 overflow-hidden rounded-[20px] border border-[#f1f5f9] bg-white p-5 shadow-sm shadow-black/5"
-  activeOpacity={0.9}
-  onPress={() => router.push('/(account)/about')}
->
-  <View className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#dc2626]" />
-  
-  <View className="flex-row items-start justify-between pl-1">
-    <View className="flex-1 pr-4">
-      <View className="mb-2 flex-row items-center gap-2">
-        <View className="h-7 w-7 items-center justify-center rounded-lg bg-[#dc2626]/10">
-          <IconSymbol name="building.columns" size={14} color="#dc2626" />
-        </View>
-        <ThemedText className="text-[14px] font-black uppercase tracking-wider text-[#dc2626]">Kültür Mirası</ThemedText>
-      </View>
-      
-      <Text className="text-[17px] font-extrabold text-[#1e293b] mb-1.5">92 Yıllık Osmanlı Başkenti</Text>
-      <Text className="text-[13px] leading-[18px] text-[#64748b]">
-        Mimar Sinan'ın şaheseri Selimiye'ye ev sahipliği yapan UNESCO korumasındaki tarihi yakından tanıyın.
-      </Text>
-    </View>
-    
-    <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] self-center">
-      <IconSymbol name="chevron.right" size={16} color="#64748b" />
-    </View>
-  </View>
-</TouchableOpacity>
+          {/* 🏛️ 4. Kültürel Vitrin: Edirne Hakkında Genel Bilgi */}
+          <TouchableOpacity 
+            className="mx-4 mb-4 overflow-hidden rounded-[20px] border border-[#f1f5f9] bg-white p-5 shadow-sm shadow-black/5"
+            activeOpacity={0.9}
+            onPress={() => router.push('/(account)/about')}
+          >
+            <View className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#dc2626]" />
+            <View className="flex-row items-start justify-between pl-1">
+              <View className="flex-1 pr-4">
+                <View className="mb-2 flex-row items-center gap-2">
+                  <View className="h-7 w-7 items-center justify-center rounded-lg bg-[#dc2626]/10">
+                    <IconSymbol name="building.columns" size={14} color="#dc2626" />
+                  </View>
+                  <ThemedText className="text-[14px] font-black uppercase tracking-wider text-[#dc2626]">{t('home.about.tag')}</ThemedText>
+                </View>
+                <Text className="text-[17px] font-extrabold text-[#1e293b] mb-1.5">{t('home.about.title')}</Text>
+                <Text className="text-[13px] leading-[18px] text-[#64748b]">
+                  {t('home.about.desc')}
+                </Text>
+              </View>
+              <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] self-center">
+                <IconSymbol name="chevron.right" size={16} color="#64748b" />
+              </View>
+            </View>
+          </TouchableOpacity>
 
-{/* 👥 5. Premium Tasarımlı Bölüm: Topluluk Rotaları */}
-<TouchableOpacity 
-  className="mx-4 mb-4 overflow-hidden rounded-[20px] border border-[#f1f5f9] bg-white p-5 shadow-sm shadow-black/5"
-  activeOpacity={0.9}
-  onPress={() => router.push('/community')}
->
-  <View className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#9333ea]" />
-  
-  <View className="flex-row items-start justify-between pl-1">
-    <View className="flex-1 pr-4">
-      <View className="mb-2 flex-row items-center gap-2">
-        <View className="h-7 w-7 items-center justify-center rounded-lg bg-[#9333ea]/10">
-          <IconSymbol name="person.3.fill" size={12} color="#9333ea" />
-        </View>
-        <ThemedText className="text-[14px] font-black uppercase tracking-wider text-[#9333ea]">Topluluk Rotaları</ThemedText>
-      </View>
-      
-      <Text className="text-[17px] font-extrabold text-[#1e293b] mb-1.5">Kaşiflerin Ayak İzleri</Text>
-      <Text className="text-[13px] leading-[18px] text-[#64748b]">
-        Diğer gezginlerin deneyimlediği rotaları inceleyin ya da kendi gezi planınızı hemen toplulukla paylaşın.
-      </Text>
-    </View>
-    
-    <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] self-center">
-      <IconSymbol name="chevron.right" size={16} color="#64748b" />
-    </View>
-  </View>
-</TouchableOpacity>
+          {/* 👥 5. Premium Tasarımlı Bölüm: Topluluk Rotaları */}
+          <TouchableOpacity 
+            className="mx-4 mb-4 overflow-hidden rounded-[20px] border border-[#f1f5f9] bg-white p-5 shadow-sm shadow-black/5"
+            activeOpacity={0.9}
+            onPress={() => router.push('/community')}
+          >
+            <View className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#9333ea]" />
+            <View className="flex-row items-start justify-between pl-1">
+              <View className="flex-1 pr-4">
+                <View className="mb-2 flex-row items-center gap-2">
+                  <View className="h-7 w-7 items-center justify-center rounded-lg bg-[#9333ea]/10">
+                    <IconSymbol name="person.3.fill" size={12} color="#9333ea" />
+                  </View>
+                  <ThemedText className="text-[14px] font-black uppercase tracking-wider text-[#9333ea]">{t('home.community.tag')}</ThemedText>
+                </View>
+                <Text className="text-[17px] font-extrabold text-[#1e293b] mb-1.5">{t('home.community.title')}</Text>
+                <Text className="text-[13px] leading-[18px] text-[#64748b]">
+                  {t('home.community.desc')}
+                </Text>
+              </View>
+              <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] self-center">
+                <IconSymbol name="chevron.right" size={16} color="#64748b" />
+              </View>
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 

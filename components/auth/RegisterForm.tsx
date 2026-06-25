@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n import edildi
 import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function RegisterForm({
@@ -13,6 +14,7 @@ export default function RegisterForm({
   errorMessage?: string | null;
   isSubmitting?: boolean;
 }) {
+  const { t } = useTranslation(); // Çeviri fonksiyonu
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,27 +38,35 @@ export default function RegisterForm({
       <View
         className="w-[90%] max-w-[380px] rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-lg shadow-black/10"
       >
-        <ThemedText className="mb-1 text-[33px] font-bold leading-[38px] text-[#e30613]">Hesap Oluşturun</ThemedText>
-        <ThemedText className="mb-5 text-[22px] text-[#4b5563]">Yeni bir hesap oluşturun</ThemedText>
+        <ThemedText className="mb-1 text-[33px] font-bold leading-[38px] text-[#e30613]">
+          {t('registerForm.title')}
+        </ThemedText>
+        <ThemedText className="mb-5 text-[22px] text-[#4b5563]">
+          {t('registerForm.subtitle')}
+        </ThemedText>
 
-        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Ad Soyad</ThemedText>
+        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+          {t('registerForm.nameLabel')}
+        </ThemedText>
         <View className="mb-3 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
           <IconSymbol name="person" size={16} color="#6b7280" />
           <TextInput
             className="ml-2 flex-1 text-[13px] text-[#111827]"
-            placeholder="Ad Soyad"
+            placeholder={t('registerForm.namePlaceholder')}
             placeholderTextColor="#9ca3af"
             value={name}
             onChangeText={setName}
           />
         </View>
 
-        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>
+        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+          {t('registerForm.emailLabel')}
+        </ThemedText>
         <View className="mb-3 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
           <IconSymbol name="envelope" size={16} color="#6b7280" />
           <TextInput
             className="ml-2 flex-1 text-[13px] text-[#111827]"
-            placeholder="Mail adresinizi"
+            placeholder={t('registerForm.emailPlaceholder')}
             placeholderTextColor="#9ca3af"
             value={email}
             onChangeText={setEmail}
@@ -65,12 +75,14 @@ export default function RegisterForm({
           />
         </View>
 
-        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre</ThemedText>
+        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+          {t('registerForm.passwordLabel')}
+        </ThemedText>
         <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
           <IconSymbol name="lock" size={16} color="#6b7280" />
           <TextInput
             className="ml-2 flex-1 text-[13px] text-[#111827]"
-            placeholder="Şifrenizi giriniz"
+            placeholder={t('registerForm.passwordPlaceholder')}
             placeholderTextColor="#9ca3af"
             value={password}
             onChangeText={setPassword}
@@ -85,12 +97,14 @@ export default function RegisterForm({
           </TouchableOpacity>
         </View>
 
-        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">Şifre Tekrar</ThemedText>
+        <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+          {t('registerForm.confirmPasswordLabel')}
+        </ThemedText>
         <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
           <IconSymbol name="lock" size={16} color="#6b7280" />
           <TextInput
             className="ml-2 flex-1 text-[13px] text-[#111827]"
-            placeholder="Şifrenizi tekrar giriniz"
+            placeholder={t('registerForm.confirmPasswordPlaceholder')}
             placeholderTextColor="#9ca3af"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -105,42 +119,38 @@ export default function RegisterForm({
           </TouchableOpacity>
         </View>
 
-      
+        {/* 🔐 KVKK ONAY CHECKBOX SATIRI */}
+        <View className="mb-4 flex-row items-start gap-2 pr-2">
+          <TouchableOpacity 
+            onPress={() => setKvkkChecked(v => !v)}
+            className={`mt-0.5 h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
+              kvkkChecked ? 'border-[#e30613] bg-[#e30613]' : 'border-[#d1d5db] bg-white'
+            }`}
+            activeOpacity={0.8}
+          >
+            {kvkkChecked && (
+              <IconSymbol name="checkmark" size={12} color="#ffffff" /> 
+            )}
+          </TouchableOpacity>
 
-       {/* 🔐 KVKK ONAY CHECKBOX SATIRI */}
-<View className="mb-4 flex-row items-start gap-2 pr-2">
-  <TouchableOpacity 
-    onPress={() => setKvkkChecked(v => !v)}
-    className={`mt-0.5 h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
-      kvkkChecked ? 'border-[#e30613] bg-[#e30613]' : 'border-[#d1d5db] bg-white'
-    }`}
-    activeOpacity={0.8}
-  >
-    {/* Eski küçük kutu yerine gerçek Check ikonu ekledik */}
-    {kvkkChecked && (
-      <IconSymbol name="checkmark" size={12} color="#ffffff" /> 
-      // Not: Eğer 'checkmark' ikon ismini kabul etmezse 'check' veya 'checkmark.png' gibi projenizdeki mevcut bir onay ikon adını yazabilirsiniz.
-    )}
-  </TouchableOpacity>
-
-  <View className="flex-1 flex-row flex-wrap items-center">
-    <TouchableOpacity onPress={() => setKvkkChecked(v => !v)} activeOpacity={1}>
-      <ThemedText className="text-[12px] leading-[16px] text-[#4b5563]">
-        Kullanıcı sözleşmesini ve{' '}
-      </ThemedText>
-    </TouchableOpacity>
-    <TouchableOpacity onPress={() => setKvkkModalVisible(true)}>
-      <ThemedText className="text-[12px] leading-[16px] font-bold text-[#e30613] underline">
-        KVKK Aydınlatma Metni'ni
-      </ThemedText>
-    </TouchableOpacity>
-    <TouchableOpacity onPress={() => setKvkkChecked(v => !v)} activeOpacity={1}>
-      <ThemedText className="text-[12px] leading-[16px] text-[#4b5563]">
-        {' '}okudum, onaylıyorum.
-      </ThemedText>
-    </TouchableOpacity>
-  </View>
-</View>
+          <View className="flex-1 flex-row flex-wrap items-center">
+            <TouchableOpacity onPress={() => setKvkkChecked(v => !v)} activeOpacity={1}>
+              <ThemedText className="text-[12px] leading-[16px] text-[#4b5563]">
+                {t('registerForm.kvkkText1')}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setKvkkModalVisible(true)}>
+              <ThemedText className="text-[12px] leading-[16px] font-bold text-[#e30613] underline">
+                {t('registerForm.kvkkLink')}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setKvkkChecked(v => !v)} activeOpacity={1}>
+              <ThemedText className="text-[12px] leading-[16px] text-[#4b5563]">
+                {t('registerForm.kvkkText2')}
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {displayedError ? (
           <View className="mb-4 rounded-[8px] bg-[#fef2f2] px-3 py-2">
@@ -154,35 +164,35 @@ export default function RegisterForm({
           onPress={() => {
             setLocalError(null);
             if (!name.trim()) {
-              setLocalError('Lütfen adınızı giriniz.');
+              setLocalError(t('registerForm.errors.emptyName'));
               return;
             }
             if (!email.trim()) {
-              setLocalError('Lütfen e-posta adresinizi giriniz.');
+              setLocalError(t('registerForm.errors.emptyEmail'));
               return;
             }
             if (!password.trim()) {
-              setLocalError('Lütfen şifrenizi giriniz.');
+              setLocalError(t('registerForm.errors.emptyPassword'));
               return;
             }
             if (password.length < 6) {
-              setLocalError('Şifre en az 6 karakter olmalıdır.');
+              setLocalError(t('registerForm.errors.passwordLength'));
               return;
             }
             if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-              setLocalError('Şifre en az bir harf ve bir rakam içermelidir.');
+              setLocalError(t('registerForm.errors.passwordPattern'));
               return;
             }
             if (!confirmPassword.trim()) {
-              setLocalError('Lütfen şifrenizi tekrar giriniz.');
+              setLocalError(t('registerForm.errors.emptyConfirmPassword'));
               return;
             }
             if (password !== confirmPassword) {
-              setLocalError('Şifreler eşleşmiyor.');
+              setLocalError(t('registerForm.errors.passwordMismatch'));
               return;
             }
             if (!kvkkChecked) {
-              setLocalError('Devam etmek için KVKK metnini onaylamalısınız.');
+              setLocalError(t('registerForm.errors.kvkkRequired'));
               return;
             }
             console.log('[RegisterForm] Attempting register with email:', email, 'name:', name);
@@ -190,14 +200,18 @@ export default function RegisterForm({
           }}
         >
           <ThemedText className="text-[14px] font-bold text-white">
-            {isSubmitting ? 'Hesap oluşturuluyor...' : 'Hesap Oluştur'}
+            {isSubmitting ? t('registerForm.submitting') : t('registerForm.submitButton')}
           </ThemedText>
         </TouchableOpacity>
 
         <View className="flex-row items-center justify-center gap-1">
-          <ThemedText className="text-[12px] text-[#6b7280]">Hesabınız var mı?</ThemedText>
+          <ThemedText className="text-[12px] text-[#6b7280]">
+            {t('registerForm.haveAccount')}
+          </ThemedText>
           <TouchableOpacity onPress={() => router.push('/login')}>
-            <ThemedText className="text-[12px] font-bold text-[#e30613]">Giriş yapın</ThemedText>
+            <ThemedText className="text-[12px] font-bold text-[#e30613]">
+              {t('registerForm.loginText')}
+            </ThemedText>
           </TouchableOpacity>
         </View>
       </View>
@@ -212,7 +226,9 @@ export default function RegisterForm({
         <View className="flex-1 items-center justify-center bg-black/50 px-4">
           <View className="w-full max-w-[360px] rounded-[16px] bg-white p-5 shadow-2xl">
             <View className="mb-3 flex-row items-center justify-between border-b border-[#e5e7eb] pb-2">
-              <Text className="text-[16px] font-bold text-[#111827]">KVKK Aydınlatma Metni</Text>
+              <Text className="text-[16px] font-bold text-[#111827]">
+                {t('registerForm.kvkkModal.title')}
+              </Text>
               <TouchableOpacity onPress={() => setKvkkModalVisible(false)} className="p-1">
                 <Text className="text-[18px] font-bold text-[#6b7280]">✕</Text>
               </TouchableOpacity>
@@ -220,31 +236,31 @@ export default function RegisterForm({
 
             <ScrollView className="max-h-[260px] mb-4 pr-1" showsVerticalScrollIndicator>
               <Text className="text-[12px] leading-[18px] text-[#4b5563] font-semibold mb-1">
-                1. Veri Sorumlusu
+                {t('registerForm.kvkkModal.section1Title')}
               </Text>
               <Text className="text-[12px] leading-[18px] text-[#6b7280] mb-3">
-                Keşfet Edirne mobil uygulaması olarak, kişisel verilerinizin güvenliğine ogun işlenmesine azami hassasiyet gösteriyoruz.
+                {t('registerForm.kvkkModal.section1Desc')}
               </Text>
 
               <Text className="text-[12px] leading-[18px] text-[#4b5563] font-semibold mb-1">
-                2. İşlenen Verileriniz ve Amacı
+                {t('registerForm.kvkkModal.section2Title')}
               </Text>
               <Text className="text-[12px] leading-[18px] text-[#6b7280] mb-3">
-                Kayıt esnasında sağladığınız Ad-Soyad ve E-posta verileriniz, kullanıcı profilinizin doğrulanması, güvenli giriş altyapısının sağlanması ve uygulama içerisinde oluşturduğunuz turistik rotaların kaydedilebilmesi amacıyla 6698 sayılı Kanun’un 5. maddesine uygun olarak işlenmektedir.
+                {t('registerForm.kvkkModal.section2Desc')}
               </Text>
 
               <Text className="text-[12px] leading-[18px] text-[#4b5563] font-semibold mb-1">
-                3. Verilerin Aktarılması ve Korunması
+                {t('registerForm.kvkkModal.section3Title')}
               </Text>
               <Text className="text-[12px] leading-[18px] text-[#6b7280] mb-3">
-                Kişisel verileriniz ticari amaçlarla üçüncü kişilere asla satılmaz veya aktarılmaz. Verileriniz, veri tabanımızda şifrelenmiş (encrypted) olarak ve güncel siber güvenlik protokolleri altında saklanmaktadır.
+                {t('registerForm.kvkkModal.section3Desc')}
               </Text>
 
               <Text className="text-[12px] leading-[18px] text-[#4b5563] font-semibold mb-1">
-                4. Haklarınız
+                {t('registerForm.kvkkModal.section4Title')}
               </Text>
               <Text className="text-[12px] leading-[18px] text-[#6b7280]">
-                Kanun’un 11. maddesi uyarınca dilediğiniz zaman uygulamanın destek hattı üzerinden verilerinizin silinmesini, güncellenmesini veya işlenip işlenmediği hakkında bilgi talep etme hakkına sahipsiniz.
+                {t('registerForm.kvkkModal.section4Desc')}
               </Text>
             </ScrollView>
 
@@ -252,7 +268,9 @@ export default function RegisterForm({
               onPress={() => setKvkkModalVisible(false)}
               className="w-full items-center rounded-[8px] bg-[#e30613] py-2.5"
             >
-              <Text className="text-[13px] font-bold text-white">Tamam</Text>
+              <Text className="text-[13px] font-bold text-white">
+                {t('registerForm.kvkkModal.closeButton')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

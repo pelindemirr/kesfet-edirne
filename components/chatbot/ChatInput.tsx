@@ -22,10 +22,15 @@ export default function ChatInput({ onSend, placeholder = 'Mesaj yaz...' }: Chat
         value={value}
         onChangeText={setValue}
         placeholder={placeholder}
+        autoCapitalize="sentences"
+        autoCorrect={true}
+        spellCheck={false}
         className="flex-1 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-[14px]"
+        onSubmitEditing={handleSend}
+        returnKeyType="send"
       />
       <TouchableOpacity onPress={handleSend} className="rounded-xl bg-[#b10016] px-4 py-2">
-        <Text className="text-[13px] font-bold text-white">Gonder</Text>
+        <Text className="text-[13px] font-bold text-white">Gönder</Text>
       </TouchableOpacity>
     </View>
   );

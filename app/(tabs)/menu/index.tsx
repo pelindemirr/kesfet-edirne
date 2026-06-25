@@ -6,35 +6,34 @@ import { useAuthStore } from '@/stores/use-auth-store';
 import { getProfileAvatar, useProfileStore } from '@/stores/use-profile-store';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // eklendi
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type MenuAction = {
   id: string;
-  label: string;
+  labelKey: string; // label → labelKey
   icon: any;
   href: string;
   iconTint: string;
   cardClass: string;
   iconClass: string;
-  isSymbol?: boolean; 
+  isSymbol?: boolean;
   symbolName?: string;
 };
-// app/(tabs)/menu/index.tsx içindeki import alanını bu şekilde eşitle:
 
 const mapIcon = require('../../../assets/icon/map.png');
 const rotaIcon = require('../../../assets/icon/rota.png');
-const eventsIcon = require('../../../assets/icon/events.png');   
-const groupsIcon = require('../../../assets/icon/groups.png');  
-const editIcon = require('../../../assets/icon/edit.png');      
+const eventsIcon = require('../../../assets/icon/events.png');
+const groupsIcon = require('../../../assets/icon/groups.png');
+const editIcon = require('../../../assets/icon/edit.png');
 
-// 🛠️ İkon isimleri evrensel standart küçük harfli halleriyle güncellendi
 const menuActions: MenuAction[] = [
   {
     id: 'home',
-    label: 'Ana Sayfa',
+    labelKey: 'menuScreen.menuActions.home',
     icon: null,
     isSymbol: true,
-    symbolName: 'house', // Evrensel ikon ismi
+    symbolName: 'house',
     href: '/(tabs)',
     iconTint: '#d32f2f',
     cardClass: 'border-[#ffd8d6] bg-[#fff4f4]',
@@ -42,7 +41,7 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'map',
-    label: 'Harita',
+    labelKey: 'menuScreen.menuActions.map',
     icon: mapIcon,
     href: '/explore',
     iconTint: '#2b72d6',
@@ -51,10 +50,10 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'favorites',
-    label: 'Favori Mekanlarım',
+    labelKey: 'menuScreen.menuActions.favorites',
     icon: null,
     isSymbol: true,
-    symbolName: 'heart', // Evrensel ikon ismi
+    symbolName: 'heart',
     href: '/(account)/favorite-places',
     iconTint: '#dc2626',
     cardClass: 'border-[#fca5a5] bg-[#fff5f5]',
@@ -62,7 +61,7 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'saved',
-    label: 'Hazır Rotalar',
+    labelKey: 'menuScreen.menuActions.saved',
     icon: rotaIcon,
     href: '/rota',
     iconTint: '#d08a1f',
@@ -71,7 +70,7 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'created-routes',
-    label: 'Kişisel Rotalarım',
+    labelKey: 'menuScreen.menuActions.createdRoutes',
     icon: rotaIcon,
     href: '/my-routes',
     iconTint: '#c75a12',
@@ -80,7 +79,7 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'community',
-    label: 'Topluluk',
+    labelKey: 'menuScreen.menuActions.community',
     icon: groupsIcon,
     href: '/community',
     iconTint: '#7656d6',
@@ -89,7 +88,7 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'events',
-    label: 'Etkinlikler',
+    labelKey: 'menuScreen.menuActions.events',
     icon: eventsIcon,
     href: '/events',
     iconTint: '#0f8f8b',
@@ -98,10 +97,10 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'news',
-    label: 'Edirne Haberleri',
+    labelKey: 'menuScreen.menuActions.news',
     icon: null,
     isSymbol: true,
-    symbolName: 'newspaper', // Evrensel ikon ismi
+    symbolName: 'newspaper',
     href: '/(account)/news',
     iconTint: '#dc2626',
     cardClass: 'border-[#fca5a5] bg-[#fef2f2]',
@@ -109,7 +108,7 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'stories',
-    label: 'Edirne Efsaneleri',
+    labelKey: 'menuScreen.menuActions.stories',
     icon: null,
     isSymbol: true,
     symbolName: 'sparkles',
@@ -120,10 +119,10 @@ const menuActions: MenuAction[] = [
   },
   {
     id: 'about',
-    label: 'Edirne Hakkında',
+    labelKey: 'menuScreen.menuActions.about',
     icon: null,
     isSymbol: true,
-    symbolName: 'building.columns', // Evrensel ikon ismi
+    symbolName: 'building.columns',
     href: '/(account)/about',
     iconTint: '#b10016',
     cardClass: 'border-[#ffd9d2] bg-[#fff6f2]',
@@ -133,6 +132,7 @@ const menuActions: MenuAction[] = [
 
 export default function MenuScreen() {
   const router = useRouter();
+  const { t } = useTranslation(); // eklendi
   const { isAuthenticated, displayName, signOut } = useAuth();
   const authToken = useAuthStore((state) => state.token);
   const authUser = useAuthStore((state) => state.user);
@@ -180,15 +180,19 @@ export default function MenuScreen() {
             <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-[#fdecee]">
               <IconSymbol name="person.3" size={24} color="#b10016" />
             </View>
-            <Text className="mb-1 text-[19px] font-bold text-[#111827]">Giriş gerekli</Text>
+            <Text className="mb-1 text-[19px] font-bold text-[#111827]">
+              {t('menuScreen.loginRequiredTitle')}
+            </Text>
             <Text className="mb-4 text-[14px] leading-[20px] text-[#6b7280]">
-              Profil menüsü, kayıtlı rotalarınız ve ayarlarınız yalnızca giriş yapan kullanıcılar için açıktır.
+              {t('menuScreen.loginRequiredDesc')}
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(auth)/login' as any)}
               className="items-center rounded-[12px] bg-[#b10016] py-3"
             >
-              <Text className="text-[14px] font-bold text-white">Giriş Yap</Text>
+              <Text className="text-[14px] font-bold text-white">
+                {t('menuScreen.loginButton')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -197,8 +201,8 @@ export default function MenuScreen() {
   }
 
   const userName = useMemo(
-    () => profileNameFromApi?.trim() || displayName?.trim() || 'Kullanıcı',
-    [profileNameFromApi, displayName]
+    () => profileNameFromApi?.trim() || displayName?.trim() || t('menuScreen.defaultUser'),
+    [profileNameFromApi, displayName, t]
   );
   const userEmail = useMemo(() => {
     if (profileEmailFromApi?.trim()) return profileEmailFromApi.trim();
@@ -212,7 +216,7 @@ export default function MenuScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="pb-8 pt-4">
-          
+
           {/* Üst Profil Kartı */}
           <View className="mx-4 rounded-[16px] border border-[#e5e7eb] bg-white p-5 shadow-lg shadow-black/10">
             <View className="flex-row items-center">
@@ -235,14 +239,16 @@ export default function MenuScreen() {
                 ) : null}
               </View>
             </View>
-            
+
             <View className="mt-5 flex-row justify-between gap-2">
               <View className="flex-1 rounded-[12px] border border-[#fed7aa] px-3 py-3.5">
                 <View className="flex-row items-center justify-center">
                   <Text className="text-[24px]">🔥</Text>
                   <Text className="ml-2 text-[24px] font-extrabold text-[#b45309]">{loginStreakFromApi ?? 0}</Text>
                 </View>
-                <Text className="mt-1 text-[11px] text-[#b45309] text-center font-semibold">Gün Serisi</Text>
+                <Text className="mt-1 text-[11px] text-[#b45309] text-center font-semibold">
+                  {t('menuScreen.streakDays')}
+                </Text>
               </View>
             </View>
           </View>
@@ -263,13 +269,17 @@ export default function MenuScreen() {
                       <Image source={action.icon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: action.iconTint }} />
                     )}
                   </View>
-                  <Text className="flex-1 text-[18px] font-semibold text-[#0f172a]">{action.label}</Text>
+                  <Text className="flex-1 text-[18px] font-semibold text-[#0f172a]">
+                    {t(action.labelKey)}
+                  </Text>
                   <IconSymbol name="chevron.right" size={18} color={action.iconTint} />
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text className="mb-2 mt-4 text-[17px] font-semibold text-[#64748b]">Hesap</Text>
+            <Text className="mb-2 mt-4 text-[17px] font-semibold text-[#64748b]">
+              {t('menuScreen.accountLabel')}
+            </Text>
 
             {/* Profil Ayarları */}
             <TouchableOpacity
@@ -279,7 +289,9 @@ export default function MenuScreen() {
               <View className="mr-3 h-9 w-9 items-center justify-center rounded-[10px] bg-[#f3f4f6]">
                 <Image source={editIcon} className="h-5 w-5" resizeMode="contain" style={{ tintColor: '#4b5563' }} />
               </View>
-              <Text className="flex-1 text-[18px] font-semibold text-[#0f172a]">Profil Ayarları</Text>
+              <Text className="flex-1 text-[18px] font-semibold text-[#0f172a]">
+                {t('menuScreen.settingsLabel')}
+              </Text>
               <IconSymbol name="chevron.right" size={18} color="#94a3b8" />
             </TouchableOpacity>
 
@@ -294,11 +306,13 @@ export default function MenuScreen() {
               <View className="mr-3 h-9 w-9 items-center justify-center rounded-[10px] bg-[#fff1f2]">
                 <IconSymbol name="paperplane" size={16} color="#dc2626" />
               </View>
-              <Text className="flex-1 text-[18px] font-semibold text-[#dc2626]">Çıkış Yap</Text>
+              <Text className="flex-1 text-[18px] font-semibold text-[#dc2626]">
+                {t('menuScreen.signOutLabel')}
+              </Text>
               <IconSymbol name="chevron.right" size={18} color="#dc2626" />
             </TouchableOpacity>
           </View>
-          
+
         </View>
       </ScrollView>
     </View>

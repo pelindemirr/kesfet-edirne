@@ -6,6 +6,7 @@ import { createCommunityReview, getCommunityRouteById, type CommunityRoutePlaceI
 import { useAuthStore } from '@/stores/use-auth-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n eklendi
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type RouteComment = {
@@ -24,43 +25,34 @@ type CommunityPlace = {
   tag: string;
 };
 
-function formatDate(text: string) {
+// t fonksiyonunu parametre olarak alıyoruz ki ayları çevirebilelim
+function formatDate(text: string, t: any) {
   const [day, month, year] = text.split('.').map(Number);
-  const months = [
-    'Ocak',
-    'Subat',
-    'Mart',
-    'Nisan',
-    'Mayis',
-    'Haziran',
-    'Temmuz',
-    'Agustos',
-    'Eylul',
-    'Ekim',
-    'Kasim',
-    'Aralik',
-  ];
+  // Ayları JSON dosyasından dizi (array) olarak çekiyoruz
+  const months = t('communityRouteDetail.months', { returnObjects: true }) as string[];
 
-  if (!day || !month || !year) {
+  if (!day || !month || !year || !months || months.length < 12) {
     return text;
   }
 
   return `${day} ${months[month - 1]} ${year}`;
 }
 
-function mapPlace(item: CommunityRoutePlaceItem, index: number): CommunityPlace {
-  const name = item.name ?? item.title ?? `Durak ${index + 1}`;
+// t fonksiyonunu parametre olarak alıyoruz ki varsayılan durak ve etiket isimleri çevrilebilsin
+function mapPlace(item: CommunityRoutePlaceItem, index: number, t: any): CommunityPlace {
+  const name = item.name ?? item.title ?? t('communityRouteDetail.defaultStop', { count: index + 1 });
 
   return {
     id: index + 1,
     name,
     desc: item.description ?? '',
-    tag: 'Mekan',
+    tag: t('communityRouteDetail.tagPlace'),
   };
 }
 
 export default function CommunityRouteDetail() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { displayName } = useAuth();
   const token = useAuthStore((state) => state.token);
   const userId = useAuthStore((state) => state.user?.id);
@@ -90,15 +82,17 @@ export default function CommunityRouteDetail() {
   }>();
 
   const routeId = params.id ?? '1';
-  const authorName = params.creatorName ?? params.authorName ?? 'Anonim Kullanici';
+  const authorName = params.creatorName ?? params.authorName ?? t('communityRouteDetail.anonymous');
   const authorInitial = params.authorInitial ?? authorName.charAt(0).toLocaleUpperCase('tr-TR') ?? 'A';
-  const [createdAt, setCreatedAt] = useState(formatDate(params.createdAt ?? '15.02.2024'));
-  const [title, setTitle] = useState(params.routeName ?? params.route_name ?? 'Tarihi Merkez Turu');
-  const [description, setDescription] = useState(params.description ?? "Edirne'nin en önemli tarihi yapılarını keşfedin");
+  
+  // formatDate artık t'yi kullanıyor
+  const [createdAt, setCreatedAt] = useState(formatDate(params.createdAt ?? '15.02.2024', t));
+  const [title, setTitle] = useState(params.routeName ?? params.route_name ?? t('communityRouteDetail.defaultTitle'));
+  const [description, setDescription] = useState(params.description ?? t('communityRouteDetail.defaultDesc'));
   const [rating, setRating] = useState(params.averageRating ?? params.average_rating ?? params.rating ?? '4.8');
   const [reviewCount, setReviewCount] = useState(params.reviewCount ?? params.review_count ?? params.commentCount ?? '124');
   const views = params.views ?? '1250';
-  const [district, setDistrict] = useState(params.district ?? 'Bilinmiyor');
+  const [district, setDistrict] = useState(params.district ?? t('communityRouteDetail.unknownDistrict'));
   const [stopCount, setStopCount] = useState<number>(Number(params.placeCount ?? params.place_count ?? params.stopCount ?? 0));
   const [places, setPlaces] = useState<CommunityPlace[]>([]);
   const [comments, setComments] = useState<RouteComment[]>([]);
@@ -129,8 +123,8 @@ export default function CommunityRouteDetail() {
             setRating(String(data.averageRating ?? data.average_rating ?? rating));
 
             const placesFromApi = Array.isArray(data.places) ? data.places : [];
-            setPlaces(placesFromApi.map(mapPlace));
-            // Prefer backend-provided place count if available, otherwise derive from places
+            // mapPlace'e t parametresini iletiyoruz
+            setPlaces(placesFromApi.map((item, index) => mapPlace(item, index, t)));
             const backendPlaceCount = Number(data.placeCount ?? data.place_count ?? placesFromApi.length ?? 0);
             setStopCount(backendPlaceCount);
           }
@@ -145,13 +139,12 @@ export default function CommunityRouteDetail() {
     return () => {
       mounted = false;
     };
-  }, [description, district, rating, reviewCount, routeId, title]);
+  }, [description, district, rating, reviewCount, routeId, title, t]); // t bağımlılığı eklendi
 
   const placePreviewText = useMemo(() => {
     if (places.length === 0) {
       return params.creatorAvatar ? '' : '';
     }
-
     return places.map((place) => place.name).join(', ');
   }, [params.creatorAvatar, places]);
 
@@ -165,7 +158,7 @@ export default function CommunityRouteDetail() {
     if (saved) {
       const success = await unsaveCommunityRoute(routeId);
       if (!success) {
-        Alert.alert('Hata', 'Rota kaldırılamadı. Lütfen tekrar deneyin.');
+        Alert.alert(t('communityRouteDetail.alerts.error'), t('communityRouteDetail.alerts.removeError'));
       }
       setSavingRoute(false);
       return;
@@ -189,7 +182,7 @@ export default function CommunityRouteDetail() {
     });
 
     if (!success) {
-      Alert.alert('Hata', 'Rota kaydedilemedi. Lütfen tekrar deneyin.');
+      Alert.alert(t('communityRouteDetail.alerts.error'), t('communityRouteDetail.alerts.saveError'));
     }
 
     setSavingRoute(false);
@@ -199,12 +192,12 @@ export default function CommunityRouteDetail() {
     const trimmedComment = commentText.trim();
 
     if (!trimmedComment) {
-      Alert.alert('Yorum gerekli', 'Lütfen önce bir yorum yazın.');
+      Alert.alert(t('communityRouteDetail.alerts.commentRequiredTitle'), t('communityRouteDetail.alerts.commentRequiredDesc'));
       return;
     }
 
     if (selectedRating < 1 || selectedRating > 5) {
-      Alert.alert('Puan gerekli', 'Lütfen 1 ile 5 arasında bir yıldız seçin.');
+      Alert.alert(t('communityRouteDetail.alerts.ratingRequiredTitle'), t('communityRouteDetail.alerts.ratingRequiredDesc'));
       return;
     }
 
@@ -216,8 +209,8 @@ export default function CommunityRouteDetail() {
       setComments((prev) => [
         {
           id: Date.now(),
-          author: displayName ?? 'Sen',
-          authorInitial: (displayName ?? 'S').charAt(0).toLocaleUpperCase('tr-TR'),
+          author: displayName ?? t('communityRouteDetail.you'),
+          authorInitial: (displayName ?? t('communityRouteDetail.you')).charAt(0).toLocaleUpperCase('tr-TR'),
           date: new Date().toLocaleDateString('tr-TR'),
           text: trimmedComment,
           likes: 0,
@@ -227,10 +220,10 @@ export default function CommunityRouteDetail() {
 
       setCommentText('');
       setSelectedRating(0);
-      Alert.alert('Teşekkürler', 'Yorumunuz başarıyla gönderildi.');
+      Alert.alert(t('communityRouteDetail.alerts.thanksTitle'), t('communityRouteDetail.alerts.thanksDesc'));
     } catch (error) {
       console.error('[COMMUNITY_REVIEW] submit error', error);
-      Alert.alert('Hata', 'Yorum gönderilemedi.');
+      Alert.alert(t('communityRouteDetail.alerts.error'), t('communityRouteDetail.alerts.commentError'));
     } finally {
       setSubmittingReview(false);
     }
@@ -246,7 +239,7 @@ export default function CommunityRouteDetail() {
           className="flex-row items-center gap-2 rounded-full border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2"
         >
           <IconSymbol name="chevron.left" size={18} color="#374151" />
-          <Text className="text-[14px] font-medium text-[#374151]">Geri</Text>
+          <Text className="text-[14px] font-medium text-[#374151]">{t('communityRouteDetail.back')}</Text>
         </TouchableOpacity>
         <View className="flex-row items-center gap-2">
           <TouchableOpacity
@@ -258,7 +251,7 @@ export default function CommunityRouteDetail() {
           >
             <IconSymbol name={saved ? 'bookmark.fill' : 'bookmark'} size={18} color={saved ? '#dc2626' : '#374151'} />
             <Text className={`text-[13px] font-semibold ${saved ? 'text-[#dc2626]' : 'text-[#374151]'}`}>
-              {savingRoute ? 'İşleniyor...' : saved ? 'Kaydedildi' : 'Kaydet'}
+              {savingRoute ? t('communityRouteDetail.processing') : saved ? t('communityRouteDetail.saved') : t('communityRouteDetail.save')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f9fafb]">
@@ -270,11 +263,11 @@ export default function CommunityRouteDetail() {
       <View className="mx-4 mt-3 overflow-hidden rounded-[18px] bg-[#111827] px-4 py-3">
         <View className="flex-row items-center justify-between">
           <View>
-            <Text className="text-[12px] uppercase tracking-[1.5px] text-white/70">Topluluk rotası</Text>
-            <Text className="mt-1 text-[16px] font-semibold text-white">Diğer kullanıcıların önerisi</Text>
+            <Text className="text-[12px] uppercase tracking-[1.5px] text-white/70">{t('communityRouteDetail.badgeCommunity')}</Text>
+            <Text className="mt-1 text-[16px] font-semibold text-white">{t('communityRouteDetail.badgeSuggestion')}</Text>
           </View>
           <View className="rounded-full bg-white/10 px-3 py-1.5">
-            <Text className="text-[12px] font-semibold text-white">{saved ? 'Cihazınıza kaydedildi' : 'Henüz kaydedilmedi'}</Text>
+            <Text className="text-[12px] font-semibold text-white">{saved ? t('communityRouteDetail.statusSaved') : t('communityRouteDetail.statusNotSaved')}</Text>
           </View>
         </View>
       </View>
@@ -304,7 +297,7 @@ export default function CommunityRouteDetail() {
 
         <View className="bg-white px-4 py-4">
           <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-[24px] font-bold text-[#111827]">📍 {stopCount} Durak</Text>
+            <Text className="text-[24px] font-bold text-[#111827]">📍 {stopCount} {t('communityRouteDetail.stops')}</Text>
             <TouchableOpacity
               disabled={savingRoute}
               onPress={() => {
@@ -313,16 +306,16 @@ export default function CommunityRouteDetail() {
               className={`rounded-full px-4 py-2 ${saved ? 'bg-[#fff1f2]' : 'bg-[#f3f4f6]'} ${savingRoute ? 'opacity-60' : ''}`}
             >
               <Text className={`text-[13px] font-semibold ${saved ? 'text-[#dc2626]' : 'text-[#374151]'}`}>
-                {savingRoute ? 'İşleniyor...' : saved ? 'Kaydedildi' : 'Kaydet'}
+                {savingRoute ? t('communityRouteDetail.processing') : saved ? t('communityRouteDetail.saved') : t('communityRouteDetail.save')}
               </Text>
             </TouchableOpacity>
           </View>
 
           {places.length === 0 ? (
             <View className="rounded-[12px] border border-dashed border-[#fca5a5] bg-[#fff7f7] px-4 py-5">
-              <Text className="text-[15px] font-semibold text-[#7f1d1d]">Durak bilgisi bulunamadı</Text>
+              <Text className="text-[15px] font-semibold text-[#7f1d1d]">{t('communityRouteDetail.emptyStopsTitle')}</Text>
               <Text className="mt-1 text-[13px] leading-[20px] text-[#9f1239]">
-                Bu rotaya ait mekan listesi backend yanıtında gelmedi.
+                {t('communityRouteDetail.emptyStopsDesc')}
               </Text>
             </View>
           ) : (
@@ -348,7 +341,7 @@ export default function CommunityRouteDetail() {
         </View>
 
         <View className="mx-4 mt-4 rounded-[14px] bg-[#eef0f3] p-4">
-          <Text className="mb-3 text-[18px] font-semibold text-[#111827]">Bu rotayı değerlendirin</Text>
+          <Text className="mb-3 text-[18px] font-semibold text-[#111827]">{t('communityRouteDetail.rateTitle')}</Text>
           <View className="flex-row gap-3">
             {Array.from({ length: 5 }).map((_, idx) => (
               <TouchableOpacity key={idx} onPress={() => setSelectedRating(idx + 1)}>
@@ -359,11 +352,11 @@ export default function CommunityRouteDetail() {
         </View>
 
         <View className="px-4 pb-6 pt-5">
-          <Text className="mb-3 text-[24px] font-bold text-[#111827]">Yorumlar ({commentCount})</Text>
+          <Text className="mb-3 text-[24px] font-bold text-[#111827]">{t('communityRouteDetail.commentsTitle')} ({commentCount})</Text>
           <TextInput
             value={commentText}
             onChangeText={setCommentText}
-            placeholder="Görüşlerinizi paylaşın..."
+            placeholder={t('communityRouteDetail.commentPlaceholder')}
             placeholderTextColor="#9ca3af"
             multiline
             className="min-h-[96px] rounded-[12px] border border-[#d1d5db] bg-white px-3 py-3 text-[15px] text-[#111827]"
@@ -375,14 +368,14 @@ export default function CommunityRouteDetail() {
             className="mt-3 items-center rounded-[10px] bg-[#dc2626] py-2.5"
             style={{ opacity: submittingReview ? 0.65 : 1 }}
           >
-            <Text className="text-[14px] font-bold text-white">{submittingReview ? 'Gönderiliyor...' : 'Yorum Yap'}</Text>
+            <Text className="text-[14px] font-bold text-white">{submittingReview ? t('communityRouteDetail.sending') : t('communityRouteDetail.submitComment')}</Text>
           </TouchableOpacity>
 
           <View className="mt-4 gap-4">
             {comments.length === 0 ? (
               <View className="rounded-[12px] border border-[#e5e7eb] bg-white px-4 py-4">
-                <Text className="text-[14px] font-medium text-[#111827]">Henüz yorum yok</Text>
-                <Text className="mt-1 text-[13px] text-[#6b7280]">İlk yorumu siz bırakabilirsiniz.</Text>
+                <Text className="text-[14px] font-medium text-[#111827]">{t('communityRouteDetail.noCommentsTitle')}</Text>
+                <Text className="mt-1 text-[13px] text-[#6b7280]">{t('communityRouteDetail.noCommentsDesc')}</Text>
               </View>
             ) : null}
 
@@ -398,10 +391,6 @@ export default function CommunityRouteDetail() {
                     <Text className="text-[12px] text-[#9ca3af]">{comment.date}</Text>
                   </View>
                   <Text className="mt-1 text-[15px] text-[#374151]">{comment.text}</Text>
-
-                  <View className="mt-1 flex-row items-center gap-1">
-                   
-                  </View>
                 </View>
               </View>
             ))}

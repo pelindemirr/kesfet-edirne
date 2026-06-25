@@ -4,12 +4,16 @@ import { getFavoritePlaces, togglePlaceFavorite, type FavoritePlaceItem } from '
 import { useAuthStore } from '@/stores/use-auth-store';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n eklendi
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-function formatDate(iso: string) {
+// t ve i18n ekleyerek dili dinamikleştirdik
+function formatDate(iso: string, language: string) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  // Aktif dile göre tarih formatla (tr ise tr-TR, en ise en-US)
+  const locale = language === 'tr' ? 'tr-TR' : 'en-US';
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function getCategoryEmoji(category?: string) {
@@ -26,6 +30,7 @@ function getCategoryEmoji(category?: string) {
 
 export default function FavoritePlacesScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation(); // Çeviri kancası
   const authUser = useAuthStore((state) => state.user);
   const authToken = useAuthStore((state) => state.token);
 
@@ -33,25 +38,24 @@ export default function FavoritePlacesScreen() {
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<number | string | null>(null);
 
- const loadFavorites = useCallback(async () => {
-  if (!authUser?.id) return;
-  try {
-    setLoading(true);
-    const response = await getFavoritePlaces(authUser.id, authToken ?? undefined);
-    
-    // API artık bize datayı array olarak döndürdüğü için doğrudan kontrol edebiliriz
-    if (response.status === 200 || response.status === 'success' || response.bodyStatus === 'success') {
-      setPlaces(Array.isArray(response.data) ? response.data : []);
-    } else {
+  const loadFavorites = useCallback(async () => {
+    if (!authUser?.id) return;
+    try {
+      setLoading(true);
+      const response = await getFavoritePlaces(authUser.id, authToken ?? undefined);
+      
+      if (response.status === 200 || response.status === 'success' || response.bodyStatus === 'success') {
+        setPlaces(Array.isArray(response.data) ? response.data : []);
+      } else {
+        setPlaces([]);
+      }
+    } catch (error) {
+      console.error('[FavoritePlaces] load error', error);
       setPlaces([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('[FavoritePlaces] load error', error);
-    setPlaces([]);
-  } finally {
-    setLoading(false);
-  }
-}, [authUser?.id, authToken]);
+  }, [authUser?.id, authToken]);
 
   useEffect(() => {
     loadFavorites();
@@ -61,12 +65,12 @@ export default function FavoritePlacesScreen() {
     if (!authUser?.id || removingId === place.id) return;
 
     Alert.alert(
-      'Favoriden Çıkar',
-      `"${place.name}" favorilerinizden çıkarılsın mı?`,
+      t('favoritePlaces.alerts.removeTitle'),
+      t('favoritePlaces.alerts.removeMessage', { name: place.name }),
       [
-        { text: 'Vazgeç', style: 'cancel' },
+        { text: t('favoritePlaces.alerts.cancel'), style: 'cancel' },
         {
-          text: 'Çıkar',
+          text: t('favoritePlaces.alerts.remove'),
           style: 'destructive',
           onPress: async () => {
             setRemovingId(place.id);
@@ -74,7 +78,7 @@ export default function FavoritePlacesScreen() {
               await togglePlaceFavorite(Number(authUser.id), place.id);
               setPlaces((prev) => prev.filter((p) => p.id !== place.id));
             } catch (error) {
-              Alert.alert('Hata', 'İşlem gerçekleştirilemedi.');
+              Alert.alert(t('favoritePlaces.alerts.errorTitle'), t('favoritePlaces.alerts.errorFailed'));
             } finally {
               setRemovingId(null);
             }
@@ -95,31 +99,33 @@ export default function FavoritePlacesScreen() {
           className="flex-row items-center gap-2 rounded-full border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2"
         >
           <IconSymbol name="chevron.left" size={18} color="#374151" />
-          <Text className="text-[14px] font-medium text-[#374151]">Geri</Text>
+          <Text className="text-[14px] font-medium text-[#374151]">{t('favoritePlaces.back')}</Text>
         </TouchableOpacity>
-        <Text className="ml-4 text-[18px] font-bold text-[#111827]">Favori Mekanlarım</Text>
+        <Text className="ml-4 text-[18px] font-bold text-[#111827]">{t('favoritePlaces.headerTitle')}</Text>
       </View>
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#dc2626" />
-          <Text className="mt-3 text-[14px] text-[#6b7280]">Favoriler yükleniyor...</Text>
+          <Text className="mt-3 text-[14px] text-[#6b7280]">{t('favoritePlaces.loading')}</Text>
         </View>
       ) : places.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
           <View className="w-full items-center rounded-[20px] border border-[#fde8cc] bg-white px-6 py-10">
             <Text className="mb-3 text-[52px]">❤️</Text>
             <Text className="mb-2 text-center text-[20px] font-extrabold text-[#111827]">
-              Henüz favori mekan yok
+              {t('favoritePlaces.emptyTitle')}
             </Text>
             <Text className="text-center text-[14px] leading-[22px] text-[#6b7280]">
-              Mekanları gezerken kalp ikonuna tıklayarak favorilerinize ekleyebilirsiniz.
+              {t('favoritePlaces.emptyDesc')}
             </Text>
           </View>
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-          <Text className="mb-3 text-[13px] text-[#6b7280]">{places.length} favori mekan</Text>
+          <Text className="mb-3 text-[13px] text-[#6b7280]">
+            {t('favoritePlaces.placesCount', { count: places.length })}
+          </Text>
 
           <View className="gap-3">
             {places.map((place) => (
@@ -163,7 +169,7 @@ export default function FavoritePlacesScreen() {
 
                   {place.favorited_at ? (
                     <Text className="mt-2 text-[11px] text-[#9ca3af]">
-                      Eklenme: {formatDate(place.favorited_at)}
+                      {t('favoritePlaces.addedAt')} {formatDate(place.favorited_at, i18n.language)}
                     </Text>
                   ) : null}
                 </View>

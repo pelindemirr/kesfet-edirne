@@ -15,12 +15,13 @@ import { useAuthStore } from '@/stores/use-auth-store';
 import { getProfileAvatar, type ProfileAvatarId } from '@/stores/use-profile-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n eklendi
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type TabKey = 'created' | 'saved';
 
-function getRouteTitle(route: CommunityRouteApiItem) {
-  return route.route_name || route.routeName || route.title || 'Rota';
+function getRouteTitle(route: CommunityRouteApiItem, t: any) {
+  return route.route_name || route.routeName || route.title || t('myRoutes.defaultRouteName');
 }
 
 function getRouteDescription(route: CommunityRouteApiItem) {
@@ -57,6 +58,7 @@ export default function MyRoutesScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation(); // Çeviri fonksiyonu tanımlandı
   
   const { savedCommunityRoutes, savedCommunityRoutesLoading, refreshSavedRoutes } = useRoutes() as any;
   
@@ -103,17 +105,16 @@ export default function MyRoutesScreen() {
     }
   }, [authUser?.id, authToken, isAuthenticated]);
 
-  // Kaydedilen rotayı silme/kaldırma aksiyonu
   const handleUnsaveRoute = (route: CommunitySavedRoute) => {
     if (unsavingId !== null) return;
 
     Alert.alert(
-      'Rotayı Kaldır',
-      `"${route.title}" rotasını kaydedilenlerden çıkarmak istediğinize emin misiniz?`,
+      t('myRoutes.alerts.unsaveTitle'),
+      t('myRoutes.alerts.unsaveMessage', { title: route.title }),
       [
-        { text: 'Vazgeç', style: 'cancel' },
+        { text: t('myRoutes.alerts.cancel'), style: 'cancel' },
         {
-          text: 'Kaldır',
+          text: t('myRoutes.alerts.remove'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -126,11 +127,11 @@ export default function MyRoutesScreen() {
                   refreshSavedRoutes();
                 }
               } else {
-                Alert.alert('Hata', response.message || 'Rota listeden kaldırılamadı.');
+                Alert.alert(t('myRoutes.alerts.error'), response.message || t('myRoutes.alerts.unsaveError'));
               }
             } catch (error) {
               console.error('[MyRoutes] Unsave error:', error);
-              Alert.alert('Hata', 'İşlem gerçekleştirilemedi.');
+              Alert.alert(t('myRoutes.alerts.error'), t('myRoutes.alerts.unsaveFailed'));
             } finally {
               setUnsavingId(null);
             }
@@ -140,18 +141,17 @@ export default function MyRoutesScreen() {
     );
   };
 
-  // Kendi oluşturduğum rotayı Berfoo'nun API'si ile silme aksiyonu
   const handleDeleteCreatedRoute = (route: CommunityRouteApiItem) => {
     const routeId = route.id;
     if (!routeId || deletingCreatedId !== null) return;
 
     Alert.alert(
-      'Rotayı Sil',
-      `"${getRouteTitle(route)}" rotasını kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
+      t('myRoutes.alerts.deleteTitle'),
+      t('myRoutes.alerts.deleteMessage', { title: getRouteTitle(route, t) }),
       [
-        { text: 'Vazgeç', style: 'cancel' },
+        { text: t('myRoutes.alerts.cancel'), style: 'cancel' },
         {
-          text: 'Sil',
+          text: t('myRoutes.alerts.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -159,17 +159,15 @@ export default function MyRoutesScreen() {
               
               const response = await deleteUserCreatedRoute(routeId, authToken ?? undefined);
               
-              // 🛠️ HATANIN KAYNAĞI DÜZELTİLDİ: 
-              // Berfoo'nun string formatındaki 'success' kontrolü için response as any ile güvenli sarmal yapıldı.
               const res = response as any;
               if (res.status === 'success' || res.bodyStatus === 'success' || res.status === 200) {
                 setCreatedRoutes((prev) => prev.filter((r: any) => String(r.id) !== String(routeId)));
               } else {
-                Alert.alert('Hata', response.message || 'Rota silinemedi.');
+                Alert.alert(t('myRoutes.alerts.error'), response.message || t('myRoutes.alerts.deleteError'));
               }
             } catch (error) {
               console.error('[MyRoutes] Delete route error:', error);
-              Alert.alert('Hata', 'Silme işlemi gerçekleştirilemedi.');
+              Alert.alert(t('myRoutes.alerts.error'), t('myRoutes.alerts.deleteFailed'));
             } finally {
               setDeletingCreatedId(null);
             }
@@ -188,15 +186,15 @@ export default function MyRoutesScreen() {
             <View className="mb-3 h-12 w-12 items-center justify-center rounded-[14px] bg-[#fef2f2]">
               <IconSymbol name="lock.fill" size={24} color="#dc2626" />
             </View>
-            <Text className="mb-1 text-[20px] font-bold text-[#111827]">Giriş gerekli</Text>
+            <Text className="mb-1 text-[20px] font-bold text-[#111827]">{t('myRoutes.authRequired')}</Text>
             <Text className="mb-4 text-[14px] leading-[20px] text-[#6b7280]">
-              Kendi rotalarınızı ve kaydedilen rotaları görmek için giriş yapabilirsiniz.
+              {t('myRoutes.authDesc')}
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(auth)/login')}
               className="items-center rounded-[12px] bg-[#dc2626] py-3"
             >
-              <Text className="text-[14px] font-bold text-white">Giriş Yap</Text>
+              <Text className="text-[14px] font-bold text-white">{t('myRoutes.loginButton')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -218,13 +216,13 @@ export default function MyRoutesScreen() {
         {routes.map((route) => {
           const rating = Number(route.average_rating ?? route.averageRating ?? 0) || 0;
           const reviewCount = Number(route.review_count ?? route.reviewCount ?? 0) || 0;
-          const district = route.district ?? 'Merkez';
+          const district = route.district ?? t('myRoutes.defaultDistrict');
           const stopCount = Number(route.place_count ?? route.placeCount ?? route.stop_count ?? route.stopCount ?? 0);
           const placePreview = route.place_preview ?? route.placePreview ?? '';
 
           const safeUser = authUser as any;
           const rawAvatar = safeUser?.avatar || safeUser?.avatar_url || safeUser?.imageUrl || '';
-          const rawName = safeUser?.name || safeUser?.fullName || safeUser?.username || 'Ben';
+          const rawName = safeUser?.name || safeUser?.fullName || safeUser?.username || t('myRoutes.me');
 
           const selfAvatarSource = rawAvatar ? getProfileAvatar(resolveAvatarId(rawAvatar) ?? 'man').source : null;
 
@@ -274,7 +272,7 @@ export default function MyRoutesScreen() {
                 </View>
 
                 <Text className="text-[17px] font-extrabold text-[#111827]">
-                  {getRouteTitle(route)}
+                  {getRouteTitle(route, t)}
                 </Text>
 
                 {getRouteDescription(route) ? (
@@ -285,17 +283,17 @@ export default function MyRoutesScreen() {
 
                 {placePreview ? (
                   <Text className="mt-2 text-[12px] text-[#6b7280]">
-                    <Text className="font-semibold text-[#111827]">Duraklar: </Text>
+                    <Text className="font-semibold text-[#111827]">{t('myRoutes.stopsPrefix')}</Text>
                     {placePreview}
                   </Text>
                 ) : null}
 
                 <View className="mt-3 flex-row flex-wrap items-center gap-2">
                   <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
-                    <Text className="text-[12px] text-[#374151]">📍 {stopCount} durak</Text>
+                    <Text className="text-[12px] text-[#374151]">📍 {stopCount} {t('myRoutes.stops')}</Text>
                   </View>
                   <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
-                    <Text className="text-[12px] text-[#374151]">💬 {reviewCount} yorum</Text>
+                    <Text className="text-[12px] text-[#374151]">💬 {reviewCount} {t('myRoutes.comments')}</Text>
                   </View>
                   {(route as any).createdAt || route.created_at ? (
                     <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
@@ -346,7 +344,7 @@ export default function MyRoutesScreen() {
                       <Text className="text-[16px] font-bold text-[#111827]" numberOfLines={1}>
                         {route.authorName}
                       </Text>
-                      <Text className="text-[12px] text-[#6b7280]">{route.district || 'Merkez'}</Text>
+                      <Text className="text-[12px] text-[#6b7280]">{route.district || t('myRoutes.defaultDistrict')}</Text>
                     </View>
                   </View>
 
@@ -379,10 +377,10 @@ export default function MyRoutesScreen() {
 
                 <View className="mt-3 flex-row flex-wrap items-center gap-2">
                   <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
-                    <Text className="text-[12px] text-[#374151]">📍 {route.stopCount || 0} durak</Text>
+                    <Text className="text-[12px] text-[#374151]">📍 {route.stopCount || 0} {t('myRoutes.stops')}</Text>
                   </View>
                   <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
-                    <Text className="text-[12px] text-[#374151]">💬 {route.commentCount || 0}</Text>
+                    <Text className="text-[12px] text-[#374151]">💬 {route.commentCount || 0} {t('myRoutes.comments')}</Text>
                   </View>
                   {route.createdAt ? (
                     <View className="rounded-full bg-[#f8fafc] px-2.5 py-1">
@@ -407,9 +405,9 @@ export default function MyRoutesScreen() {
         <View className="rounded-[18px] border border-[#e5e7eb] bg-white p-5">
           <View className="mb-2 flex-row items-center justify-between">
             <View>
-              <Text className="text-[24px] font-extrabold text-[#111827]">Rotalarım</Text>
+              <Text className="text-[24px] font-extrabold text-[#111827]">{t('myRoutes.title')}</Text>
               <Text className="mt-1 text-[13px] text-[#6b7280]">
-                Kendi oluşturduklarınızı ve topluluktan kaydettiklerinizi ayrı görün.
+                {t('myRoutes.subtitle')}
               </Text>
             </View>
           </View>
@@ -420,7 +418,7 @@ export default function MyRoutesScreen() {
               className={`flex-1 items-center rounded-[10px] px-3 py-2 ${selectedTab === 'created' ? 'bg-white' : ''}`}
             >
               <Text className={`${selectedTab === 'created' ? 'font-bold text-[#111827]' : 'text-[#6b7280]'}`}>
-                Oluşturduklarım
+                {t('myRoutes.tabCreated')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -428,7 +426,7 @@ export default function MyRoutesScreen() {
               className={`flex-1 items-center rounded-[10px] px-3 py-2 ${selectedTab === 'saved' ? 'bg-white' : ''}`}
             >
               <Text className={`${selectedTab === 'saved' ? 'font-bold text-[#111827]' : 'text-[#6b7280]'}`}>
-                Kaydettiklerim
+                {t('myRoutes.tabSaved')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -439,14 +437,14 @@ export default function MyRoutesScreen() {
                 onPress={() => router.push('/explore')}
                 className="mb-3 items-center rounded-[12px] bg-[#dc2626] py-3"
               >
-                <Text className="text-[14px] font-bold text-white">Yeni Rota Oluştur</Text>
+                <Text className="text-[14px] font-bold text-white">{t('myRoutes.createRouteButton')}</Text>
               </TouchableOpacity>
 
-              {renderRouteList(createdRoutes, loadingCreated, 'Henüz oluşturduğunuz rota yok.')}
+              {renderRouteList(createdRoutes, loadingCreated, t('myRoutes.emptyCreated'))}
             </View>
           ) : (
             <View>
-              {renderSavedRouteList(localSavedRoutes, savedCommunityRoutesLoading, 'Henüz kaydettiğiniz rota yok.')}
+              {renderSavedRouteList(localSavedRoutes, savedCommunityRoutesLoading, t('myRoutes.emptySaved'))}
             </View>
           )}
         </View>

@@ -12,24 +12,26 @@ type IconSymbolName = keyof typeof MAPPING;
  * Add your SF Symbols to Material Icons mappings here.
  * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
- */
-const MAPPING = {
+ */const MAPPING = {
+  'house': 'home',
   'house.fill': 'home',
+  'paperplane': 'send',
   'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'chevron.left': 'chevron-left',
   'chevron.down': 'expand-more',
+  'star': 'star-border',
   'star.fill': 'star',
   'calendar': 'calendar-month',
   'clock': 'schedule',
   'mappin.and.ellipse': 'location_on',
+  'person.3': 'group',
   'person.3.fill': 'group',
   'arrow.left': 'arrow-back',
   'person': 'person',
   'envelope': 'email',
   'lock': 'lock',
-  'lock.fill': 'lock',
+  // 'lock.fill' varsa onu kullanın, 'lock' ismini tekrar etmeyin
   'eye': 'visibility',
   'eye.slash': 'visibility-off',
   'magnifyingglass': 'search',
@@ -40,8 +42,10 @@ const MAPPING = {
   'heart.fill': 'favorite',
   'line.3.horizontal': 'menu',
   'square.and.arrow.up': 'share',
+  'newspaper': 'article',
+  'sparkles': 'auto-awesome',
+  'building.columns': 'account-balance',
 } as unknown as IconMapping;
-
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
  * This ensures a consistent look across platforms, and optimal resource usage.

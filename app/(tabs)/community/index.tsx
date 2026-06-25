@@ -6,6 +6,7 @@ import { getCommunityRoutes, type CommunityRouteApiItem } from '@/services/api/e
 import { getProfileAvatar, type ProfileAvatarId } from '@/stores/use-profile-store';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next'; // 1. i18n import edildi
 import { ActivityIndicator, Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type SortOption = 'Popüler' | 'En İyi' | 'Yeni';
@@ -28,8 +29,6 @@ type CommunityRoute = {
 };
 
 const sortOptions: SortOption[] = ['Popüler', 'En İyi', 'Yeni'];
-
-// İlettiğin sabit ilçe listesi
 const FIXED_DISTRICTS = ['Merkez', 'Enez', 'İpsala', 'Süloğlu', 'Uzunköprü', 'Lalapaşa', 'Keşan', 'Meriç', 'Havsa'];
 
 function parseDate(dateText: string) {
@@ -60,10 +59,11 @@ function resolveAvatarId(avatar?: string): ProfileAvatarId | undefined {
   return undefined;
 }
 
-function normalizeRoute(item: CommunityRouteApiItem, index: number): CommunityRoute {
-  const authorName = item.creatorName ?? item.creator_name ?? item.authorName ?? item.author_name ?? 'Anonim Kullanıcı';
+// 2. normalizeRoute fonksiyonuna çeviri (t) parametresi eklendi
+function normalizeRoute(item: CommunityRouteApiItem, index: number, t: any): CommunityRoute {
+  const authorName = item.creatorName ?? item.creator_name ?? item.authorName ?? item.author_name ?? t('communityRoutes.anonymous');
   const createdAt = item.createdAt ?? item.created_at ?? '';
-  const routeName = item.routeName ?? item.route_name ?? item.title ?? 'Adsız Rota';
+  const routeName = item.routeName ?? item.route_name ?? item.title ?? t('communityRoutes.untitled');
   const placeCount = item.placeCount ?? item.place_count ?? item.stopCount ?? item.stop_count ?? 0;
   const averageRating = item.averageRating ?? item.average_rating ?? item.rating ?? 0;
   const reviewCount = item.reviewCount ?? item.review_count ?? item.commentCount ?? item.comment_count ?? 0;
@@ -80,7 +80,7 @@ function normalizeRoute(item: CommunityRouteApiItem, index: number): CommunityRo
     description: item.description ?? '',
     placePreview,
     stopCount: placeCount,
-    district: item.district ?? 'Bilinmiyor',
+    district: item.district ?? t('communityRoutes.unknown'),
     rating: Number(averageRating) || 0,
     reviewCount: Number(reviewCount) || 0,
     commentCount: Number(reviewCount) || 0,
@@ -100,17 +100,17 @@ export default function CommunityRoutesScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { isCommunityRouteSaved, saveCommunityRoute, unsaveCommunityRoute } = useRoutes();
+  const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSort, setSelectedSort] = useState<SortOption>('Yeni');
-  const [selectedDistrict, setSelectedDistrict] = useState('Tüm İlçeler');
+  const [selectedDistrict, setSelectedDistrict] = useState('Tüm İlçeler'); // State değişmedi
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [districtMenuOpen, setDistrictMenuOpen] = useState(false);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [savingRouteId, setSavingRouteId] = useState<string | null>(null);
   const [routes, setRoutes] = useState<CommunityRoute[]>([]);
 
-  // Sayfa her odaklandığında otomatik API isteği atar
   useFocusEffect(
     useCallback(() => {
       let mounted = true;
@@ -124,16 +124,13 @@ export default function CommunityRoutesScreen() {
 
           if (response.status === 200 || response.bodyStatus === 'success') {
             const items = extractRouteItems(response.data);
-            const normalizedRoutes = items.map(normalizeRoute);
-
-            console.log('[COMMUNITY_ROUTES] Normalized routes:', normalizedRoutes);
+            // normalizeRoute çağrısına "t" fonksiyonunu da gönderiyoruz
+            const normalizedRoutes = items.map((item, index) => normalizeRoute(item, index, t));
             setRoutes(normalizedRoutes);
           } else {
-            console.log('[COMMUNITY_ROUTES] Non-success response:', response);
             setRoutes([]);
           }
         } catch (error) {
-          console.error('[COMMUNITY_ROUTES] loadCommunityRoutes error', error);
           if (mounted) {
             setRoutes([]);
           }
@@ -149,24 +146,19 @@ export default function CommunityRoutesScreen() {
       return () => {
         mounted = false;
       };
-    }, [])
+    }, [t]) // t'yi dependency olarak ekledik (dil değişirse veriler yeniden formatlanır)
   );
 
-  // Filtre dropdown listesi için ilçeleri hazırlar
   const districtOptions = useMemo(() => {
-    // API'den gelen rotalardaki farklı ilçeleri al (Bilinmiyor ve boş olanları ele)
     const uniqueApiDistricts = Array.from(
-      new Set(routes.map((route) => route.district).filter((d) => d && d !== 'Bilinmiyor'))
+      new Set(routes.map((route) => route.district).filter((d) => d && d !== t('communityRoutes.unknown')))
     );
-
-    // İlettiğin sabit liste ile API'den gelenleri birleştir (böylece veri olmasa da ilçeler listelenir)
     const allDistricts = Array.from(new Set([...FIXED_DISTRICTS, ...uniqueApiDistricts]));
-
-    // Türkçe karakterlere duyarlı olarak alfabetik sırala
     allDistricts.sort((a, b) => a.localeCompare(b, 'tr-TR'));
-
+    
+    // Mantık değişmedi, arrayin ilk elemanı hep 'Tüm İlçeler'
     return ['Tüm İlçeler', ...allDistricts];
-  }, [routes]);
+  }, [routes, t]);
 
   const filteredRoutes = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLocaleLowerCase('tr-TR');
@@ -202,13 +194,12 @@ export default function CommunityRoutesScreen() {
 
   const handleToggleSave = async (route: CommunityRoute) => {
     if (savingRouteId === route.id) return;
-
     setSavingRouteId(route.id);
 
     if (isCommunityRouteSaved(route.id)) {
       const success = await unsaveCommunityRoute(route.id);
       if (!success) {
-        Alert.alert('Hata', 'Rota kaldırılamadı. Lütfen tekrar deneyin.');
+        Alert.alert(t('communityRoutes.errorTitle'), t('communityRoutes.errorRemove'));
       }
       setSavingRouteId(null);
       return;
@@ -232,10 +223,21 @@ export default function CommunityRoutesScreen() {
     });
 
     if (!success) {
-      Alert.alert('Hata', 'Rota kaydedilemedi. Lütfen tekrar deneyin.');
+      Alert.alert(t('communityRoutes.errorTitle'), t('communityRoutes.errorSave'));
     }
 
     setSavingRouteId(null);
+  };
+
+  // State'deki Türkçe terimleri ekranda çevirerek göstermek için yardımcı fonksiyonlar
+  const getDisplaySort = (sort: SortOption) => {
+    if (sort === 'Popüler') return t('communityRoutes.sortPopular');
+    if (sort === 'En İyi') return t('communityRoutes.sortBest');
+    return t('communityRoutes.sortNew');
+  };
+
+  const getDisplayDistrict = (district: string) => {
+    return district === 'Tüm İlçeler' ? t('communityRoutes.allDistricts') : district;
   };
 
   if (!isAuthenticated) {
@@ -247,15 +249,15 @@ export default function CommunityRoutesScreen() {
             <View className="mb-3 h-12 w-12 items-center justify-center rounded-[14px] bg-[#fef2f2]">
               <IconSymbol name="lock.fill" size={24} color="#dc2626" />
             </View>
-            <Text className="mb-1 text-[20px] font-bold text-[#111827]">Topluluk rotaları için giriş gerekli</Text>
+            <Text className="mb-1 text-[20px] font-bold text-[#111827]">{t('communityRoutes.authRequired')}</Text>
             <Text className="mb-4 text-[14px] leading-[20px] text-[#6b7280]">
-              Diğer kullanıcıların paylaştığı rotaları görmek ve incelemek için lütfen giriş yapın.
+              {t('communityRoutes.authDesc')}
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(auth)/login')}
               className="items-center rounded-[12px] bg-[#dc2626] py-3"
             >
-              <Text className="text-[14px] font-bold text-white">Giriş Yap</Text>
+              <Text className="text-[14px] font-bold text-white">{t('communityRoutes.loginButton')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -268,8 +270,8 @@ export default function CommunityRoutesScreen() {
       <Header />
 
       <View className="bg-white px-4 pb-3 pt-4 shadow-sm">
-        <Text className="text-[22px] font-extrabold text-[#0f172a]">Topluluk Rotaları</Text>
-        <Text className="mt-1 text-[13px] text-[#6b7280]">Paylaşılan rotaları keşfedin</Text>
+        <Text className="text-[22px] font-extrabold text-[#0f172a]">{t('communityRoutes.title')}</Text>
+        <Text className="mt-1 text-[13px] text-[#6b7280]">{t('communityRoutes.subtitle')}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 12, paddingBottom: 88 }}>
@@ -278,7 +280,7 @@ export default function CommunityRoutesScreen() {
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Rota veya yer ara..."
+            placeholder={t('communityRoutes.searchPlaceholder')}
             placeholderTextColor="#9ca3af"
             className="ml-2 flex-1 text-[14px] text-[#111827]"
           />
@@ -294,7 +296,7 @@ export default function CommunityRoutesScreen() {
               }}
               className="flex-row items-center justify-between rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm"
             >
-              <Text className="text-[14px] font-medium text-[#0f172a]">{selectedSort}</Text>
+              <Text className="text-[14px] font-medium text-[#0f172a]">{getDisplaySort(selectedSort)}</Text>
               <IconSymbol name="chevron.down" size={16} color="#6b7280" />
             </TouchableOpacity>
 
@@ -312,7 +314,7 @@ export default function CommunityRoutesScreen() {
                     }`}
                   >
                     <Text className={`text-[14px] ${selectedSort === option ? 'font-semibold text-[#111827]' : 'text-[#6b7280]'}`}>
-                      {option}
+                      {getDisplaySort(option)}
                     </Text>
                     {selectedSort === option && <IconSymbol name="checkmark" size={15} color="#6b7280" />}
                   </TouchableOpacity>
@@ -331,7 +333,7 @@ export default function CommunityRoutesScreen() {
               className="flex-row items-center justify-between rounded-[12px] border border-[#e6e9ee] bg-white px-3 py-2.5 shadow-sm"
             >
               <Text className="text-[14px] font-medium text-[#0f172a]" numberOfLines={1}>
-                {selectedDistrict}
+                {getDisplayDistrict(selectedDistrict)}
               </Text>
               <IconSymbol name="chevron.down" size={16} color="#6b7280" />
             </TouchableOpacity>
@@ -351,7 +353,7 @@ export default function CommunityRoutesScreen() {
                       }`}
                     >
                       <Text className={`text-[14px] ${selectedDistrict === option ? 'font-semibold text-[#111827]' : 'text-[#6b7280]'}`}>
-                        {option}
+                        {getDisplayDistrict(option)}
                       </Text>
                       {selectedDistrict === option && <IconSymbol name="checkmark" size={15} color="#6b7280" />}
                     </TouchableOpacity>
@@ -366,7 +368,7 @@ export default function CommunityRoutesScreen() {
           {loadingRoutes ? (
             <View className="items-center rounded-[14px] border border-[#e5e7eb] bg-white px-4 py-8">
               <ActivityIndicator size="large" color="#dc2626" />
-              <Text className="mt-3 text-[14px] text-[#6b7280]">Topluluk rotaları yükleniyor...</Text>
+              <Text className="mt-3 text-[14px] text-[#6b7280]">{t('communityRoutes.loading')}</Text>
             </View>
           ) : null}
 
@@ -393,14 +395,14 @@ export default function CommunityRoutesScreen() {
 
               {route.placePreview ? (
                 <Text className="mb-3 text-[13px] leading-[20px] text-[#6b7280]">
-                  <Text className="font-semibold text-[#111827]">Önizleme: </Text>
+                  <Text className="font-semibold text-[#111827]">{t('communityRoutes.preview')}</Text>
                   {route.placePreview}
                 </Text>
               ) : null}
 
               <View className="mb-4 flex-row items-center gap-2">
                 <Text className="text-[14px] text-[#dc2626]">📍</Text>
-                <Text className="text-[14px] text-[#374151]">{route.stopCount} durak</Text>
+                <Text className="text-[14px] text-[#374151]">{route.stopCount} {t('communityRoutes.stops')}</Text>
                 <Text className="text-[#9ca3af]">•</Text>
                 <Text className="text-[14px] text-[#374151]">{route.district}</Text>
               </View>
@@ -422,10 +424,10 @@ export default function CommunityRoutesScreen() {
                     >
                       <Text className={`text-[13px] font-bold ${isCommunityRouteSaved(route.id) ? 'text-[#dc2626]' : 'text-[#111827]'}`}>
                         {savingRouteId === route.id
-                          ? 'İşleniyor...'
+                          ? t('communityRoutes.processing')
                           : isCommunityRouteSaved(route.id)
-                            ? 'Kaydedildi'
-                            : 'Kaydet'}
+                            ? t('communityRoutes.saved')
+                            : t('communityRoutes.save')}
                       </Text>
                     </TouchableOpacity>
 
@@ -452,7 +454,7 @@ export default function CommunityRoutesScreen() {
                       }
                       className="rounded-[10px] bg-[#dc2626] px-4 py-2"
                     >
-                      <Text className="text-[13px] font-bold text-white">İncele</Text>
+                      <Text className="text-[13px] font-bold text-white">{t('communityRoutes.review')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -462,8 +464,8 @@ export default function CommunityRoutesScreen() {
 
           {!loadingRoutes && filteredRoutes.length === 0 && (
             <View className="items-center rounded-[14px] border border-[#e5e7eb] bg-white px-4 py-8">
-              <Text className="text-[16px] font-semibold text-[#111827]">Filtreye uygun rota bulunamadı</Text>
-              <Text className="mt-1 text-[13px] text-[#6b7280]">Arama metnini veya filtreleri değiştirebilirsin.</Text>
+              <Text className="text-[16px] font-semibold text-[#111827]">{t('communityRoutes.emptyTitle')}</Text>
+              <Text className="mt-1 text-[13px] text-[#6b7280]">{t('communityRoutes.emptyDesc')}</Text>
             </View>
           )}
         </View>

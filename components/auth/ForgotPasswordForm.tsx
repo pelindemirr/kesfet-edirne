@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next'; // i18n import edildi
 import { TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ForgotPasswordForm({
@@ -14,6 +15,7 @@ export default function ForgotPasswordForm({
   successMessage?: string | null;
   errorMessage?: string | null;
 }) {
+  const { t } = useTranslation(); // t fonksiyonu tanımlandı
   const [email, setEmail] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -21,15 +23,21 @@ export default function ForgotPasswordForm({
 
   return (
     <View className="mt-4 w-[90%] max-w-[380px] self-center rounded-[16px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-lg shadow-black/10">
-      <ThemedText className="mb-1 text-[26px] font-bold leading-[30px] text-[#e30613]">Şifrenizi Sıfırlayın</ThemedText>
-      <ThemedText className="mb-4 text-[14px] text-[#4b5563]">Kayıtlı e-posta adresinizi girin, sıfırlama bağlantısı gönderelim.</ThemedText>
+      <ThemedText className="mb-1 text-[26px] font-bold leading-[30px] text-[#e30613]">
+        {t('forgotPasswordForm.title')}
+      </ThemedText>
+      <ThemedText className="mb-4 text-[14px] text-[#4b5563]">
+        {t('forgotPasswordForm.description')}
+      </ThemedText>
 
-      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">E-posta</ThemedText>
+      <ThemedText className="mb-1.5 text-[12px] font-semibold text-[#111827]">
+        {t('forgotPasswordForm.emailLabel')}
+      </ThemedText>
       <View className="mb-4 flex-row items-center rounded-[8px] bg-[#f3f4f6] px-3 py-2.5">
         <IconSymbol name="envelope" size={16} color="#6b7280" />
         <TextInput
           className="ml-2 flex-1 text-[13px] text-[#111827]"
-          placeholder="Kayıtlı e-posta adresiniz"
+          placeholder={t('forgotPasswordForm.emailPlaceholder')}
           placeholderTextColor="#9ca3af"
           value={email}
           onChangeText={setEmail}
@@ -56,18 +64,20 @@ export default function ForgotPasswordForm({
         onPress={() => {
           setLocalError(null);
           if (!email.trim()) {
-            setLocalError('Lütfen e-posta adresinizi giriniz.');
+            setLocalError(t('forgotPasswordForm.emptyEmailError'));
             return;
           }
           if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-            setLocalError('Lütfen geçerli bir e-posta adresi giriniz.');
+            setLocalError(t('forgotPasswordForm.invalidEmailError'));
             return;
           }
 
           onSubmit?.(email);
         }}
       >
-        <ThemedText className="text-[14px] font-bold text-white">{isSubmitting ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'}</ThemedText>
+        <ThemedText className="text-[14px] font-bold text-white">
+          {isSubmitting ? t('forgotPasswordForm.sending') : t('forgotPasswordForm.submitButton')}
+        </ThemedText>
       </TouchableOpacity>
     </View>
   );

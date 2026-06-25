@@ -5,17 +5,14 @@ import {
   ActivityIndicator,
   Image,
   KeyboardAvoidingView,
-  NativeSyntheticEvent,
   Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TextInputChangeEventData,
-  TextInputKeyPressEventData,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 const chatbotIcon = require('../../assets/chatbot/chatbot .png');
@@ -302,26 +299,12 @@ export default function ChatbotScreen({ onClose }: ChatbotScreenProps) {
               style={styles.input}
               placeholder="Tarih, rota, yemek..."
               placeholderTextColor="#98A2B3"
-                value={inputText}
-                onChangeText={(t) => {
-                  try {
-                    console.log('[Chatbot] input change:', t);
-                  } catch (e) {}
-                  setInputText(t);
-                }}
-                onKeyPress={(e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-                  try {
-                    console.log('[Chatbot] keypress:', e.nativeEvent.key);
-                  } catch (err) {}
-                }}
-                onChange={(e: NativeSyntheticEvent<TextInputChangeEventData>) => {
-                  try {
-                    console.log('[Chatbot] change event:', e.nativeEvent.text);
-                  } catch (err) {}
-                }}
-                keyboardType="default"
-                autoCapitalize="none"
-                autoCorrect={false}
+              value={inputText}
+              onChangeText={setInputText} // 💡 En temiz ve doğru kullanım budur
+              keyboardType="default"
+              autoCapitalize="sentences" // 'none' yerine 'sentences' yapmak iOS'ta Türkçe klavyeyi daha iyi çalıştırır
+              autoCorrect={true} // Opsiyonel, genelde true bırakmak daha sağlıklıdır
+              spellCheck={false} // Altını kırmızı çizmesini engeller
               onSubmitEditing={handleTextSubmit}
               returnKeyType="send"
             />

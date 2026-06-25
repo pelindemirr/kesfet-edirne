@@ -11,6 +11,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<boolean>;
   register: (full_name: string, email: string, password: string) => Promise<boolean>;
   signOut: () => void;
+  clearError: () => void; // 1. Fonksiyonu type tanımına ekledik
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -28,6 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resolvedDisplayName = user?.full_name?.trim() || displayName;
 
+  // 2. Zustand state'ine doğrudan müdahale edip error'u sıfırlayan fonksiyon
+  const clearError = () => {
+    useAuthStore.setState({ error: null });
+  };
+
   const value = useMemo(
     () => ({
       isAuthenticated: isLoggedIn,
@@ -36,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       error,
       login,
       register,
+      clearError, // 3. Context value içine dahil ettik
       signOut: () => {
         logout();
         setDisplayName('Kullanici');
